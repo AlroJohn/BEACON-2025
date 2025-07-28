@@ -25,35 +25,37 @@ function AdminLoginForm() {
   const { isAuthenticated, isSessionValid, clearSession } = useAdminStore();
   const adminLogin = useAdminLogin();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  
+
   // Get return URL from query params, default to /admin
-  const returnUrl = searchParams.get('returnUrl') ? decodeURIComponent(searchParams.get('returnUrl')!) : '/admin';
+  const returnUrl = searchParams.get("returnUrl")
+    ? decodeURIComponent(searchParams.get("returnUrl")!)
+    : "/admin";
 
   // Check authentication state and handle expired sessions
   useEffect(() => {
     const checkAuthState = () => {
-      console.log('🔍 Login: Checking authentication state...', {
+      console.log("🔍 Login: Checking authentication state...", {
         isAuthenticated,
         isSessionValid: isSessionValid(),
       });
 
       setTimeout(() => {
         const sessionValid = isSessionValid();
-        
+
         // If authenticated with valid session, redirect
         if (isAuthenticated && sessionValid) {
-          console.log('✅ Login: Already authenticated, redirecting');
+          console.log("✅ Login: Already authenticated, redirecting");
           router.push(returnUrl);
-        } 
+        }
         // If authenticated but session invalid, clear and stay on login
         else if (isAuthenticated && !sessionValid) {
-          console.log('🔒 Login: Session expired, clearing auth state');
+          console.log("🔒 Login: Session expired, clearing auth state");
           clearSession();
           setIsCheckingAuth(false);
         }
         // Not authenticated, show login form
         else {
-          console.log('📝 Login: Not authenticated, showing login form');
+          console.log("📝 Login: Not authenticated, showing login form");
           setIsCheckingAuth(false);
         }
       }, 100);
@@ -159,7 +161,7 @@ function AdminLoginForm() {
             </Button>
 
             {/* Debug button for development */}
-            {process.env.NODE_ENV === 'development' && (
+            {/* {process.env.NODE_ENV === 'development' && (
               <Button
                 type="button"
                 variant="outline"
@@ -173,7 +175,7 @@ function AdminLoginForm() {
               >
                 🧹 Clear All Auth Data (Debug)
               </Button>
-            )}
+            )} */}
           </form>
         </CardContent>
       </Card>
@@ -183,14 +185,16 @@ function AdminLoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-        <div className="flex items-center space-x-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading...</span>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading...</span>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <AdminLoginForm />
     </Suspense>
   );

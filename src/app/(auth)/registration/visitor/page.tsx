@@ -760,21 +760,6 @@ export default function VisitorRegistrationPage() {
               You will receive a confirmation email shortly with your
               registration details and event information.
             </div>
-            {registrationData && (
-              <div className="bg-gray-50 rounded-lg p-3 text-xs text-left">
-                <div>
-                  <span className="font-medium">User ID:</span>{" "}
-                  {registrationData.userId.slice(0, 8)}...
-                </div>
-                <div>
-                  <span className="font-medium">Registration ID:</span>{" "}
-                  {registrationData.visitorId.slice(0, 8)}...
-                </div>
-              </div>
-            )}
-            <div className="text-xs text-muted-foreground">
-              Save this information for your records.
-            </div>
           </div>
 
           <AlertDialogFooter>

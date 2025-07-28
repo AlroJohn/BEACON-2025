@@ -22,7 +22,7 @@ export const visitorEventSchema = z.object({
   eventStartTime: z.date().optional().nullable(),
   eventEndTime: z.date().optional().nullable(),
   eventStatus: z.nativeEnum(EventStatusEnum),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
   description: z.string().optional().nullable(),
 }).refine((data) => {
   // If both start and end times are provided, ensure end time is after start time
@@ -45,7 +45,7 @@ export interface CreateVisitorEventRequest {
   eventStartTime?: Date | null;
   eventEndTime?: Date | null;
   eventStatus: EventStatusEnum;
-  isActive?: boolean;
+  isActive: boolean;
   description?: string | null;
 }
 

@@ -86,7 +86,7 @@ interface EventData {
   createdAt: Date;
   updatedAt: Date;
   eventName: string;
-  eventDates: Date[];
+  eventDate: Date;
   eventPrice: number;
   eventStatus: EventStatusEnum;
   isActive: boolean;
@@ -235,7 +235,7 @@ export function EventsDataTable({
       ),
     },
     {
-      accessorKey: "eventDates",
+      accessorKey: "eventDate",
       header: ({ column }) => {
         return (
           <Button
@@ -243,23 +243,16 @@ export function EventsDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 px-2 lg:px-3"
           >
-            Dates
+            Date
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
-        const dates = row.getValue("eventDates") as Date[];
+        const date = row.getValue("eventDate") as Date;
         return (
           <div className="text-sm">
-            {formatDates(dates)}
-            {dates && dates.length > 1 && (
-              <div className="text-xs text-muted-foreground mt-1">
-                {dates.slice(1).map((date, index) => (
-                  <div key={index}>{formatDate(date)}</div>
-                ))}
-              </div>
-            )}
+            {date ? formatDate(date) : 'No date set'}
           </div>
         );
       },
@@ -395,11 +388,9 @@ export function EventsDataTable({
                           <p>{getStatusBadge(event.eventStatus)}</p>
                         </div>
                         <div className="md:col-span-2">
-                          <label className="font-medium">Dates:</label>
+                          <label className="font-medium">Date:</label>
                           <div className="space-y-1">
-                            {event.eventDates?.map((date, index) => (
-                              <p key={index}>{formatDate(date)}</p>
-                            )) || <p>No dates set</p>}
+                            <p>{event.eventDate ? formatDate(event.eventDate) : 'No date set'}</p>
                           </div>
                         </div>
                         <div>
@@ -502,7 +493,7 @@ export function EventsDataTable({
                 editingEvent={{
                   id: event.id,
                   eventName: event.eventName,
-                  eventDates: event.eventDates?.map(date => new Date(date)) || [new Date()],
+                  eventDate: event.eventDate ? new Date(event.eventDate) : new Date(),
                   eventStartTime: event.eventStartTime ? new Date(event.eventStartTime) : undefined,
                   eventEndTime: event.eventEndTime ? new Date(event.eventEndTime) : undefined,
                   eventPrice: Number(event.eventPrice),

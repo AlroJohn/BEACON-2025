@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 // Validation schema for events
 const eventSchema = z.object({
   eventName: z.string().min(1, 'Event name is required'),
-  eventDates: z.array(z.string().pipe(z.coerce.date())).min(1, 'At least one event date is required'),
+  eventDate: z.string().pipe(z.coerce.date()),
   eventStartTime: z.string().optional().nullable(),
   eventEndTime: z.string().optional().nullable(),
   eventPrice: z.number().min(0, 'Event price must be non-negative'),
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const event = await prisma.events.create({
       data: {
         eventName: validatedData.eventName,
-        eventDates: validatedData.eventDates,
+        eventDate: validatedData.eventDate,
         eventStartTime: validatedData.eventStartTime ? new Date(validatedData.eventStartTime) : null,
         eventEndTime: validatedData.eventEndTime ? new Date(validatedData.eventEndTime) : null,
         eventPrice: validatedData.eventPrice,

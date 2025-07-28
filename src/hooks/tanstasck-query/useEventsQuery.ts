@@ -92,7 +92,7 @@ export const useEventQuery = (eventId: string) => {
 // Create new event
 interface CreateEventData {
   eventName: string;
-  eventDates: Date[];
+  eventDate: Date;
   eventPrice: number;
   eventStatus: EventStatusEnum;
   isActive?: boolean;
@@ -241,7 +241,7 @@ export const useEventSelection = () => {
       value: event.id,
       label: event.eventName,
       price: Number(event.eventPrice),
-      dates: event.eventDates,
+      date: event.eventDate,
       status: event.eventStatus,
       description: event.description,
     }));

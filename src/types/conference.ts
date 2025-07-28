@@ -46,8 +46,7 @@ export interface VisitorEvent {
   createdAt: Date;
   updatedAt: Date;
   eventName: string;
-  eventDateStart: Date;
-  eventDateEnd: Date;
+  eventDates: Date[];
   eventStatus: EventStatusEnum;
   isActive: boolean;
   description?: string;

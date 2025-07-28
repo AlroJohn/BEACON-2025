@@ -368,10 +368,13 @@ export default function ExhibitorRegistrationPage() {
         if (result.errors && Array.isArray(result.errors)) {
           result.errors.forEach((error: any) => {
             if (error.path && error.path.length > 0) {
-              form.setError(error.path[0] as keyof ExhibitorRegistrationFormData, {
-                type: "server",
-                message: error.message,
-              });
+              form.setError(
+                error.path[0] as keyof ExhibitorRegistrationFormData,
+                {
+                  type: "server",
+                  message: error.message,
+                }
+              );
             }
           });
           // Scroll to first error after server validation
@@ -408,7 +411,8 @@ export default function ExhibitorRegistrationPage() {
             <CardDescription className="">
               <div className="text-accent-foreground">
                 <p className="font-semibold">
-                  Official Exhibitor Registration Form – Showcase Your Products & Services
+                  Official Exhibitor Registration Form – Showcase Your Products
+                  & Services
                 </p>
                 <p>
                   September 29 – October 1, 2025 | SMX Convention Center, MOA
@@ -545,12 +549,14 @@ export default function ExhibitorRegistrationPage() {
                           width="24"
                           height="24"
                         />
-                        {Array.from({ length: exhibitionLineCount }).map((_, i) => (
-                          <span
-                            key={i}
-                            className="border-l-2 border-c1 h-2"
-                          ></span>
-                        ))}
+                        {Array.from({ length: exhibitionLineCount }).map(
+                          (_, i) => (
+                            <span
+                              key={i}
+                              className="border-l-2 border-c1 h-2"
+                            ></span>
+                          )
+                        )}
                       </div>
                       <div className="flex-1 flex flex-col lg:mt-3">
                         <h1 className="text-lg font-semibold">
@@ -680,7 +686,8 @@ export default function ExhibitorRegistrationPage() {
                           emailCheck?.exists
                         }
                       >
-                        {isSubmitting || exhibitorRegistrationMutation.isPending ? (
+                        {isSubmitting ||
+                        exhibitorRegistrationMutation.isPending ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Registering...
@@ -711,8 +718,8 @@ export default function ExhibitorRegistrationPage() {
               Exhibitor Registration Successful!
             </AlertDialogTitle>
             <AlertDialogDescription className="text-center">
-              🎉 Welcome to BEACON 2025! Your exhibitor registration has been completed
-              successfully.
+              🎉 Welcome to BEACON 2025! Your exhibitor registration has been
+              completed successfully.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -720,21 +727,6 @@ export default function ExhibitorRegistrationPage() {
             <div className="text-sm text-muted-foreground">
               You will receive a confirmation email shortly with your
               registration details and booth information.
-            </div>
-            {registrationData && (
-              <div className="bg-gray-50 rounded-lg p-3 text-xs text-left">
-                <div>
-                  <span className="font-medium">User ID:</span>{" "}
-                  {registrationData.userId.slice(0, 8)}...
-                </div>
-                <div>
-                  <span className="font-medium">Exhibitor ID:</span>{" "}
-                  {registrationData.exhibitorId.slice(0, 8)}...
-                </div>
-              </div>
-            )}
-            <div className="text-xs text-muted-foreground">
-              Save this information for your records.
             </div>
           </div>
 

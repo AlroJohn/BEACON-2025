@@ -83,10 +83,22 @@ export function EventPreferences({ form }: EventPreferencesProps) {
     if (isChecked) {
       if (!nextEventParts.includes(eventName)) nextEventParts.push(eventName);
       if (!nextAttending[eventName]) nextAttending[eventName] = [];
+
+      // Automatically open the collapsible menu when event is selected
+      setExpandedEvents((prev) => ({
+        ...prev,
+        [eventId]: true,
+      }));
     } else {
       const idx = nextEventParts.indexOf(eventName);
       if (idx > -1) nextEventParts.splice(idx, 1);
       delete nextAttending[eventName];
+
+      // Automatically close the collapsible menu when event is unselected
+      setExpandedEvents((prev) => ({
+        ...prev,
+        [eventId]: false,
+      }));
     }
 
     form.setValue("eventParts", nextEventParts, {
@@ -217,7 +229,17 @@ export function EventPreferences({ form }: EventPreferencesProps) {
                   const selectedDates = attendingDaysObj[event.eventName] || [];
 
                   return (
-                    <Collapsible key={event.id} className="space-y-2">
+                    <Collapsible
+                      key={event.id}
+                      className="space-y-2"
+                      open={isExpanded}
+                      onOpenChange={(open) =>
+                        setExpandedEvents((prev) => ({
+                          ...prev,
+                          [event.id]: open,
+                        }))
+                      }
+                    >
                       <div className="flex items-center gap-4">
                         <Checkbox
                           id={`event-${event.id}`}
@@ -246,14 +268,14 @@ export function EventPreferences({ form }: EventPreferencesProps) {
                             <Calendar className="h-4 w-4 mr-2" />
                             {event.eventDates.length} available date(s)
                           </div>
-                          {isEventSelected && selectedDates.length > 0 && (
+                          {/* {isEventSelected && selectedDates.length > 0 && (
                             <div className="mt-2 text-xs text-muted-foreground">
                               Selected:{" "}
                               {selectedDates
                                 .map((d) => formatDate(d))
                                 .join(", ")}
                             </div>
-                          )}
+                          )} */}
                         </div>
                         <CollapsibleTrigger asChild>
                           <Button

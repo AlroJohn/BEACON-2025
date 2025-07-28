@@ -67,6 +67,12 @@ const data = {
       url: "/admin/events",
       icon: BookOpen,
     },
+    // visitor-events
+    {
+      name: "Visitor Events",
+      url: "/admin/visitor-events",
+      icon: BookOpen,
+    },
   ],
 };
 

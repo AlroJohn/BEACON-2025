@@ -61,13 +61,13 @@ src/
 - **Schema Location**: `prisma/schema.prisma`
 - **Core Models**: 
   - User system: `Users`, `user_accounts`, `user_details`
-  - Registration: `Visitors` (general event), `Conference` (conference-specific)
+  - Registration: `Visitors` (general event), `Conference` (conference-specific), `exhibitor_registrations`, `sponsorship_interests`
   - Payment: `ConferencePayment`, `SummaryOfPayments`
   - Events: `Events`, `CodeDistribution`
   - Admin: `ManagerAccount`
-- **Key Enums**: Gender, AgeBracket, Industry, AttendeeType, InterestArea, HearAboutEvent, MaritimeLeagueMembership, PaymentMode, PaymentStatus
-- **Registration Flow**: Dual registration system for visitors and conference attendees
-- **Payment Integration**: PayMongo integration with webhook-based payment confirmation
+- **Key Enums**: Gender, AgeBracket, Industry, AttendeeType, InterestArea, HearAboutEvent, MaritimeLeagueMembership, PaymentMode, PaymentStatus, SponsorshipCategory, ParticipationType, BoothSize
+- **Registration Flow**: Multi-type registration system (visitors, conference, exhibitors, sponsors)
+- **Payment Integration**: Manual payment verification with receipt upload for conferences
 - **Database Provider**: PostgreSQL with Supabase (supports both `DATABASE_URL` and `DIRECT_URL`)
 - **Client Generation**: Standard Prisma client (not custom output)
 
@@ -92,7 +92,8 @@ src/
 - Route group architecture for clean authentication flow: `(auth)`, `(private)`, `(public)`
 - Admin panel with data tables for managing visitors, conferences, events, and codes
 - Real-time capabilities via Supabase realtime provider
-- State management using Zustand stores for different registration types
+- State management using Zustand stores: `appStore`, `registrationStore`, `visitorRegistrationStore`, `adminStore`, `userStore`
+- Email notifications via SendGrid integration for registration confirmations and payment status updates
 
 ### Domain Context
 - **BEACON 2025**: Maritime industry event registration and management system
@@ -105,8 +106,9 @@ src/
 - Always check `src/types/` directory if there are available data types for specific schema models
 - Face capture functionality is integrated - check `face-api.js` configuration in Next.js config
 - Use appropriate registration stores: `useRegistrationStore` for visitors, `useConferenceRegistrationStore` for conferences
-- Admin routes require authentication validation via `adminSessions.ts`
+- Admin authentication uses simplified database verification via `ManagerAccount` model
 - **Realtime Integration**: Admin pages automatically refresh when database changes occur via Supabase realtime subscriptions
+- **Modal State Management**: For admin modals, use external state management to prevent auto-closing during realtime updates
 
 ### Realtime Features
 - **Live Admin Dashboard**: Visitor and conference admin tables show real-time updates with visual indicators
@@ -196,11 +198,16 @@ webhook.on('payment.paid', async (event) => {
 ### API Route Structure
 ```
 api/
-├── admin/           # Admin-only endpoints
+├── admin/
+│   └── conference/
+│       └── [id]/
+│           └── payment-status/  # Admin payment status updates
 ├── check-email/     # Email validation
 ├── code-distribution/ # Registration codes
 ├── conference/      # Conference registration & receipts
 ├── events/          # Event management
+├── exhibitors/      # Exhibitor registration
+├── sponsorship/     # Sponsorship interest registration
 └── visitors/        # Visitor registration
 ```
 
@@ -208,3 +215,40 @@ api/
 - ESLint configured but disabled by default
 - TypeScript strict mode enforced
 - Prisma client regeneration on build and install
+
+## Email System Architecture
+
+### SendGrid Integration
+- **Service**: SendGrid for email delivery (`@sendgrid/mail`)
+- **From Address**: `noreply@thebeaconexpo.com`
+- **Configuration**: Environment variable `SENDGRID_API_KEY` required
+
+### Email Templates
+- **Conference Registration**: Comprehensive HTML email with registration details, payment status, and next steps
+- **Payment Status Updates**: Dynamic templates for CONFIRMED, FAILED, and REFUNDED statuses
+- **Template Location**: `src/lib/email.ts` with `generateConferenceRegistrationEmail()` and `generatePaymentStatusEmail()`
+
+### Email Delivery Rules
+- **Registration Confirmation**: Sent automatically after successful conference registration
+- **Payment Status**: Sent when admin updates payment status to CONFIRMED, FAILED, or REFUNDED
+- **Email Source**: Always uses database `user_accounts.email` field, not form data
+- **Error Handling**: Email failures don't block registration/payment processes
+
+## Admin System Architecture
+
+### Authentication Pattern
+- **Storage**: Zustand store (`adminStore.ts`) with localStorage persistence
+- **Verification**: Direct database lookup via `ManagerAccount` model
+- **Session Management**: Token-based with expiry validation
+- **Access Control**: Simplified verification checking for any active admin
+
+### Payment Management
+- **Inline Editing**: Payment status can be updated directly in admin modals
+- **Status Flow**: PENDING → CONFIRMED/FAILED/REFUNDED
+- **Email Triggers**: Status changes automatically send notification emails
+- **Modal Persistence**: Admin modals use external state to prevent auto-closing during realtime updates
+
+### Critical Implementation Notes
+- **Query Invalidation**: Remove immediate invalidation from payment mutations to prevent modal closing
+- **Global Modal State**: Keep modal state outside table render cycle for persistence
+- **Realtime Compatibility**: Admin tables work with Supabase realtime without disrupting user interactions

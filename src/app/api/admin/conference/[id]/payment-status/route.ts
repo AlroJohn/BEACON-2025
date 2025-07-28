@@ -33,13 +33,13 @@ async function verifyAdminAccess() {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify admin access
     const admin = await verifyAdminAccess();
 
-    const conferenceId = params.id;
+    const { id } = await context.params
     const body = await request.json();
 
     // Validate request body
@@ -47,7 +47,7 @@ export async function PATCH(
 
     // Find the conference and its payment record with event details
     const conference = await prisma.conference.findUnique({
-      where: { id: conferenceId },
+      where: { id: id },
       include: {
         ConferencePayment: true,
         user: {
@@ -100,7 +100,7 @@ export async function PATCH(
     };
 
     console.log(`Payment status updated by admin ${admin.username}:`, {
-      conferenceId,
+      id,
       user: userInfo,
       oldStatus: conference.ConferencePayment?.paymentStatus || 'N/A',
       newStatus: validatedData.paymentStatus,
@@ -110,11 +110,11 @@ export async function PATCH(
     // Send email notification for status changes (CONFIRMED, FAILED, REFUNDED)
     const shouldSendEmail = ['CONFIRMED', 'FAILED', 'REFUNDED'].includes(validatedData.paymentStatus);
     const statusChanged = conference.ConferencePayment?.paymentStatus !== validatedData.paymentStatus;
-    
+
     if (shouldSendEmail && statusChanged) {
       try {
         console.log(`Sending payment status email for status: ${validatedData.paymentStatus}`);
-        
+        const conferenceId = id
         // Prepare email data
         const emailData: PaymentStatusEmailData = {
           userEmail: conference.user?.user_accounts?.[0]?.email || '',
@@ -133,7 +133,7 @@ export async function PATCH(
         };
 
         const emailSent = await sendPaymentStatusEmail(emailData);
-        
+
         if (emailSent) {
           console.log(`Payment status email sent successfully to: ${emailData.userEmail}`);
         } else {
@@ -149,7 +149,7 @@ export async function PATCH(
       success: true,
       message: 'Payment status updated successfully',
       data: {
-        conferenceId,
+        id,
         paymentId: updatedPayment.id,
         newStatus: validatedData.paymentStatus,
         updatedAt: updatedPayment.updatedAt,

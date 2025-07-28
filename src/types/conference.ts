@@ -30,7 +30,7 @@ export interface Event {
   createdAt: Date;
   updatedAt: Date;
   eventName: string;
-  eventDate: Date;
+  eventDates: Date[];
   eventPrice: number;
   eventStatus: EventStatusEnum;
   isActive: boolean;

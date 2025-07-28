@@ -452,8 +452,7 @@ model VisitorEvents {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   eventName      String
-  eventDateStart DateTime
-  eventDateEnd   DateTime
+  eventDates     DateTime[]
   eventStartTime DateTime?
   eventEndTime   DateTime?
   eventStatus    EventStatusEnum
@@ -560,7 +559,7 @@ model sponsorship_interests {
   // 🔷 SECTION 5: Budget & Next Steps
   budgetRange        SponsorshipBudgetRange
   customizedProposal ProposalOption
-  uploadLogoUrl          String? // file path for logo/materials
+  uploadLogoUrl      String? // file path for logo/materials
   additionalComments String?
 
   @@map("sponsorship_interests")

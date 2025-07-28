@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { format } from "date-fns";
 import { CalendarIcon, Clock, Loader2, Plus, X } from "lucide-react";
 
@@ -42,47 +41,37 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
-import { EventStatusEnum } from "@prisma/client";
+import { 
+  visitorEventSchema, 
+  VisitorEventFormData, 
+  VisitorEvent,
+  EVENT_STATUS_OPTIONS 
+} from "@/types/visitor-events";
+import { 
+  useCreateVisitorEventMutation, 
+  useUpdateVisitorEventMutation 
+} from "@/hooks/tanstasck-query/useVisitorEventsQuery";
+import { useVisitorEventsStore } from "@/stores/visitorEventsStore";
 
-const createEventSchema = z.object({
-  eventName: z.string().min(1, "Event name is required"),
-  eventDates: z.array(z.date()).min(1, "At least one event date is required"),
-  eventStartTime: z.string().optional(),
-  eventEndTime: z.string().optional(),
-  eventPrice: z.number().min(0, "Price must be 0 or positive"),
-  eventStatus: z.nativeEnum(EventStatusEnum),
-  description: z.string().optional(),
-  isActive: z.boolean(),
-});
-
-type CreateEventFormData = z.infer<typeof createEventSchema>;
-
-interface CreateEventDialogProps {
+interface CreateVisitorEventDialogProps {
   trigger: React.ReactNode;
   onEventCreated: () => void;
-  editingEvent?: {
-    id: string;
-    eventName: string;
-    eventDates: Date[];
-    eventStartTime?: Date;
-    eventEndTime?: Date;
-    eventPrice: number;
-    eventStatus: EventStatusEnum;
-    description?: string;
-    isActive: boolean;
-  };
+  editingEvent?: VisitorEvent;
   mode?: "create" | "edit";
 }
 
-export function CreateEventDialog({
+export function CreateVisitorEventDialog({
   trigger,
   onEventCreated,
   editingEvent,
   mode = "create",
-}: CreateEventDialogProps) {
+}: CreateVisitorEventDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createMutation = useCreateVisitorEventMutation();
+  const updateMutation = useUpdateVisitorEventMutation();
+  const { addVisitorEvent, updateVisitorEvent } = useVisitorEventsStore();
+
+  const isLoading = createMutation.isPending || updateMutation.isPending;
 
   // Helper function to format time for input field
   const formatTimeForInput = (date: Date | undefined | null): string => {
@@ -91,106 +80,93 @@ export function CreateEventDialog({
   };
 
   // Get initial values based on mode
-  const getInitialValues = () => {
+  const getInitialValues = (): VisitorEventFormData => {
     if (mode === "edit" && editingEvent) {
       return {
         eventName: editingEvent.eventName,
         eventDates: editingEvent.eventDates.map(date => new Date(date)),
-        eventStartTime: formatTimeForInput(editingEvent.eventStartTime),
-        eventEndTime: formatTimeForInput(editingEvent.eventEndTime),
-        eventPrice: editingEvent.eventPrice,
+        eventStartTime: editingEvent.eventStartTime ? new Date(editingEvent.eventStartTime) : null,
+        eventEndTime: editingEvent.eventEndTime ? new Date(editingEvent.eventEndTime) : null,
         eventStatus: editingEvent.eventStatus,
-        description: editingEvent.description || "",
         isActive: editingEvent.isActive,
+        description: editingEvent.description,
       };
     }
     return {
       eventName: "",
       eventDates: [new Date()],
-      eventStartTime: "",
-      eventEndTime: "",
-      eventPrice: 0,
-      eventStatus: EventStatusEnum.CONFERENCE,
-      description: "",
+      eventStartTime: null,
+      eventEndTime: null,
+      eventStatus: "CONFERENCE" as const,
       isActive: true,
+      description: null,
     };
   };
 
-  const form = useForm<CreateEventFormData>({
-    resolver: zodResolver(createEventSchema),
+  const form = useForm<VisitorEventFormData>({
+    resolver: zodResolver(visitorEventSchema),
     defaultValues: getInitialValues(),
   });
+
+  // Watch for date changes to update times accordingly
+  const watchedDates = form.watch("eventDates");
+
+  React.useEffect(() => {
+    const startTime = form.getValues("eventStartTime");
+    if (startTime && watchedDates && watchedDates[0]) {
+      const timeString = formatTimeForInput(startTime);
+      if (timeString) {
+        const [hours, minutes] = timeString.split(":");
+        const newDateTime = new Date(watchedDates[0]);
+        newDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        form.setValue("eventStartTime", newDateTime);
+      }
+    }
+  }, [watchedDates, form]);
+
+  React.useEffect(() => {
+    const endTime = form.getValues("eventEndTime");
+    if (endTime && watchedDates && watchedDates[0]) {
+      const timeString = formatTimeForInput(endTime);
+      if (timeString) {
+        const [hours, minutes] = timeString.split(":");
+        const newDateTime = new Date(watchedDates[0]);
+        newDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        form.setValue("eventEndTime", newDateTime);
+      }
+    }
+  }, [watchedDates, form]);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && mode === "edit" && editingEvent) {
       // Load editing data when opening in edit mode
       form.reset(getInitialValues());
-    } else if (!newOpen && !isSubmitting) {
+    } else if (!newOpen && !isLoading) {
       // Reset form when closing dialog
       form.reset(getInitialValues());
     }
     setOpen(newOpen);
   };
 
-  const onSubmit = async (data: CreateEventFormData) => {
-    setIsSubmitting(true);
+  const onSubmit = async (data: VisitorEventFormData) => {
     try {
-      // Convert time strings to Date objects if provided
-      let eventStartTime: Date | undefined;
-      let eventEndTime: Date | undefined;
-
-      if (data.eventStartTime && data.eventStartTime.trim() && data.eventDates[0]) {
-        const [hours, minutes] = data.eventStartTime.split(":");
-        eventStartTime = new Date(data.eventDates[0]);
-        eventStartTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      if (mode === "edit" && editingEvent) {
+        const updatedEvent = await updateMutation.mutateAsync({
+          id: editingEvent.id,
+          ...data,
+        });
+        updateVisitorEvent(updatedEvent);
+      } else {
+        const newEvent = await createMutation.mutateAsync(data);
+        addVisitorEvent(newEvent);
       }
 
-      if (data.eventEndTime && data.eventEndTime.trim() && data.eventDates[0]) {
-        const [hours, minutes] = data.eventEndTime.split(":");
-        eventEndTime = new Date(data.eventDates[0]);
-        eventEndTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-      }
-
-      const eventData = {
-        ...(mode === "edit" && editingEvent ? { id: editingEvent.id } : {}),
-        eventName: data.eventName,
-        eventDates: data.eventDates.map(date => date.toISOString()),
-        eventStartTime: eventStartTime?.toISOString(),
-        eventEndTime: eventEndTime?.toISOString(),
-        eventPrice: data.eventPrice,
-        eventStatus: data.eventStatus,
-        description: data.description || null,
-        isActive: data.isActive,
-      };
-
-      const response = await fetch("/api/events", {
-        method: mode === "edit" ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(eventData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || `Failed to ${mode} event`);
-      }
-
-      const result = await response.json();
-
-      toast.success(
-        `Event ${mode === "edit" ? "updated" : "created"} successfully!`
-      );
       form.reset(getInitialValues());
       handleOpenChange(false);
       onEventCreated();
     } catch (error) {
-      console.error("Error creating event:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create event"
-      );
-    } finally {
-      setIsSubmitting(false);
+      // Error handling is done in the mutation hooks
+      console.error("Error saving visitor event:", error);
     }
   };
 
@@ -200,12 +176,12 @@ export function CreateEventDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {mode === "edit" ? "Edit Event" : "Create New Event"}
+            {mode === "edit" ? "Edit Visitor Event" : "Create New Visitor Event"}
           </DialogTitle>
           <DialogDescription>
             {mode === "edit"
-              ? "Update the event details for the BEACON 2025 conference system."
-              : "Add a new event to the BEACON 2025 conference system."}
+              ? "Update the visitor event details for the BEACON 2025 system."
+              : "Add a new visitor event to the BEACON 2025 system."}
           </DialogDescription>
         </DialogHeader>
 
@@ -321,24 +297,36 @@ export function CreateEventDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value={EventStatusEnum.CONFERENCE}>
-                          Conference
-                        </SelectItem>
-                        <SelectItem value={EventStatusEnum.SHOW}>
-                          Show
-                        </SelectItem>
-                        <SelectItem value={EventStatusEnum.WORKSHOP}>
-                          Workshop
-                        </SelectItem>
-                        <SelectItem value={EventStatusEnum.SEMINAR}>
-                          Seminar
-                        </SelectItem>
-                        <SelectItem value={EventStatusEnum.EXHIBITION}>
-                          Exhibition
-                        </SelectItem>
+                        {EVENT_STATUS_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Active Status */}
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Active Event</FormLabel>
+                      <FormDescription>
+                        Active events are visible to visitors
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
@@ -355,8 +343,23 @@ export function CreateEventDialog({
                         <Input
                           type="time"
                           placeholder="09:00"
-                          {...field}
-                          value={field.value || ""}
+                          value={field.value ? formatTimeForInput(field.value) : ""}
+                          onChange={(e) => {
+                            const timeValue = e.target.value;
+                            if (!timeValue) {
+                              field.onChange(null);
+                              return;
+                            }
+                            
+                            const dates = form.getValues("eventDates");
+                            const startDate = dates && dates[0];
+                            if (startDate) {
+                              const [hours, minutes] = timeValue.split(":");
+                              const dateTime = new Date(startDate);
+                              dateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                              field.onChange(dateTime);
+                            }
+                          }}
                         />
                         <Clock className="absolute right-3 top-2.5 h-4 w-4 opacity-50" />
                       </div>
@@ -379,61 +382,29 @@ export function CreateEventDialog({
                         <Input
                           type="time"
                           placeholder="17:00"
-                          {...field}
-                          value={field.value || ""}
+                          value={field.value ? formatTimeForInput(field.value) : ""}
+                          onChange={(e) => {
+                            const timeValue = e.target.value;
+                            if (!timeValue) {
+                              field.onChange(null);
+                              return;
+                            }
+                            
+                            const dates = form.getValues("eventDates");
+                            const endDate = dates && dates[0];
+                            if (endDate) {
+                              const [hours, minutes] = timeValue.split(":");
+                              const dateTime = new Date(endDate);
+                              dateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                              field.onChange(dateTime);
+                            }
+                          }}
                         />
                         <Clock className="absolute right-3 top-2.5 h-4 w-4 opacity-50" />
                       </div>
                     </FormControl>
                     <FormDescription>Optional - 24-hour format</FormDescription>
                     <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Event Price */}
-              <FormField
-                control={form.control}
-                name="eventPrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Event Price (₱) *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value) || 0)
-                        }
-                      />
-                    </FormControl>
-                    <FormDescription>Enter 0 for free events</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Active Status */}
-              <FormField
-                control={form.control}
-                name="isActive"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">Active Event</FormLabel>
-                      <FormDescription>
-                        Active events are visible to users for registration
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
                   </FormItem>
                 )}
               />
@@ -451,10 +422,11 @@ export function CreateEventDialog({
                       placeholder="Enter event description (optional)"
                       className="resize-none"
                       {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormDescription>
-                    Optional description about the event
+                    Optional description about the visitor event
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -466,12 +438,12 @@ export function CreateEventDialog({
                 type="button"
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
-                disabled={isSubmitting}
+                disabled={isLoading}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     {mode === "edit" ? "Updating..." : "Creating..."}

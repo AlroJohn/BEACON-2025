@@ -91,40 +91,46 @@ export type RegistrationFormData = z.infer<typeof baseVisitorSchema>;
 
 // Use undefined for better form UX with selects
 export const defaultRegistrationValues: Partial<RegistrationFormData> = {
-  firstName: "Alro",
-  lastName: "John",
-  middleName: "Smith",
-  suffix: "Jr.",
-  preferredName: "Al",
-  attendeeType: AttendeeType.STUDENT_ACADEMIC,
-  ageBracket: AgeBracket.AGE_18_24,
-  mailingAddress: '',
-  // Don't set enum defaults - let user choose
-  gender: Gender.MALE,
+  firstName: "",
+  lastName: "",
+  middleName: null,
+  suffix: null,
+  preferredName: null,
+  attendeeType: 'EXHIBITOR',
+  ageBracket: 'AGE_18_24',
+  mailingAddress: "",
+
+  // Let user choose enum values
+  gender: 'MALE',
   genderOthers: "",
-  nationality: "Filipino",
-  email: "alro.john@example.com",
-  mobileNumber: "09123456789",
-  landline: "0287654321",
-  jobTitle: "Software Engineer",
-  companyName: "Tech Solutions Inc.",
-  industry: Industry.GOVERNMENT,
-  industryOthers: "Information Technology",
-  companyAddress: "123 Tech Street",
-  companyWebsite: "https://techsolutions.com",
-  businessEmail: "business@techsolutions.com",
+  nationality: "",
+
+  email: "",
+  mobileNumber: "",
+  landline: "",
+
+  jobTitle: "",
+  companyName: "",
+  industry: null,
+  industryOthers: "",
+
+  companyAddress: "",
+  companyWebsite: "",
+  businessEmail: "",
+
   attendingDays: [],
-  eventParts: ["EXPO", "CONFERENCE"],
-  interestAreas: ["MARITIME_NAVAL_TECH", "SHIPBUILDING_REPAIR"],
+  eventParts: [],
+  interestAreas: [],
   receiveUpdates: false,
   inviteToFutureEvents: false,
-  specialAssistance: "Test",
-  emergencyContactPerson: "Test",
-  emergencyContactNumber: "09815133675",
+  specialAssistance: "",
+  emergencyContactPerson: "",
+  emergencyContactNumber: "",
   dataPrivacyConsent: false,
-  hearAboutEvent: HearAboutEvent.FACEBOOK_SOCIAL_MEDIA,
+  hearAboutEvent: 'FACEBOOK_SOCIAL_MEDIA',
   hearAboutOthers: "",
 };
+
 
 export const eventPartsOptions = [
   "EXPO",

@@ -64,6 +64,7 @@ jobs:
           PAYMONGO_SECRET_KEY: ${{ secrets.PAYMONGO_SECRET_KEY }}
           NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL }}
           NODE_ENV: ${{ vars.NODE_ENV }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
         run: |
           docker build \
             --build-arg DATABASE_URL=${DATABASE_URL} \
@@ -76,6 +77,7 @@ jobs:
             --build-arg PAYMONGO_SECRET_KEY=${PAYMONGO_SECRET_KEY} \
             --build-arg NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL} \
             --build-arg NODE_ENV=${NODE_ENV} \
+            --build-arg SENDGRID_API_KEY=${{SENDGRID_API_KEY}} \
             -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}" .
 
           docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}"
@@ -90,7 +92,7 @@ jobs:
               --port=$CONTAINER_PORT \
               --platform=managed \
               --allow-unauthenticated \
-              --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},DIRECT_URL=${{ secrets.DIRECT_URL }},NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL }},NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }},SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }},JWT_SECRET=${{ secrets.JWT_SECRET }},PAYMONGO_PUBLIC_KEY=${{ secrets.PAYMONGO_PUBLIC_KEY }},PAYMONGO_SECRET_KEY=${{ secrets.PAYMONGO_SECRET_KEY }},NEXT_PUBLIC_BASE_URL=${{ vars.NEXT_PUBLIC_BASE_URL }},NODE_ENV=${{ vars.NODE_ENV }}"
+              --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},DIRECT_URL=${{ secrets.DIRECT_URL }},NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL }},NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }},SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }},JWT_SECRET=${{ secrets.JWT_SECRET }},PAYMONGO_PUBLIC_KEY=${{ secrets.PAYMONGO_PUBLIC_KEY }},PAYMONGO_SECRET_KEY=${{ secrets.PAYMONGO_SECRET_KEY }},NEXT_PUBLIC_BASE_URL=${{ vars.NEXT_PUBLIC_BASE_URL }},NODE_ENV=${{ vars.NODE_ENV }},SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}"
           else
             echo "Cloud Run service $SERVICE already exists."
           fi
@@ -113,6 +115,7 @@ jobs:
             PAYMONGO_SECRET_KEY=${{ secrets.PAYMONGO_SECRET_KEY }}
             NEXT_PUBLIC_BASE_URL=${{ vars.NEXT_PUBLIC_BASE_URL }}
             NODE_ENV=${{ vars.NODE_ENV }}
+            SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}
           flags: >
             --min-instances=0
             --max-instances=100

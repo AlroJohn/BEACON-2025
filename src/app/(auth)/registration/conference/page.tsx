@@ -118,7 +118,6 @@ export default function ConferenceRegistrationSinglePage() {
     defaultValues: defaultConferenceRegistrationValues,
     mode: "onChange",
   });
-  
 
   const email = form.watch("email");
   const isMaritimeLeagueMember = form.watch("isMaritimeLeagueMember");

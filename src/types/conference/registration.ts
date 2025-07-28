@@ -133,37 +133,35 @@ export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData
   selectedEventIds: [],
   faceScannedUrl: "",
 
-
-
   // user_details fields
-  firstName: "Aj",
-  lastName: "Comahes",
+  firstName: "",
+  lastName: "",
   middleName: null,
   suffix: null,
   preferredName: null,
-  gender: Gender.MALE,
+  gender: 'MALE',
   genderOthers: null,
-  ageBracket: AgeBracket.AGE_25_34,
-  nationality: "Filipino",
+  ageBracket: 'AGE_18_24',
+  nationality: "",
 
   // user_accounts fields
-  email: "ajcomahes@gmail.com",
-  mobileNumber: "09999999999",
-  mailingAddress: '123 Main St, City, Country',
+  email: "",
+  mobileNumber: "",
+  mailingAddress: "",
 
   // Conference fields
-  isMaritimeLeagueMember: MaritimeLeagueMembership.NO || 'NO',
+  isMaritimeLeagueMember: 'NO',
   tmlMemberCode: null,
 
   // Professional Information
-  jobTitle: "Software Engineer",
-  companyName: "Tech Solutions Inc.",
-  industry: "Information Technology",
-  companyAddress: "456 Tech Park, Silicon Valley, CA",
-  companyWebsite: "https://www.techsolutions.com",
+  jobTitle: "",
+  companyName: "",
+  industry: "",
+  companyAddress: "",
+  companyWebsite: "",
 
   // Areas of Interest
-  interestAreas: ["SHIPBUILDING_SHIP_REPAIR", "MARINE_TECHNOLOGY"],
+  interestAreas: [],
   otherInterests: null,
   receiveEventInvites: false,
 
@@ -178,7 +176,6 @@ export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData
   emailCertificate: false,
   photoVideoConsent: false,
   dataUsageConsent: false,
-
 };
 
 // Conference Interest Areas options for UI

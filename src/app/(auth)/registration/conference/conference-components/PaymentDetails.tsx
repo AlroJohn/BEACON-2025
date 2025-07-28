@@ -26,6 +26,8 @@ import {
   Users,
   Upload,
   ImageIcon,
+  Copy,
+  CopyCheck,
 } from "lucide-react";
 import { PaymentDetailsProps } from "@/types/conference/components";
 import { useConferenceRegistrationStore } from "@/hooks/standard-hooks/conference/useConferenceRegistrationStore";
@@ -42,10 +44,23 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
   } = useConferenceRegistrationStore();
   const [paymentMethod, setPaymentMethod] = useState<string>("GCASH");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const formatPrice = (price: number) => {
     return price === 0 ? "FREE" : `₱${price.toLocaleString()}`;
+  };
+
+  // Copy to clipboard functionality
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      toast.success(`${field} copied to clipboard!`);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (err) {
+      toast.error("Failed to copy to clipboard");
+    }
   };
 
   // Handle file selection for receipt upload
@@ -105,9 +120,9 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
           </p>
         </div>
 
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-green-200 ">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2 text-green-800">
+            <CardTitle className="text-base flex items-center gap-2 ">
               <Users className="h-4 w-4" />
               TML Member Benefits Applied
             </CardTitle>
@@ -115,28 +130,24 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-green-800">Registration Status:</span>
+                <span className="">Registration Status:</span>
                 <Badge className="bg-green-600 text-white">
                   FREE - TML Member
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-green-800">Total Events Selected:</span>
-                <span className="font-medium text-green-800">
-                  {selectedEvents.length}
-                </span>
+                <span className="">Total Events Selected:</span>
+                <span className="font-medium ">{selectedEvents.length}</span>
               </div>
               {totalAmount > 0 && (
                 <div className="flex items-center justify-between">
-                  <span className="text-green-800">Total Savings:</span>
-                  <span className="font-bold text-green-800">
-                    {formatPrice(totalAmount)}
-                  </span>
+                  <span className="">Total Savings:</span>
+                  <span className="font-bold ">{formatPrice(totalAmount)}</span>
                 </div>
               )}
               <Alert className="border-green-300 bg-green-100">
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
+                <AlertDescription className="">
                   As a verified TML member, all conference events are
                   complimentary. No payment is required to complete your
                   registration.
@@ -196,15 +207,142 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
         )}
       />
 
+      {/* GCash Payment Details */}
+      {paymentMethod === "GCASH" && (
+        <Card className="border-blue-200 dark:bg-c1/30 bg-muted">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base  flex items-center gap-2">
+              <Smartphone className="h-4 w-4" />
+              GCash Payment Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <div className="relative max-w-xs">
+                  <img
+                    src="/images/instapay.jpg"
+                    alt="InstaPay QR Code"
+                    className="w-full h-auto rounded-lg border border-blue-200 shadow-sm"
+                  />
+                </div>
+              </div>
+              <Alert className="border-blue-300 ">
+                <Info className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="">
+                  <strong>How to pay:</strong> Scan the QR code above using your
+                  GCash app or send payment to the InstaPay details shown. After
+                  payment, upload your receipt below for verification.
+                </AlertDescription>
+              </Alert>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Bank Transfer Payment Details */}
       {paymentMethod === "BANK_DEPOSIT_TRANSFER" && (
-        <Alert className="border-gray-200 bg-gray-50">
-          <Info className="h-4 w-4 text-gray-600" />
-          <AlertDescription className="text-gray-800">
-            <strong>Bank Transfer:</strong> Bank details will be provided after
-            registration. You'll need to upload proof of payment for
-            verification.
-          </AlertDescription>
-        </Alert>
+        <Card className="border-green-200 dark:bg-c1/30 bg-muted">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base  flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Bank Transfer Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className=" p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold  mb-3">
+                  THE MARITIME LEAGUE, INC.
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm ">Account Name</p>
+                      <p className="font-medium">The Maritime League, Inc.</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        copyToClipboard(
+                          "The Maritime League, Inc.",
+                          "Account Name"
+                        )
+                      }
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      {copiedField === "Account Name" ? (
+                        <CopyCheck className="h-4 w-4" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm ">BPI Current Account</p>
+                      <p className="font-medium font-mono">0091-0683-03</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        copyToClipboard("0091-0683-03", "Account Number")
+                      }
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      {copiedField === "Account Number" ? (
+                        <CopyCheck className="h-4 w-4" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm ">Branch</p>
+                      <p className="font-medium">
+                        Pasong Tamo Extension Branch, Makati City
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        copyToClipboard(
+                          "Pasong Tamo Extension Branch, Makati City",
+                          "Branch"
+                        )
+                      }
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      {copiedField === "Branch" ? (
+                        <CopyCheck className="h-4 w-4" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Alert className="border-green-300">
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-accent-foreground">
+                  <strong>Instructions:</strong> Deposit your payment to the
+                  account above. After making the deposit, upload a copy of your
+                  deposit slip below for verification.
+                </AlertDescription>
+              </Alert>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Custom Payment Amount (if needed) */}
@@ -212,7 +350,7 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
       {/* Payment Summary */}
       <Card className="dark:bg-c1/30 bg-muted">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base text-blue-800 dark:text-white">
+          <CardTitle className="text-base  dark:text-white">
             Payment Summary
           </CardTitle>
         </CardHeader>
@@ -228,7 +366,7 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
                 <span>₱{parseFloat(customPaymentAmount).toLocaleString()}</span>
               </div>
             )}
-            <div className="border-t pt-2 flex justify-between font-semibold text-blue-800 dark:text-green-500">
+            <div className="border-t pt-2 flex justify-between font-semibold  dark:text-green-500">
               <span>Total Amount:</span>
               <span>{formatPrice(totalAmount)}</span>
             </div>
@@ -241,7 +379,7 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
         <CardHeader className="pb-3">
           <CardTitle className="text-base text-orange-800 dark:text-white flex items-center gap-2">
             <Upload className="h-4 w-4" />
-            2. Upload Payment Receipt *
+            Upload Payment Receipt *
           </CardTitle>
         </CardHeader>
         <CardContent>

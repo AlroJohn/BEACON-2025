@@ -90,19 +90,22 @@ export function VisitorEventsDataTable({
   currentAdminStatus,
 }: VisitorEventsDataTableProps) {
   const { refetch } = useVisitorEventsQuery();
-  const { 
-    searchQuery, 
+  const {
+    searchQuery,
     setSearchQuery,
     statusFilter,
     setStatusFilter,
     activeFilter,
     setActiveFilter,
-    clearFilters 
+    clearFilters,
   } = useVisitorEventsStore();
-  
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
   const handleEventCreated = () => {
@@ -118,23 +121,18 @@ export function VisitorEventsDataTable({
     });
   };
 
-  const formatDateRange = (startDate: Date, endDate: Date) => {
-    const start = new Date(startDate).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-    
-    const end = new Date(endDate).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+  const formatEventDates = (eventDates: Date[]) => {
+    if (!eventDates || eventDates.length === 0) return "No dates set";
 
-    if (start === end) {
-      return start;
+    if (eventDates.length === 1) {
+      return new Date(eventDates[0]).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
     }
-    return `${start} - ${end}`;
+
+    return `${eventDates.length} dates`;
   };
 
   const formatTimeRange = (startTime: Date | null, endTime: Date | null) => {
@@ -169,7 +167,7 @@ export function VisitorEventsDataTable({
     const colorClass = EVENT_STATUS_COLORS[status];
     return (
       <Badge className={colorClass} variant="secondary">
-        {status.replace('_', ' ')}
+        {status.replace("_", " ")}
       </Badge>
     );
   };
@@ -225,7 +223,7 @@ export function VisitorEventsDataTable({
       ),
     },
     {
-      id: "eventDateRange",
+      accessorKey: "eventDates",
       header: ({ column }) => {
         return (
           <Button
@@ -233,18 +231,14 @@ export function VisitorEventsDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 px-2 lg:px-3"
           >
-            Date Range
+            Event Dates
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
-        const event = row.original;
-        return (
-          <div className="text-sm">
-            {formatDateRange(event.eventDateStart, event.eventDateEnd)}
-          </div>
-        );
+        const eventDates = row.getValue("eventDates") as Date[];
+        return <div className="text-sm">{formatEventDates(eventDates)}</div>;
       },
     },
     {
@@ -316,7 +310,9 @@ export function VisitorEventsDataTable({
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Visitor Event Details: {event.eventName}</DialogTitle>
+                    <DialogTitle>
+                      Visitor Event Details: {event.eventName}
+                    </DialogTitle>
                     <DialogDescription>
                       Complete information about this visitor event
                     </DialogDescription>
@@ -335,20 +331,22 @@ export function VisitorEventsDataTable({
                           <label className="font-medium">Status:</label>
                           <p>{getStatusBadge(event.eventStatus)}</p>
                         </div>
-                        <div>
-                          <label className="font-medium">Start Date:</label>
-                          <p>{formatDate(event.eventDateStart)}</p>
-                        </div>
-                        <div>
-                          <label className="font-medium">End Date:</label>
-                          <p>{formatDate(event.eventDateEnd)}</p>
+                        <div className="md:col-span-2">
+                          <label className="font-medium">Event Dates:</label>
+                          <div className="space-y-1">
+                            {event.eventDates?.map((date, index) => (
+                              <p key={index}>{formatDate(date)}</p>
+                            )) || <p>No dates set</p>}
+                          </div>
                         </div>
                         <div>
                           <label className="font-medium">Start Time:</label>
                           <p>
                             {event.eventStartTime
-                              ? new Date(event.eventStartTime).toLocaleTimeString("en-US", {
-                                  hour: "2-digit", 
+                              ? new Date(
+                                  event.eventStartTime
+                                ).toLocaleTimeString("en-US", {
+                                  hour: "2-digit",
                                   minute: "2-digit",
                                 })
                               : "Not set"}
@@ -358,10 +356,13 @@ export function VisitorEventsDataTable({
                           <label className="font-medium">End Time:</label>
                           <p>
                             {event.eventEndTime
-                              ? new Date(event.eventEndTime).toLocaleTimeString("en-US", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
+                              ? new Date(event.eventEndTime).toLocaleTimeString(
+                                  "en-US",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )
                               : "Not set"}
                           </p>
                         </div>
@@ -431,7 +432,9 @@ export function VisitorEventsDataTable({
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Visitor Event</AlertDialogTitle>
+                        <AlertDialogTitle>
+                          Delete Visitor Event
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
                           Are you sure you want to delete the visitor event{" "}
                           <strong>{event.eventName}</strong>? This action cannot
@@ -490,22 +493,38 @@ export function VisitorEventsDataTable({
               onChange={(event) => setSearchQuery(event.target.value)}
               className="max-w-sm"
             />
-            
-            <Select value={statusFilter || "all_status"} onValueChange={(value) => setStatusFilter(value === "all_status" ? null : value)}>
+
+            <Select
+              value={statusFilter || "all_status"}
+              onValueChange={(value) =>
+                setStatusFilter(value === "all_status" ? null : value)
+              }
+            >
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all_status">All Status</SelectItem>
-                <SelectItem value={EventStatusEnum.CONFERENCE}>Conference</SelectItem>
+                <SelectItem value={EventStatusEnum.CONFERENCE}>
+                  Conference
+                </SelectItem>
                 <SelectItem value={EventStatusEnum.SHOW}>Show</SelectItem>
-                <SelectItem value={EventStatusEnum.WORKSHOP}>Workshop</SelectItem>
+                <SelectItem value={EventStatusEnum.WORKSHOP}>
+                  Workshop
+                </SelectItem>
                 <SelectItem value={EventStatusEnum.SEMINAR}>Seminar</SelectItem>
-                <SelectItem value={EventStatusEnum.EXHIBITION}>Exhibition</SelectItem>
+                <SelectItem value={EventStatusEnum.EXHIBITION}>
+                  Exhibition
+                </SelectItem>
               </SelectContent>
             </Select>
 
-            <Select value={activeFilter || "all_active"} onValueChange={(value) => setActiveFilter(value === "all_active" ? null : value)}>
+            <Select
+              value={activeFilter || "all_active"}
+              onValueChange={(value) =>
+                setActiveFilter(value === "all_active" ? null : value)
+              }
+            >
               <SelectTrigger className="w-[130px]">
                 <SelectValue placeholder="Active" />
               </SelectTrigger>
@@ -520,7 +539,7 @@ export function VisitorEventsDataTable({
               Clear Filters
             </Button>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <CreateVisitorEventDialog
               trigger={
@@ -572,7 +591,7 @@ export function VisitorEventsDataTable({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -623,7 +642,7 @@ export function VisitorEventsDataTable({
           </TableBody>
         </Table>
       </div>
-      
+
       <div className="flex flex-row items-center justify-end w-full space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}

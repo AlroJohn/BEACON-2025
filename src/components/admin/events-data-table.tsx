@@ -394,15 +394,6 @@ export function EventsDataTable({
                           </div>
                         </div>
                         <div>
-                          <label className="font-medium">Time:</label>
-                          <p>
-                            {formatTimeRange(
-                              event.eventStartTime || null,
-                              event.eventEndTime || null
-                            )}
-                          </p>
-                        </div>
-                        <div>
                           <label className="font-medium">Start Time:</label>
                           <p>
                             {event.eventStartTime

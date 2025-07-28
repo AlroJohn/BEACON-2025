@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
@@ -10,6 +10,22 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, Calendar, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { InterestArea, EventStatusEnum } from "@prisma/client";
+import { useRegistrationStore } from "@/hooks/standard-hooks/visitor/useRegistrationStore";
+import { format, parseISO } from "date-fns";
+import { RegistrationFormData } from "@/types/visitor/registration";
+import { useActiveVisitorEventsQuery } from "@/hooks/tanstasck-query/useVisitorEventsQuery";
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
@@ -17,75 +33,134 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Calendar, Info } from "lucide-react";
-import {
-  RegistrationFormData,
-  eventPartsOptions,
-} from "@/hooks/standard-hooks/visitor/useRegistrationSchema";
-import { InterestArea } from "@prisma/client";
-import { useVisitorEventSelection } from "@/hooks/tanstasck-query/useVisitorEventsQuery";
-import { useRegistrationStore } from "@/hooks/standard-hooks/visitor/useRegistrationStore";
 
 interface EventPreferencesProps {
   form: UseFormReturn<RegistrationFormData>;
 }
 
+const toIsoDate = (d: string | Date) => {
+  const date = typeof d === "string" ? new Date(d) : d;
+  if (isNaN(date.getTime())) return String(d);
+  return date.toISOString().slice(0, 10);
+};
+
+const formatDate = (d: string | Date) => {
+  const date =
+    typeof d === "string" ? parseISO(d.length > 10 ? toIsoDate(d) : d) : d;
+  return format(date, "MMM dd, yyyy");
+};
+
 export function EventPreferences({ form }: EventPreferencesProps) {
   const { updateSelectedEvents } = useRegistrationStore();
+  const [expandedEvents, setExpandedEvents] = useState<Record<string, boolean>>(
+    {}
+  );
 
-  const {
-    events = [],
-    isLoading,
-    error,
-    getEventsByIds,
-    formatEventDateRange,
-  } = useVisitorEventSelection();
+  const { data: events = [], isLoading, error } = useActiveVisitorEventsQuery();
 
-  // Watch selected event IDs
-  const selectedEventIds = form.watch("attendingDays") || [];
+  const selectedEventParts = form.watch("eventParts") || [];
+  const attendingDaysObj = (form.watch("attendingDays") || {}) as Record<
+    string,
+    string[]
+  >;
   const previousSelectionRef = useRef<string>("");
 
-  // Update store when form selection changes
+  const toggleEventExpansion = (eventId: string) => {
+    setExpandedEvents((prev) => ({
+      ...prev,
+      [eventId]: !prev[eventId],
+    }));
+  };
+
+  const handleEventToggle = (
+    eventId: string,
+    eventName: string,
+    isChecked: boolean
+  ) => {
+    const nextEventParts = [...selectedEventParts];
+    const nextAttending = { ...attendingDaysObj };
+
+    if (isChecked) {
+      if (!nextEventParts.includes(eventName)) nextEventParts.push(eventName);
+      if (!nextAttending[eventName]) nextAttending[eventName] = [];
+    } else {
+      const idx = nextEventParts.indexOf(eventName);
+      if (idx > -1) nextEventParts.splice(idx, 1);
+      delete nextAttending[eventName];
+    }
+
+    form.setValue("eventParts", nextEventParts, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    form.setValue("attendingDays", nextAttending, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
+  const handleDateToggle = (
+    eventName: string,
+    rawDate: string | Date,
+    isChecked: boolean
+  ) => {
+    const iso = toIsoDate(rawDate);
+    const nextAttending = { ...attendingDaysObj };
+    const current = nextAttending[eventName]
+      ? [...nextAttending[eventName]]
+      : [];
+
+    if (isChecked) {
+      if (!current.includes(iso)) current.push(iso);
+    } else {
+      const i = current.indexOf(iso);
+      if (i > -1) current.splice(i, 1);
+    }
+
+    nextAttending[eventName] = current;
+    form.setValue("attendingDays", nextAttending, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
   useEffect(() => {
-    // Create a string representation to compare
-    const currentSelection = selectedEventIds.sort().join(",");
+    const snapshot = JSON.stringify({
+      parts: [...selectedEventParts].sort(),
+      days: Object.fromEntries(
+        Object.entries(attendingDaysObj).map(([k, v]) => [k, [...v].sort()])
+      ),
+    });
+    if (snapshot !== previousSelectionRef.current) {
+      previousSelectionRef.current = snapshot;
 
-    // Only update if the selection actually changed
-    if (currentSelection !== previousSelectionRef.current) {
-      previousSelectionRef.current = currentSelection;
-
-      if (selectedEventIds.length > 0 && events.length > 0) {
-        const selected = getEventsByIds(selectedEventIds);
-        const eventsWithDetails = selected.map((event) => ({
-          id: event.id,
-          name: event.eventName,
-          price: 0, // VisitorEvents don't have pricing
+      if (selectedEventParts.length > 0 && events.length > 0) {
+        const selected = events.filter((e) =>
+          selectedEventParts.includes(e.eventName)
+        );
+        const eventsWithDetails = selected.map((e) => ({
+          id: e.id,
+          name: e.eventName,
+          price: 0,
         }));
-
         updateSelectedEvents(eventsWithDetails);
       } else {
         updateSelectedEvents([]);
       }
     }
-  }, [selectedEventIds, events]);
+  }, [attendingDaysObj, selectedEventParts, events, updateSelectedEvents]);
 
-
-  const getEventStatusColor = (status: string) => {
+  const getEventStatusColor = (status: EventStatusEnum) => {
     switch (status) {
-      case "CONFERENCE":
+      case EventStatusEnum.CONFERENCE:
         return "bg-blue-100 text-blue-800";
-      case "SHOW":
+      case EventStatusEnum.SHOW:
         return "bg-purple-100 text-purple-800";
-      case "WORKSHOP":
+      case EventStatusEnum.WORKSHOP:
         return "bg-green-100 text-green-800";
-      case "SEMINAR":
+      case EventStatusEnum.SEMINAR:
         return "bg-yellow-100 text-yellow-800";
-      case "EXHIBITION":
+      case EventStatusEnum.EXHIBITION:
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -119,7 +194,7 @@ export function EventPreferences({ form }: EventPreferencesProps) {
       {/* Event Selection */}
       <FormField
         control={form.control}
-        name="attendingDays"
+        name="eventParts"
         render={() => (
           <FormItem>
             <div className="flex items-center justify-between py-4">
@@ -129,71 +204,119 @@ export function EventPreferences({ form }: EventPreferencesProps) {
               <FormMessage />
             </div>
             <FormDescription className="font-normal text-accent-foreground pb-4">
-              Select one or more events you'd like to attend.
+              Select one or more events and specific dates you&apos;d like to
+              attend.
             </FormDescription>
             <FormControl>
-              <div className="grid grid-cols-1 gap-6 overflow-hidden">
-                {events
-                  .sort((a, b) => a.eventName.localeCompare(b.eventName))
-                  .map((event) => (
-                    <FormField
-                      key={`event-${event.id}`}
-                      control={form.control}
-                      name="attendingDays"
-                      render={({ field }) => {
-                        return (
-                          <FormItem
-                            key={`item-${event.id}`}
-                            className="flex flex-row items-start lg:items-center space-x-3 space-y-0"
+              <div className="space-y-4">
+                {events.map((event) => {
+                  const isEventSelected = selectedEventParts.includes(
+                    event.eventName
+                  );
+                  const isExpanded = expandedEvents[event.id] || false;
+                  const selectedDates = attendingDaysObj[event.eventName] || [];
+
+                  return (
+                    <Collapsible key={event.id} className="space-y-2">
+                      <div className="flex items-center gap-4">
+                        <Checkbox
+                          id={`event-${event.id}`}
+                          checked={isEventSelected}
+                          onCheckedChange={(checked) =>
+                            handleEventToggle(
+                              event.id,
+                              event.eventName,
+                              Boolean(checked)
+                            )
+                          }
+                        />
+                        <div className="flex-1">
+                          <label
+                            htmlFor={`event-${event.id}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
                           >
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(event.id)}
-                                onCheckedChange={(checked) => {
-                                  const currentValues = field.value || [];
-                                  if (checked) {
-                                    field.onChange([
-                                      ...currentValues,
-                                      event.id,
-                                    ]);
-                                  } else {
-                                    field.onChange(
-                                      currentValues.filter(
-                                        (value) => value !== event.id
-                                      )
-                                    );
+                            {event.eventName}
+                            <Badge
+                              className={getEventStatusColor(event.eventStatus)}
+                            >
+                              {event.eventStatus}
+                            </Badge>
+                          </label>
+                          <div className="text-sm text-muted-foreground flex items-center">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            {event.eventDates.length} available date(s)
+                          </div>
+                          {isEventSelected && selectedDates.length > 0 && (
+                            <div className="mt-2 text-xs text-muted-foreground">
+                              Selected:{" "}
+                              {selectedDates
+                                .map((d) => formatDate(d))
+                                .join(", ")}
+                            </div>
+                          )}
+                        </div>
+                        <CollapsibleTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-9 p-0"
+                            disabled={!isEventSelected}
+                            onClick={() => toggleEventExpansion(event.id)}
+                          >
+                            {isExpanded ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                            <span className="sr-only">Toggle</span>
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
+
+                      <CollapsibleContent>
+                        <div className="ml-10 space-y-2 mt-2">
+                          {event.eventDates.map((dateObj) => {
+                            const iso = toIsoDate(dateObj);
+                            const inputId = `date-${event.id}-${iso}`;
+                            const checked = selectedDates.includes(iso);
+                            return (
+                              <div
+                                key={iso}
+                                className="flex items-center space-x-3"
+                              >
+                                <Checkbox
+                                  id={inputId}
+                                  checked={checked}
+                                  disabled={!isEventSelected}
+                                  onCheckedChange={(checked) =>
+                                    handleDateToggle(
+                                      event.eventName,
+                                      iso,
+                                      Boolean(checked)
+                                    )
                                   }
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="text-accent-foreground lg:items-center items-start flex lg:flex-row flex-col">
-                              {event.eventName}
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  className={getEventStatusColor(
-                                    event.eventStatus
-                                  )}
-                                  variant="secondary"
+                                />
+                                <label
+                                  htmlFor={inputId}
+                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                 >
-                                  {event.eventStatus}
-                                </Badge>
+                                  {formatDate(iso)}
+                                </label>
                               </div>
-                              <div className="flex items-center text-sm text-muted-foreground">
-                                <Calendar className="h-4 w-4 mr-2" />
-                                {formatEventDateRange(event)}
-                              </div>
-                            </FormLabel>
-                          </FormItem>
-                        );
-                      }}
-                    />
-                  ))}
+                            );
+                          })}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  );
+                })}
               </div>
             </FormControl>
           </FormItem>
         )}
       />
 
+      {/* Rest of your form fields */}
       <div className="space-y-6">
         {/* Attendee Type */}
         <FormField
@@ -232,13 +355,12 @@ export function EventPreferences({ form }: EventPreferencesProps) {
         />
 
         {/* Interest Areas */}
-
         <FormField
           control={form.control}
           name="interestAreas"
           render={() => (
             <FormItem className="flex flex-col gap-3">
-              <FormLabel> 3. Interest Areas *</FormLabel>
+              <FormLabel>3. Interest Areas *</FormLabel>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {Object.values(InterestArea).map((area) => (
                   <FormField
@@ -256,10 +378,13 @@ export function EventPreferences({ form }: EventPreferencesProps) {
                               checked={field.value?.includes(area)}
                               onCheckedChange={(checked) => {
                                 return checked
-                                  ? field.onChange([...field.value, area])
+                                  ? field.onChange([
+                                      ...(field.value || []),
+                                      area,
+                                    ])
                                   : field.onChange(
-                                      field.value?.filter(
-                                        (value) => value !== area
+                                      (field.value || []).filter(
+                                        (v) => v !== area
                                       )
                                     );
                               }}

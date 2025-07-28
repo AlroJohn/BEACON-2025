@@ -324,7 +324,7 @@ model Visitors {
   businessEmail  String?
 
   // Section 4: Interests & Preferences
-  attendingDays        String[]
+  attendingDays        Json
   eventParts           String[] // This is a EXPO, CONFERENCE, PHILIPPINE IN-WATER SHIP & BOAT SHOW, BLUE RUNWAY, NETWORKING & AWARDS NIGHT
   attendeeType         AttendeeType
   interestAreas        InterestArea[]

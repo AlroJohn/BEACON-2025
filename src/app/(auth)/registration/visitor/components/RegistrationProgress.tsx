@@ -2,6 +2,7 @@ import { Progress } from "@/components/ui/progress";
 import { UseFormReturn } from "react-hook-form";
 import { RegistrationFormData } from "@/hooks/standard-hooks/visitor/useRegistrationSchema";
 import { useMemo } from "react";
+import { AttendeeType } from "@prisma/client";
 
 interface RegistrationProgressProps {
   form: UseFormReturn<RegistrationFormData>;
@@ -10,12 +11,10 @@ interface RegistrationProgressProps {
 export function RegistrationProgress({ form }: RegistrationProgressProps) {
   const formValues = form.watch();
   const attendeeType = form.watch("attendeeType");
-  const isStudent = attendeeType === "STUDENT_ACADEMIC";
+  const isStudent = attendeeType === AttendeeType.STUDENT_ACADEMIC;
 
-  // Calculate progress directly using useMemo to prevent infinite loops
   const progressData = useMemo(() => {
     let completedStepsCount = 0;
-    // For students: 7 steps (skip professional), for non-students: 8 steps
     const totalSteps = isStudent ? 7 : 8;
     let currentStepNumber = 0;
 
@@ -44,11 +43,18 @@ export function RegistrationProgress({ form }: RegistrationProgressProps) {
     }
 
     // Step 4: Event Preferences
+    // attendingDays is now a record: { [eventName]: string[] }
+    const hasSelectedDates = Object.values(formValues.attendingDays || {}).some(
+      (arr) => Array.isArray(arr) && arr.length > 0
+    );
+    const hasEventParts = (formValues.eventParts?.length ?? 0) > 0;
+    const hasInterestAreas = (formValues.interestAreas?.length ?? 0) > 0;
+
     if (
       formValues.attendeeType &&
-      formValues.attendingDays?.length > 0 &&
-      formValues.eventParts?.length > 0 &&
-      formValues.interestAreas?.length > 0
+      hasSelectedDates &&
+      hasEventParts &&
+      hasInterestAreas
     ) {
       completedStepsCount++;
       currentStepNumber = Math.max(currentStepNumber, 4);
@@ -56,7 +62,7 @@ export function RegistrationProgress({ form }: RegistrationProgressProps) {
 
     // Step 5: Professional Info (skip for students)
     if (isStudent) {
-      completedStepsCount++; // Auto-complete for students
+      completedStepsCount++;
       currentStepNumber = Math.max(currentStepNumber, 5);
     } else if (
       formValues.jobTitle &&
@@ -83,25 +89,25 @@ export function RegistrationProgress({ form }: RegistrationProgressProps) {
     }
 
     const progressPercent = (completedStepsCount / totalSteps) * 100;
-    
+
     return {
       progress: progressPercent,
       currentStep: currentStepNumber,
-      completedSteps: completedStepsCount
+      completedSteps: completedStepsCount,
     };
   }, [
     formValues.firstName,
-    formValues.lastName, 
+    formValues.lastName,
     formValues.gender,
     formValues.ageBracket,
     formValues.nationality,
-    formValues.faceScannedUrl, // Added face capture to dependencies
+    formValues.faceScannedUrl,
     formValues.email,
     formValues.mobileNumber,
     formValues.attendeeType,
-    formValues.attendingDays,
-    formValues.eventParts,
-    formValues.interestAreas,
+    JSON.stringify(formValues.attendingDays), // stabilize object dependency
+    formValues.eventParts?.length,
+    formValues.interestAreas?.length,
     formValues.jobTitle,
     formValues.companyName,
     formValues.industry,
@@ -109,7 +115,7 @@ export function RegistrationProgress({ form }: RegistrationProgressProps) {
     formValues.emergencyContactNumber,
     formValues.hearAboutEvent,
     formValues.dataPrivacyConsent,
-    isStudent
+    isStudent,
   ]);
 
   const stepNames = [
@@ -123,7 +129,8 @@ export function RegistrationProgress({ form }: RegistrationProgressProps) {
     "Additional Info",
   ];
 
-  const currentStepName = stepNames[progressData.currentStep] || "Getting Started";
+  const currentStepName =
+    stepNames[progressData.currentStep] || "Getting Started";
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 z-50">
@@ -132,13 +139,12 @@ export function RegistrationProgress({ form }: RegistrationProgressProps) {
           <span>Registration Progress</span>
           <span>{Math.round(progressData.progress)}% Complete</span>
         </div>
-        <Progress
-          value={progressData.progress}
-          className="h-2 w-full"
-        />
+        <Progress value={progressData.progress} className="h-2 w-full" />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>Current: {currentStepName}</span>
-          <span>Step {progressData.currentStep} of {stepNames.length - 1}</span>
+          <span>
+            Step {progressData.currentStep} of {stepNames.length - 1}
+          </span>
         </div>
       </div>
     </div>

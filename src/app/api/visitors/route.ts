@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
-import { AgeBracket, AttendeeType, Gender, HearAboutEvent, Industry, InterestArea, PrismaClient } from '@prisma/client';
+import { AgeBracket, AttendeeType, Gender, HearAboutEvent, Industry, InterestArea, Prisma, PrismaClient } from '@prisma/client';
 import { baseVisitorSchema } from '@/types/visitor/registration';
 
 
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
           businessEmail: validatedData.businessEmail || null,
           eventParts: validatedData.eventParts,
           attendeeType: validatedData.attendeeType,
-          attendingDays: validatedData.attendingDays,
+          attendingDays: (validatedData.attendingDays ?? {}) as Prisma.InputJsonValue,
           interestAreas: validatedData.interestAreas,
           receiveUpdates: validatedData.receiveUpdates,
           inviteToFutureEvents: validatedData.inviteToFutureEvents,

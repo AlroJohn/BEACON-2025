@@ -13,6 +13,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
   Eye,
   ExternalLink,
   User,
@@ -22,16 +31,22 @@ import {
   Calendar,
   CreditCard,
   ZoomIn,
+  Save,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { ConferenceData } from "@/components/admin/conference-data-table";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { useUpdatePaymentStatus } from "@/hooks/tanstasck-query/useAdminConference";
+import { toast } from "sonner";
 
 interface ConferenceRegistrationDialogProps {
   conference: ConferenceData;
   getStatusBadge: (status: string) => React.ReactNode;
   getMembershipBadge: (isMember: boolean) => React.ReactNode;
   getPaymentStatusBadge: (status: string) => React.ReactNode;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 // Utility Components
@@ -334,10 +349,20 @@ const InterestAreasSection: React.FC<{
 const SelectedEventsSection: React.FC<{
   selectedEvents: ConferenceData["selectedEvents"];
 }> = ({ selectedEvents }) => {
-  const totalAmount = selectedEvents.reduce(
-    (sum, event) => sum + event.price,
-    0
-  );
+  // Calculate total with conference discount logic (same as API)
+  const calculateTotal = () => {
+    const baseTotal = selectedEvents.reduce((sum, event) => sum + event.price, 0);
+    
+    // Apply conference discount if all 3 CONFERENCE events are selected
+    const conferenceEvents = selectedEvents.filter(event => event.status === 'CONFERENCE');
+    if (conferenceEvents.length === 3) {
+      return baseTotal - 1500; // Apply 1500 discount for selecting all 3 conference events
+    }
+    
+    return baseTotal;
+  };
+
+  const totalAmount = calculateTotal();
 
   return (
     <SectionCard
@@ -397,8 +422,32 @@ const SelectedEventsSection: React.FC<{
 const PaymentInfoSection: React.FC<{
   paymentInfo: ConferenceData["paymentInfo"];
   getPaymentStatusBadge: (status: string) => React.ReactNode;
-}> = ({ paymentInfo, getPaymentStatusBadge }) => {
+  conferenceId: string;
+}> = ({ paymentInfo, getPaymentStatusBadge, conferenceId }) => {
   const [showImageModal, setShowImageModal] = useState(false);
+  const [newPaymentStatus, setNewPaymentStatus] = useState(paymentInfo.paymentStatus);
+  const [notes, setNotes] = useState(paymentInfo.notes || '');
+  const updatePaymentStatus = useUpdatePaymentStatus();
+
+  const handleUpdatePaymentStatus = () => {
+    if (newPaymentStatus === paymentInfo.paymentStatus && notes === paymentInfo.notes) {
+      toast.info('No changes to save');
+      return;
+    }
+
+    updatePaymentStatus.mutate({
+      conferenceId,
+      paymentStatus: newPaymentStatus as 'PENDING' | 'CONFIRMED' | 'FAILED' | 'REFUNDED',
+      notes: notes.trim() || undefined,
+    }, {
+      onSuccess: () => {
+        toast.success('Payment status updated successfully');
+      },
+      onError: (error) => {
+        toast.error(`Failed to update payment status: ${error.message}`);
+      },
+    });
+  };
 
   return (
     <SectionCard
@@ -408,10 +457,67 @@ const PaymentInfoSection: React.FC<{
       <div className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-semibold  uppercase tracking-wide">
+            <label className="text-sm font-semibold uppercase tracking-wide">
               Payment Status
             </label>
-            <div>{getPaymentStatusBadge(paymentInfo.paymentStatus)}</div>
+            <div className="flex items-center gap-3">
+              <Select 
+                value={newPaymentStatus} 
+                onValueChange={(value) => {
+                  setNewPaymentStatus(value);
+                  // Auto-update when changed
+                  if (value !== paymentInfo.paymentStatus) {
+                    updatePaymentStatus.mutate({
+                      conferenceId,
+                      paymentStatus: value as 'PENDING' | 'CONFIRMED' | 'FAILED' | 'REFUNDED',
+                      notes: `Status changed from ${paymentInfo.paymentStatus} to ${value} by admin`,
+                    }, {
+                      onSuccess: () => {
+                        toast.success('Payment status updated successfully');
+                      },
+                      onError: (error) => {
+                        toast.error(`Failed to update payment status: ${error.message}`);
+                        setNewPaymentStatus(paymentInfo.paymentStatus); // Revert on error
+                      },
+                    });
+                  }
+                }}
+                disabled={updatePaymentStatus.isPending}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PENDING">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                      PENDING
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="CONFIRMED">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      CONFIRMED
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="FAILED">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                      FAILED
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="REFUNDED">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-gray-500"></div>
+                      REFUNDED
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              {updatePaymentStatus.isPending && (
+                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+              )}
+            </div>
           </div>
           <InfoField
             label="Total Amount"
@@ -510,10 +616,12 @@ const PaymentInfoSection: React.FC<{
           </div>
         )}
 
+
+        {/* Current Payment Notes */}
         {paymentInfo.notes && (
           <div className="space-y-2">
             <label className="text-sm font-semibold  uppercase tracking-wide">
-              Payment Notes
+              Current Payment Notes
             </label>
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
               <p className="text-amber-800 font-medium">{paymentInfo.notes}</p>
@@ -533,17 +641,32 @@ const ConferenceRegistrationDialog: React.FC<
   getStatusBadge,
   getMembershipBadge,
   getPaymentStatusBadge,
+  isOpen: externalIsOpen,
+  onOpenChange: externalOnOpenChange,
 }) => {
   const fullName = `${conference.personalInfo.firstName} ${conference.personalInfo.lastName}`;
+  
+  // Use external state if provided, otherwise internal state
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const onOpenChange = externalOnOpenChange || setInternalIsOpen;
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-          <Eye className="mr-2 h-4 w-4" />
-          View details
-        </DropdownMenuItem>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      {/* Only render trigger if using internal state (for backward compatibility) */}
+      {externalIsOpen === undefined && (
+        <DialogTrigger asChild>
+          <DropdownMenuItem 
+            onSelect={(e) => {
+              e.preventDefault();
+              onOpenChange(true);
+            }}
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            View details
+          </DropdownMenuItem>
+        </DialogTrigger>
+      )}
 
       <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto ">
         <DialogHeader className="space-y-3 pb-6">
@@ -595,6 +718,7 @@ const ConferenceRegistrationDialog: React.FC<
           <PaymentInfoSection
             paymentInfo={conference.paymentInfo}
             getPaymentStatusBadge={getPaymentStatusBadge}
+            conferenceId={conference.id}
           />
         </div>
       </DialogContent>

@@ -20,6 +20,7 @@ import {
   useTMLMemberBenefits,
 } from "@/hooks/tanstasck-query/useTMLCodeValidation";
 import { useConferenceRegistrationStore } from "@/hooks/standard-hooks/conference/useConferenceRegistrationStore";
+import Link from "next/link";
 
 export default function MaritimeMembership({ form }: MaritimeMembershipProps) {
   const [showCodeInput, setShowCodeInput] = useState(false);
@@ -137,6 +138,19 @@ export default function MaritimeMembership({ form }: MaritimeMembershipProps) {
                 ))}
               </RadioGroup>
             </FormControl>
+            <FormDescription className="text-accent-foreground">
+              I would like to apply for membership (please send an email by
+              clicking this address:{" "}
+              <a
+                href="https://mail.google.com/mail/?view=cm&fs=1&to=mlbeacon2023@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                mlbeacon2023@gmail.com
+              </a>
+              ).
+            </FormDescription>
           </FormItem>
         )}
       />

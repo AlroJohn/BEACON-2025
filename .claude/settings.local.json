@@ -21,7 +21,8 @@
       "Bash(npx prisma:*)",
       "Bash(npm run dev:*)",
       "Bash(node:*)",
-      "Bash(npm:*)"
+      "Bash(npm:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

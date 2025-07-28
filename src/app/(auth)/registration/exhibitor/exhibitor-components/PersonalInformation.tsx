@@ -15,7 +15,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { ExhibitorRegistrationFormData, genderOptions, ageBracketOptions } from "@/types/exhibitor/registration";
+import {
+  ExhibitorRegistrationFormData,
+  genderOptions,
+  ageBracketOptions,
+} from "@/types/exhibitor/registration";
 import { FaceCapture } from "../../visitor/components/FaceCapture";
 
 interface PersonalInformationProps {
@@ -33,7 +37,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
     <div className="space-y-6">
       <div className="space-y-4">
         {/* Face Capture */}
-        <Card className="border-dashed">
+        <Card className="border-dashed dark:bg-c1/30 bg-muted">
           <CardContent className="p-4">
             <div className="space-y-2">
               <h3 className="font-medium text-sm">Face Capture *</h3>
@@ -46,7 +50,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <FaceCapture 
+                      <FaceCapture
                         onCapture={handleFaceCapture}
                         capturedImage={field.value || undefined}
                       />
@@ -96,10 +100,10 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
               <FormItem>
                 <FormLabel>Middle Name</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="Middle name" 
-                    {...field} 
-                    value={field.value || ""} 
+                  <Input
+                    placeholder="Middle name"
+                    {...field}
+                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -114,10 +118,10 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
               <FormItem>
                 <FormLabel>Suffix</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="Jr., Sr., III" 
-                    {...field} 
-                    value={field.value || ""} 
+                  <Input
+                    placeholder="Jr., Sr., III"
+                    {...field}
+                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -134,10 +138,10 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             <FormItem>
               <FormLabel>Preferred Name</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="Name you'd like to be called" 
-                  {...field} 
-                  value={field.value || ""} 
+                <Input
+                  placeholder="Name you'd like to be called"
+                  {...field}
+                  value={field.value || ""}
                 />
               </FormControl>
               <FormMessage />
@@ -153,10 +157,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Gender *</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select gender" />
@@ -184,10 +185,10 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
                 <FormItem>
                   <FormLabel>Specify Gender *</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Please specify" 
-                      {...field} 
-                      value={field.value || ""} 
+                    <Input
+                      placeholder="Please specify"
+                      {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -202,10 +203,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Age Bracket *</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select age bracket" />
@@ -233,7 +231,10 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             <FormItem>
               <FormLabel>Nationality *</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Filipino, American, Japanese" {...field} />
+                <Input
+                  placeholder="e.g., Filipino, American, Japanese"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -560,7 +560,7 @@ model sponsorship_interests {
   // 🔷 SECTION 5: Budget & Next Steps
   budgetRange        SponsorshipBudgetRange
   customizedProposal ProposalOption
-  uploadUrl          String? // file path for logo/materials
+  uploadLogoUrl          String? // file path for logo/materials
   additionalComments String?
 
   @@map("sponsorship_interests")

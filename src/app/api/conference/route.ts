@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MaritimeLeagueMembership, PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
+import { sendConferenceRegistrationEmail, ConferenceRegistrationEmailData } from '@/lib/email';
 
 const prisma = new PrismaClient();
 
@@ -553,6 +554,41 @@ export async function POST(request: NextRequest) {
           });
         }
       }
+    }
+
+    // Send confirmation email after successful registration
+    try {
+      console.log("Conference API: Sending confirmation email...");
+
+      // Prepare email data - use the email from the database user_accounts
+      const emailData: ConferenceRegistrationEmailData = {
+        userEmail: user.user_accounts?.[0]?.email || email,
+        userName: `${firstName} ${lastName}`,
+        conferenceId: conference.id,
+        isMaritimeLeagueMember: conferenceData.isMaritimeLeagueMember === 'YES',
+        selectedEvents: selectedEvents.map(event => ({
+          eventName: event.eventName,
+          eventDate: new Date(event.eventDate),
+          eventPrice: Number(event.eventPrice),
+          eventStatus: event.eventStatus,
+        })),
+        totalAmount: calculatedAmount,
+        paymentStatus: conferenceData.isMaritimeLeagueMember === 'YES' ? 'FREE' :
+          (requiresPayment ? 'PENDING' : 'CONFIRMED'),
+        requiresPayment,
+        tmlMemberCode: conferenceData.tmlMemberCode || undefined,
+      };
+
+      const emailSent = await sendConferenceRegistrationEmail(emailData);
+
+      if (emailSent) {
+        console.log("Conference API: Confirmation email sent successfully to:", email);
+      } else {
+        console.error("Conference API: Failed to send confirmation email to:", email);
+      }
+    } catch (emailError) {
+      console.error("Conference API: Error sending confirmation email:", emailError);
+      // Don't fail the registration if email fails
     }
 
     return NextResponse.json({

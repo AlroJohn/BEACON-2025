@@ -147,3 +147,55 @@ export const useDeleteConference = () => {
     },
   });
 };
+
+// Payment status update types
+interface PaymentStatusUpdateData {
+  conferenceId: string;
+  paymentStatus: 'PENDING' | 'CONFIRMED' | 'FAILED' | 'REFUNDED';
+  notes?: string;
+}
+
+const updatePaymentStatus = async (
+  data: PaymentStatusUpdateData,
+  token: string
+): Promise<{ success: boolean; message: string; data?: any }> => {
+  const response = await fetch(`/api/admin/conference/${data.conferenceId}/payment-status`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      paymentStatus: data.paymentStatus,
+      notes: data.notes,
+    }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to update payment status');
+  }
+
+  return result;
+};
+
+export const useUpdatePaymentStatus = () => {
+  const { sessionToken } = useAdminStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: PaymentStatusUpdateData) => updatePaymentStatus(data, sessionToken!),
+    onSuccess: () => {
+      // Don't invalidate immediately - let realtime handle it to avoid double updates
+      // Add a fallback invalidation in case realtime is not working (after 2 seconds)
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['admin-conferences'] });
+        console.log('Fallback data refresh for payment status update');
+      }, 2000);
+    },
+    onError: (error) => {
+      console.error('Update payment status error:', error);
+    },
+  });
+};

@@ -235,6 +235,10 @@ export function ConferenceDataTable({
     });
   const [rowSelection, setRowSelection] = React.useState({});
   const [isExporting, setIsExporting] = React.useState(false);
+  
+  // Global modal state - independent of table re-renders
+  const [selectedConference, setSelectedConference] = React.useState<ConferenceData | null>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const exportToExcel = async () => {
     try {
@@ -879,14 +883,15 @@ export function ConferenceDataTable({
               <DropdownMenuSeparator />
 
               {/* View Details */}
-              <ConferenceRegistrationDialog
-                conference={transformConferenceData(conference)}
-                getStatusBadge={getStatusBadge}
-                getMembershipBadge={(isMember: boolean) =>
-                  getMembershipBadge(isMember ? "YES" : "NO")
-                }
-                getPaymentStatusBadge={getPaymentStatusBadge}
-              />
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedConference(conference);
+                  setIsModalOpen(true);
+                }}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View details
+              </DropdownMenuItem>
 
               {/* Delete - Only for SUPERADMIN */}
               {currentAdminStatus === "SUPERADMIN" && (
@@ -1031,7 +1036,7 @@ export function ConferenceDataTable({
                 Columns <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="max-h-56">
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
@@ -1196,6 +1201,26 @@ export function ConferenceDataTable({
           </div>
         </div>
       </div>
+      
+      {/* Global Modal - Outside table render cycle */}
+      {selectedConference && (
+        <ConferenceRegistrationDialog
+          key={`global-conference-dialog-${selectedConference.id}`}
+          conference={transformConferenceData(selectedConference)}
+          getStatusBadge={getStatusBadge}
+          getMembershipBadge={(isMember: boolean) =>
+            getMembershipBadge(isMember ? "YES" : "NO")
+          }
+          getPaymentStatusBadge={getPaymentStatusBadge}
+          isOpen={isModalOpen}
+          onOpenChange={(open) => {
+            setIsModalOpen(open);
+            if (!open) {
+              setSelectedConference(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

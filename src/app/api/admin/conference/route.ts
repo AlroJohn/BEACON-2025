@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
         id: payment.event.id,
         name: payment.event.eventName,
         date: payment.event.eventDate,
-        price: payment.event.eventPrice,
+        price: Number(payment.event.eventPrice),
         status: payment.event.eventStatus,
       })),
     }));

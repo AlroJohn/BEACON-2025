@@ -67,10 +67,10 @@ export const useRealtimeWithFallback = (options: RealtimeHookOptions) => {
     }, fallbackInterval);
 
     setFallbackTimer(timer);
-    
+
     // Only show toast once when entering fallback mode
     if (!hasShownFallbackToast) {
-      toast.warning('⚠️ Using polling fallback for updates');
+      // toast.warning('⚠️ Using polling fallback for updates');
       setHasShownFallbackToast(true);
     }
   }, [enableFallback, fallbackInterval, invalidateQuery, hasShownFallbackToast]);
@@ -122,40 +122,40 @@ export const useRealtimeWithFallback = (options: RealtimeHookOptions) => {
       const channel = supabase.channel(channelName);
       channelRef.current = channel;
 
-    // Add listeners for each table
-    tablesToWatch.forEach((table) => {
-      channel.on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table,
-        },
-        (payload) => {
-          console.log(`📡 ${table} realtime change:`, payload);
+      // Add listeners for each table
+      tablesToWatch.forEach((table) => {
+        channel.on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table,
+          },
+          (payload) => {
+            console.log(`📡 ${table} realtime change:`, payload);
 
-          // Only show toast for main data tables, not for every related table
-          if (['visitors', 'conferences'].includes(table)) {
-            switch (payload.eventType) {
-              case 'INSERT':
-                toast.success(`🎉 New ${table.slice(0, -1)} registration!`);
-                break;
-              case 'UPDATE':
-                toast.info(`📝 ${table.slice(0, -1)} updated`);
-                break;
-              case 'DELETE':
-                toast.info(`🗑️ ${table.slice(0, -1)} removed`);
-                break;
+            // Only show toast for main data tables, not for every related table
+            if (['visitors', 'conferences'].includes(table)) {
+              switch (payload.eventType) {
+                case 'INSERT':
+                  toast.success(`🎉 New ${table.slice(0, -1)} registration!`);
+                  break;
+                case 'UPDATE':
+                  toast.info(`📝 ${table.slice(0, -1)} updated`);
+                  break;
+                case 'DELETE':
+                  toast.info(`🗑️ ${table.slice(0, -1)} removed`);
+                  break;
+              }
             }
-          }
 
-          // Add delay for data consistency
-          setTimeout(() => {
-            invalidateQuery();
-          }, 100);
-        }
-      );
-    });
+            // Add delay for data consistency
+            setTimeout(() => {
+              invalidateQuery();
+            }, 100);
+          }
+        );
+      });
 
       // Subscribe with improved error handling
       channel.subscribe((status) => {

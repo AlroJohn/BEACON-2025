@@ -1,0 +1,126 @@
+name: Build and Deploy to Cloud Run
+
+on:
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GAR_LOCATION: ${{ vars.GAR_LOCATION }}
+  REPOSITORY: ${{ vars.GAR_REPOSITORY }}
+  SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
+  REGION: ${{ vars.GCP_REGION }}
+  CONTAINER_PORT: ${{ vars.CONTAINER_PORT }}
+  GCP_CREDENTIALS_JSON: ${{ secrets.GCP_CREDENTIALS_JSON }}
+
+jobs:
+  deploy:
+    environment: production
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate with GCP
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          token_format: 'access_token'
+          credentials_json: '${{ secrets.GCP_CREDENTIALS_JSON }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Create Artifact Registry if not exists
+        run: |
+          if ! gcloud artifacts repositories describe $REPOSITORY --location=$GAR_LOCATION 2>/dev/null; then
+            echo "Creating Artifact Registry repository $REPOSITORY..."
+            gcloud artifacts repositories create $REPOSITORY \
+              --repository-format=docker \
+              --location=$GAR_LOCATION \
+              --description="Docker repository for $SERVICE"
+          else
+            echo "Artifact Registry repository $REPOSITORY already exists."
+          fi
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${GAR_LOCATION}-docker.pkg.dev --quiet
+
+      - name: Build and Push Container
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PAYMONGO_PUBLIC_KEY: ${{ secrets.PAYMONGO_PUBLIC_KEY }}
+          PAYMONGO_SECRET_KEY: ${{ secrets.PAYMONGO_SECRET_KEY }}
+          NEXT_PUBLIC_BASE_URL: ${{ vars.NEXT_PUBLIC_BASE_URL }}
+          NODE_ENV: ${{ vars.NODE_ENV }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        run: |
+          docker build \
+            --build-arg DATABASE_URL=${DATABASE_URL} \
+            --build-arg DIRECT_URL=${DIRECT_URL} \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL} \
+            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY} \
+            --build-arg SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY} \
+            --build-arg JWT_SECRET=${JWT_SECRET} \
+            --build-arg PAYMONGO_PUBLIC_KEY=${PAYMONGO_PUBLIC_KEY} \
+            --build-arg PAYMONGO_SECRET_KEY=${PAYMONGO_SECRET_KEY} \
+            --build-arg NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL} \
+            --build-arg NODE_ENV=${NODE_ENV} \
+            --build-arg SENDGRID_API_KEY=${SENDGRID_API_KEY} \
+            -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}" .
+
+          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}"
+
+      - name: Create Cloud Run service if not exists
+        run: |
+          if ! gcloud run services describe $SERVICE --region=$REGION --format="value(status.url)" 2>/dev/null; then
+            echo "Creating Cloud Run service $SERVICE..."
+            gcloud run deploy $SERVICE \
+              --image="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}" \
+              --region=$REGION \
+              --port=$CONTAINER_PORT \
+              --platform=managed \
+              --allow-unauthenticated \
+              --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }},DIRECT_URL=${{ secrets.DIRECT_URL }},NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL }},NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }},SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }},JWT_SECRET=${{ secrets.JWT_SECRET }},PAYMONGO_PUBLIC_KEY=${{ secrets.PAYMONGO_PUBLIC_KEY }},PAYMONGO_SECRET_KEY=${{ secrets.PAYMONGO_SECRET_KEY }},NEXT_PUBLIC_BASE_URL=${{ vars.NEXT_PUBLIC_BASE_URL }},NODE_ENV=${{ vars.NODE_ENV }},SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}"
+          else
+            echo "Cloud Run service $SERVICE already exists."
+          fi
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}
+          env_vars: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            DIRECT_URL=${{ secrets.DIRECT_URL }}
+            NEXT_PUBLIC_SUPABASE_URL=${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+            SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            PAYMONGO_PUBLIC_KEY=${{ secrets.PAYMONGO_PUBLIC_KEY }}
+            PAYMONGO_SECRET_KEY=${{ secrets.PAYMONGO_SECRET_KEY }}
+            NEXT_PUBLIC_BASE_URL=${{ vars.NEXT_PUBLIC_BASE_URL }}
+            NODE_ENV=${{ vars.NODE_ENV }}
+            SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}
+          flags: >
+            --min-instances=0
+            --max-instances=100
+            --memory=1Gi
+            --cpu=1
+
+      - name: Show Output
+        run: echo ${{ steps.deploy.outputs.url }}

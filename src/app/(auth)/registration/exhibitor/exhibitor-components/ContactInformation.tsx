@@ -78,14 +78,29 @@ export function ContactInformation({ form }: ContactInformationProps) {
             name="landline"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>3. Landline Number</FormLabel>
+                <FormLabel className="text-base">2. Phone *</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="+63 2 XXX XXXX"
-                    type="tel"
-                    {...field}
-                    value={field.value || ""}
-                  />
+                  <div className="relative flex items-center">
+                    {/* Static prefix */}
+                    <div className="absolute left-3 z-10 px-1">+63</div>
+                    <Input
+                      placeholder="9XXXXXXXXX"
+                      {...field}
+                      // Display only the part after +63
+                      value={field.value?.replace("+63", "") || ""}
+                      onChange={(e) => {
+                        let numbersOnly = e.target.value.replace(/\D/g, "");
+                        // enforce first digit is 9
+                        // if (numbersOnly.length > 0 && numbersOnly[0] !== "9") {
+                        //   numbersOnly = "9" + numbersOnly.replace(/^9*/, "");
+                        // }
+                        const truncated = numbersOnly.slice(0, 10); // enforce 10 digits including the starting 9
+                        field.onChange(`+63${truncated}`);
+                      }}
+                      className="pl-12"
+                      maxLength={10}
+                    />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

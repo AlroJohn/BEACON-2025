@@ -42,8 +42,10 @@ function LogoUpload({ onFileSelect, selectedFile }: LogoUploadProps) {
   >("idle");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const maxFileSize = 1;
-  15 * 1024 * 1024; // 5MB
+  // --- UPDATED: 15MB limit + derived MB label ---
+  const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB in bytes
+  const MAX_FILE_SIZE_MB = Math.round(MAX_FILE_SIZE / (1024 * 1024));
+
   const acceptedTypes = [
     "image/png",
     "image/jpeg",
@@ -54,8 +56,8 @@ function LogoUpload({ onFileSelect, selectedFile }: LogoUploadProps) {
   ];
 
   const validateFile = (file: File): string | null => {
-    if (file.size > maxFileSize) {
-      return "File size must be less than 5MB";
+    if (file.size > MAX_FILE_SIZE) {
+      return `File size must be less than ${MAX_FILE_SIZE_MB}MB`;
     }
     if (!acceptedTypes.includes(file.type)) {
       return "Please upload a valid image file (PNG, JPG, GIF, SVG, WebP)";
@@ -155,7 +157,8 @@ function LogoUpload({ onFileSelect, selectedFile }: LogoUploadProps) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              // stricter: match validation set
+              accept={acceptedTypes.join(",")}
               onChange={handleInputChange}
               className="hidden"
             />
@@ -223,7 +226,7 @@ function LogoUpload({ onFileSelect, selectedFile }: LogoUploadProps) {
                         : "Drop your logo here, or click to browse"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      PNG, JPG, GIF, SVG, WebP up to 5MB
+                      PNG, JPG, GIF, SVG, WebP up to {MAX_FILE_SIZE_MB}MB
                     </p>
                   </div>
                 </>
@@ -272,7 +275,7 @@ function LogoUpload({ onFileSelect, selectedFile }: LogoUploadProps) {
               <li>• High resolution recommended (min. 300px width)</li>
               <li>• Square or rectangular format preferred</li>
               <li>• Transparent background (PNG) for best results</li>
-              <li>• Maximum file size: 5MB</li>
+              <li>• Maximum file size: {MAX_FILE_SIZE_MB}MB</li>
             </ul>
           </div>
         </div>

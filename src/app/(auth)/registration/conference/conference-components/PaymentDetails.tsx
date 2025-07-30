@@ -74,9 +74,10 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
       return;
     }
 
+    const maxFileSize = 15 * 1024 * 1024; // 15MB
     // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size must be less than 5MB");
+    if (file.size > maxFileSize * 1024 * 1024) {
+      toast.error("Image size must be less than 15MB");
       return;
     }
 
@@ -436,7 +437,7 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
                               Click to select receipt
                             </span>
                             <span className="text-xs text-orange-600 dark:text-white">
-                              PNG, JPG up to 5MB
+                              PNG, JPG up to 15MB
                             </span>
                           </div>
                         )}

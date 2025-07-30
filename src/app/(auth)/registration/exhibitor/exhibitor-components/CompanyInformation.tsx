@@ -16,7 +16,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { ExhibitorRegistrationFormData, industrySectorOptions } from "@/types/exhibitor/registration";
+import {
+  ExhibitorRegistrationFormData,
+  industrySectorOptions,
+} from "@/types/exhibitor/registration";
 
 interface CompanyInformationProps {
   form: UseFormReturn<ExhibitorRegistrationFormData>;
@@ -51,10 +54,10 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
               <FormItem>
                 <FormLabel>Business Registration Name</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="Official registered business name (if different)" 
-                    {...field} 
-                    value={field.value || ""} 
+                  <Input
+                    placeholder="Official registered business name (if different)"
+                    {...field}
+                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -71,12 +74,9 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Industry Sector *</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select industry sector" />
                     </SelectTrigger>
                   </FormControl>
@@ -102,10 +102,10 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
                 <FormItem>
                   <FormLabel>Specify Industry Sector *</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Please specify your industry sector" 
-                      {...field} 
-                      value={field.value || ""} 
+                    <Input
+                      placeholder="Please specify your industry sector"
+                      {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -123,11 +123,11 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
             <FormItem>
               <FormLabel>Company Address</FormLabel>
               <FormControl>
-                <Textarea 
+                <Textarea
                   placeholder="Enter complete company address"
                   className="min-h-[80px]"
-                  {...field} 
-                  value={field.value || ""} 
+                  {...field}
+                  value={field.value || ""}
                 />
               </FormControl>
               <FormMessage />
@@ -143,11 +143,11 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
             <FormItem>
               <FormLabel>Company Website</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="https://www.yourcompany.com" 
+                <Input
+                  placeholder="https://www.yourcompany.com"
                   type="url"
-                  {...field} 
-                  value={field.value || ""} 
+                  {...field}
+                  value={field.value || ""}
                 />
               </FormControl>
               <FormMessage />
@@ -163,12 +163,12 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
             <FormItem>
               <FormLabel>Company Profile</FormLabel>
               <FormControl>
-                <Textarea 
+                <Textarea
                   placeholder="Brief description of your company, products, and services (max 500 characters)"
                   className="min-h-[120px]"
                   maxLength={500}
-                  {...field} 
-                  value={field.value || ""} 
+                  {...field}
+                  value={field.value || ""}
                 />
               </FormControl>
               <FormMessage />

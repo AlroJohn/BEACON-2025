@@ -1,12 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient, IndustrySector, SponsorshipAudience, SponsorshipActivation } from '@prisma/client';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { createClient } from '@supabase/supabase-js';
-import { 
-  sponsorshipApiRegistrationSchema,
-  SponsorshipApiFormData,
-  SponsorshipRegistrationResponse
-} from '@/types/sponsorship/registration';
+
+import { ZodError } from "zod";
+import { SponsorRegistrationFormData, SponsorRegistrationResponse, sponsorRegistrationSchema } from "@/types/sponsors/registration";
 
 const prisma = new PrismaClient();
 
@@ -15,18 +12,58 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Helper function to upload file to Supabase Storage for sponsorship materials
-async function uploadSponsorshipFileToSupabase(file: File, userId: string, type: 'sponsor-logo'): Promise<string> {
+// Helper function to upload base64 image to Supabase Storage
+async function uploadImageToSupabase(base64Image: string, userId: string, type: 'face'): Promise<string> {
   try {
-    // Allowed extensions for sponsor materials
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx', 'gif', 'webp'];
+    // Remove data:image/jpeg;base64, prefix if present
+    const base64Data = base64Image.replace(/^data:image\/[a-z]+;base64,/, '');
+
+    // Convert base64 to buffer
+    const imageBuffer = Buffer.from(base64Data, 'base64');
+
+    // Generate file name with uid structure
+    const fileName = `face-scan.jpg`;
+    const filePath = `${userId}/${fileName}`;
+
+    // Upload to user-profile bucket
+    const { data, error } = await supabase.storage
+      .from('user-profile')
+      .upload(filePath, imageBuffer, {
+        contentType: 'image/jpeg',
+        cacheControl: '3600',
+        upsert: true // This will replace if file already exists
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      throw new Error(`Failed to upload ${type} image: ${error.message}`);
+    }
+
+    // Get public URL
+    const { data: publicData } = supabase.storage
+      .from('user-profile')
+      .getPublicUrl(filePath);
+
+    return publicData.publicUrl;
+
+  } catch (error) {
+    console.error(`${type} image upload error:`, error);
+    throw error;
+  }
+}
+
+// Helper function to upload file to Supabase Storage
+async function uploadFileToSupabase(file: File, userId: string, type: 'logo'): Promise<string> {
+  try {
+    // Allowed extensions for logo
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf'];
 
     // Extract and normalize file extension
     let fileExtension = file.name.split('.').pop()?.toLowerCase();
 
     // Fallback if no extension or not allowed
     if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
-      fileExtension = 'jpg'; // Default to jpg for sponsor logos
+      fileExtension = 'jpg';
     }
 
     // Clean original file name and append extension
@@ -35,12 +72,9 @@ async function uploadSponsorshipFileToSupabase(file: File, userId: string, type:
     const fileName = `${type}-${timestamp}-${baseName}.${fileExtension}`;
     const filePath = `${userId}/${fileName}`;
 
-    // Choose correct bucket - sponsor-logo goes to company-logos bucket
-    const bucketName = 'company-logos';
-
-    // Upload file to Supabase
+    // Upload file to company-logos bucket
     const { data, error } = await supabase.storage
-      .from(bucketName)
+      .from('company-logos')
       .upload(filePath, file, {
         contentType: file.type,
         cacheControl: '3600',
@@ -54,7 +88,7 @@ async function uploadSponsorshipFileToSupabase(file: File, userId: string, type:
 
     // Get the public URL
     const { data: publicData } = supabase.storage
-      .from(bucketName)
+      .from('company-logos')
       .getPublicUrl(filePath);
 
     return publicData.publicUrl;
@@ -65,20 +99,18 @@ async function uploadSponsorshipFileToSupabase(file: File, userId: string, type:
   }
 }
 
-// Using the imported sponsorship registration schema from types
-
-// POST - Create new sponsorship registration
+// POST - Create new sponsor registration
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
 
     // Extract files if present
-    const sponsorLogoFile = formData.get('sponsorLogoFile') as File | null;
+    const logoFile = formData.get('logoFile') as File | null;
 
     // Extract other form data
     const jsonData: any = {};
     for (const [key, value] of formData.entries()) {
-      if (key !== 'sponsorLogoFile') {
+      if (key !== 'logoFile') {
         jsonData[key] = value;
       }
     }
@@ -94,10 +126,6 @@ export async function POST(request: NextRequest) {
       if (jsonData.targetAudience && typeof jsonData.targetAudience === 'string') {
         jsonData.targetAudience = JSON.parse(jsonData.targetAudience);
       }
-      if (jsonData.activationPreferences && typeof jsonData.activationPreferences === 'string') {
-        jsonData.activationPreferences = JSON.parse(jsonData.activationPreferences);
-      }
-
     } catch (parseError) {
       console.error('Error parsing FormData fields:', parseError);
       throw new Error('Invalid form data format');
@@ -105,296 +133,629 @@ export async function POST(request: NextRequest) {
 
     console.log('Processed jsonData before validation:', jsonData);
 
-    const validatedData: SponsorshipApiFormData = sponsorshipApiRegistrationSchema.parse(jsonData);
+    // Validate the request data using Zod schema
+    const validatedData: SponsorRegistrationFormData = sponsorRegistrationSchema.parse(jsonData);
 
-    // Additional validations for "Others" fields
-    if (validatedData.industrySector === IndustrySector.OTHERS) {
-      if (!validatedData.industrySectorOthers || validatedData.industrySectorOthers.trim().length === 0) {
-        return NextResponse.json({
-          success: false,
-          error: 'Please specify your industry sector when selecting "Others"',
-        }, { status: 400 });
-      }
-    }
+    // Separate data for different models
+    const {
+      faceScannedUrl,
+      // user_details fields
+      firstName,
+      lastName,
+      middleName,
+      suffix,
+      preferredName,
+      gender,
+      genderOthers,
+      ageBracket,
+      nationality,
+      position,
+      // user_accounts fields
+      email,
+      mobileNumber,
+      mailingAddress,
+      landline,
+      // Everything else goes to sponsor_registrations model
+      ...sponsorData
+    } = validatedData;
 
-    if (validatedData.targetAudience.includes(SponsorshipAudience.OTHERS)) {
-      if (!validatedData.targetAudienceOthers || validatedData.targetAudienceOthers.trim().length === 0) {
-        return NextResponse.json({
-          success: false,
-          error: 'Please specify your other target audience when selecting "Others"',
-        }, { status: 400 });
-      }
-    }
-
-    if (validatedData.activationPreferences.includes(SponsorshipActivation.OTHERS)) {
-      if (!validatedData.activationOthers || validatedData.activationOthers.trim().length === 0) {
-        return NextResponse.json({
-          success: false,
-          error: 'Please specify your other activation preferences when selecting "Others"',
-        }, { status: 400 });
-      }
-    }
-
-    // Check if user already has a sponsorship registration
+    // Check if user already exists with this email
     const existingUser = await prisma.users.findFirst({
       where: {
-        sponsorship_interests: {
+        user_accounts: {
           some: {
-            contactEmail: validatedData.contactEmail
+            email: email
           }
         }
       },
       include: {
-        sponsorship_interests: true
+        user_accounts: true,
+        user_details: true,
+        sponsor_registrations: true
       }
     });
 
     let user;
+    let userAccount;
+    let user_details;
 
     if (existingUser) {
-      // Check if user already has a sponsorship registration
-      if (existingUser.sponsorship_interests.length > 0) {
-        return NextResponse.json(
-          { error: 'User already has a sponsorship registration' },
-          { status: 400 }
-        );
-      }
       user = existingUser;
+      userAccount = existingUser.user_accounts[0];
+      user_details = existingUser.user_details[0];
+
+      // Check if user already has a sponsor registration
+      if (existingUser.sponsor_registrations.length > 0) {
+        return NextResponse.json({
+          success: false,
+          error: "User already has a sponsor registration",
+          message: "A sponsor registration already exists for this email address"
+        } as SponsorRegistrationResponse, { status: 409 });
+      }
+
+      // Update existing user data if needed
+      if (userAccount) {
+        await prisma.user_accounts.update({
+          where: { id: userAccount.id },
+          data: {
+            email,
+            mobileNumber,
+            mailingAddress,
+            landline,
+            updated_at: new Date(),
+          }
+        });
+      }
+
+      if (user_details) {
+        await prisma.user_details.update({
+          where: { id: user_details.id },
+          data: {
+            firstName,
+            lastName,
+            middleName,
+            suffix,
+            preferredName,
+            gender,
+            genderOthers,
+            ageBracket,
+            nationality,
+            position,
+            faceScannedUrl: null, // Will be updated after image upload
+          }
+        });
+      }
     } else {
-      // Create new user for sponsorship
+      // Create new user with accounts and details
       user = await prisma.users.create({
-        data: {},
+        data: {
+          created_at: new Date(),
+          updated_at: new Date(),
+          user_accounts: {
+            create: {
+              email,
+              mobileNumber,
+              mailingAddress,
+              landline,
+              created_at: new Date(),
+              updated_at: new Date(),
+            }
+          },
+          user_details: {
+            create: {
+              firstName,
+              lastName,
+              middleName,
+              suffix,
+              preferredName,
+              gender,
+              genderOthers,
+              ageBracket,
+              nationality,
+              position,
+              faceScannedUrl: null, // Will be updated after image upload
+
+            }
+          }
+        },
         include: {
-          sponsorship_interests: true
+          user_accounts: true,
+          user_details: true
         }
       });
+
+      userAccount = user.user_accounts[0];
+      user_details = user.user_details[0];
     }
 
-    // Step 1: Create sponsorship registration with null uploadLogoUrl
-    console.log("Sponsorship API: Creating sponsorship registration with null uploadLogoUrl");
-    const sponsorship = await prisma.sponsorship_interests.create({
+    // Step 1: Create sponsor registration with null file URLs
+    console.log("Sponsor API: Creating sponsor registration with null file URLs");
+    const sponsor = await prisma.sponsor_registrations.create({
       data: {
         userId: user.id,
-        companyName: validatedData.companyName,
-        businessRegistrationName: validatedData.businessRegistrationName,
-        industrySector: validatedData.industrySector,
-        industrySectorOthers: validatedData.industrySectorOthers,
-        companyAddress: validatedData.companyAddress,
-        companyWebsite: validatedData.companyWebsite,
-        companyProfile: validatedData.companyProfile,
-        contactFullName: validatedData.contactFullName,
-        contactPosition: validatedData.contactPosition,
-        contactEmail: validatedData.contactEmail,
-        contactMobile: validatedData.contactMobile,
-        contactLandline: validatedData.contactLandline,
-        sponsorshipCategories: validatedData.sponsorshipCategories,
-        targetAudience: validatedData.targetAudience,
-        targetAudienceOthers: validatedData.targetAudienceOthers,
-        activationPreferences: validatedData.activationPreferences,
-        activationOthers: validatedData.activationOthers,
-        launchProduct: validatedData.launchProduct,
-        budgetRange: validatedData.budgetRange,
-        customizedProposal: validatedData.customizedProposal,
+        companyName: sponsorData.companyName,
+        businessRegistrationName: sponsorData.businessRegistrationName,
+        industrySector: sponsorData.industrySector,
+        industrySectorOthers: sponsorData.industrySectorOthers,
+        companyAddress: sponsorData.companyAddress,
+        companyWebsite: sponsorData.companyWebsite,
+        companyProfile: sponsorData.companyProfile,
+        sponsorshipCategories: sponsorData.sponsorshipCategories,
+        targetAudience: sponsorData.targetAudience,
+        targetAudienceOthers: sponsorData.targetAudienceOthers,
+        activationPreferences: sponsorData.activationPreferences,
+        activationOthers: sponsorData.activationOthers,
+        launchProduct: sponsorData.launchProduct,
+        budgetRange: sponsorData.budgetRange,
+        customizedProposal: sponsorData.customizedProposal,
         uploadLogoUrl: null, // Initially null, will be updated after upload
-        additionalComments: validatedData.additionalComments,
+        additionalComments: sponsorData.additionalComments,
+        created_at: new Date(),
+        updated_at: new Date(),
       },
       include: {
-        user: true
+        user: {
+          include: {
+            user_accounts: true,
+            user_details: true
+          }
+        }
       }
     });
 
-    console.log("Sponsorship API: Registration created successfully with ID:", sponsorship.id);
+    console.log("Sponsor API: Registration created successfully with ID:", sponsor.id);
 
-    // Step 2: Handle file upload after record creation
-    let sponsorLogoUrl: string | null = null;
+    // Step 2: Handle file uploads after record creation
+    let faceImageUrl: string | null = null;
+    let logoImageUrl: string | null = null;
 
-    // Handle sponsor logo file upload if provided
-    if (sponsorLogoFile) {
-      console.log("Sponsorship API: Uploading sponsor logo file to sponsor-logo/" + user.id + "/");
+    // Handle face image upload if provided
+    if (faceScannedUrl) {
+      console.log("Sponsor API: Uploading face image to user-profile/" + user.id + "/");
       try {
-        sponsorLogoUrl = await uploadSponsorshipFileToSupabase(sponsorLogoFile, user.id, 'sponsor-logo');
+        faceImageUrl = await uploadImageToSupabase(faceScannedUrl, user.id, 'face');
 
-        // Update sponsorship registration with logo URL
-        await prisma.sponsorship_interests.update({
-          where: { id: sponsorship.id },
-          data: {
-            uploadLogoUrl: sponsorLogoUrl,
-          }
-        });
+        // Update user_details with the face image URL
+        const user_detailsId = user_details?.id;
 
-        console.log("Sponsorship API: Sponsor logo file uploaded successfully to:", sponsorLogoUrl);
-      } catch (logoError) {
-        console.error("Sponsorship API: Sponsor logo file upload failed:", logoError);
+        if (user_detailsId) {
+          await prisma.user_details.update({
+            where: { id: user_detailsId },
+            data: {
+              faceScannedUrl: faceImageUrl,
+            },
+          });
+        } else {
+          console.error("Sponsor API: user_details ID not found for user:", user.id);
+        }
+
+        console.log("Sponsor API: Face image uploaded and URL updated successfully");
+      } catch (imageError) {
+        console.error("Sponsor API: Face image upload failed:", imageError);
         // Log the error but don't fail the registration
       }
     }
 
-    console.log("Sponsorship API: File upload process completed");
-    console.log("Final URLs - Sponsor Logo:", sponsorLogoUrl);
+    // Handle logo file upload if provided
+    if (logoFile) {
+      console.log("Sponsor API: Uploading logo file to company-logos/" + user.id + "/");
+      try {
+        logoImageUrl = await uploadFileToSupabase(logoFile, user.id, 'logo');
 
-    const response: SponsorshipRegistrationResponse = {
-      success: true,
-      data: {
-        sponsorshipId: sponsorship.id,
-        userId: user.id,
-        uploadLogoUrl: sponsorLogoUrl,
+        // Update sponsor registration with logo URL
+        await prisma.sponsor_registrations.update({
+          where: { id: sponsor.id },
+          data: {
+            uploadLogoUrl: logoImageUrl,
+            updated_at: new Date(),
+          }
+        });
+
+        console.log("Sponsor API: Logo file uploaded successfully to:", logoImageUrl);
+      } catch (logoError) {
+        console.error("Sponsor API: Logo file upload failed:", logoError);
+        // Log the error but don't fail the registration
       }
-    };
-
-    return NextResponse.json(response, { status: 201 });
-
-  } catch (error) {
-    console.error('Sponsorship registration error:', error);
-
-    if (error instanceof z.ZodError) {
-      console.error('Validation errors:', error.issues);
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: error.issues,
-          message: error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join(', ')
-        },
-        { status: 400 }
-      );
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error', message: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    );
+    console.log("Sponsor API: File upload process completed");
+    console.log("Final URLs - Face:", faceImageUrl, "Logo:", logoImageUrl);
+
+    // Return success response
+    return NextResponse.json({
+      success: true,
+      data: {
+        sponsorId: sponsor.id,
+        userId: user.id,
+        faceImageUrl: faceImageUrl,
+        logoUrl: logoImageUrl,
+      },
+      message: "Sponsor registration created successfully"
+    } as SponsorRegistrationResponse, { status: 201 });
+
+  } catch (error) {
+    console.error("Sponsor registration error:", error);
+
+    // Handle Zod validation errors
+    if (error instanceof ZodError) {
+      console.error('Validation errors:', error.issues);
+      return NextResponse.json({
+        success: false,
+        error: "Validation failed",
+        errors: error.issues.map(err => ({
+          path: err.path.map(String),
+          message: err.message
+        })),
+        message: "Please check your input and try again"
+      } as SponsorRegistrationResponse, { status: 400 });
+    }
+
+    // Handle Prisma errors
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
+      return NextResponse.json({
+        success: false,
+        error: "Duplicate entry",
+        message: "A record with this information already exists"
+      } as SponsorRegistrationResponse, { status: 409 });
+    }
+
+    // Handle other errors
+    return NextResponse.json({
+      success: false,
+      error: "Internal server error",
+      message: "An unexpected error occurred. Please try again later."
+    } as SponsorRegistrationResponse, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 }
 
-// GET - Retrieve sponsorship registrations
+// GET - Retrieve sponsor registrations
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const search = searchParams.get('search') || '';
+    const industrySector = searchParams.get('industrySector');
+    const budgetRange = searchParams.get('budgetRange');
     const userId = searchParams.get('userId');
     const email = searchParams.get('email');
-    const sponsorshipId = searchParams.get('sponsorshipId');
+    const sponsorId = searchParams.get('sponsorId');
 
-    if (!userId && !email && !sponsorshipId) {
-      return NextResponse.json(
-        { error: 'userId, email, or sponsorshipId parameter is required' },
-        { status: 400 }
-      );
-    }
+    // If specific identifiers are provided, return single or filtered results
+    if (sponsorId || userId || email) {
+      let whereClause: any = {};
 
-    let whereClause: any = {};
-
-    if (sponsorshipId) {
-      whereClause.id = sponsorshipId;
-    } else if (userId) {
-      whereClause.userId = userId;
-    } else if (email) {
-      whereClause.contactEmail = email;
-    }
-
-    const sponsorships = await prisma.sponsorship_interests.findMany({
-      where: whereClause,
-      include: {
-        user: true
-      },
-      orderBy: {
-        created_at: 'desc'
+      if (sponsorId) {
+        whereClause.id = sponsorId;
+      } else if (userId) {
+        whereClause.userId = userId;
+      } else if (email) {
+        whereClause.user = {
+          user_accounts: {
+            some: {
+              email: email
+            }
+          }
+        };
       }
-    });
+
+      const sponsors = await prisma.sponsor_registrations.findMany({
+        where: whereClause,
+        include: {
+          user: {
+            include: {
+              user_accounts: true,
+              user_details: true
+            }
+          }
+        },
+        orderBy: { created_at: 'desc' }
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: sponsors,
+        message: "Sponsors retrieved successfully"
+      });
+    }
+
+    // General listing with pagination and filters
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const whereClause: any = {};
+
+    if (search) {
+      whereClause.OR = [
+        { companyName: { contains: search, mode: 'insensitive' } },
+        { businessRegistrationName: { contains: search, mode: 'insensitive' } },
+        {
+          user: {
+            user_details: {
+              some: {
+                OR: [
+                  { firstName: { contains: search, mode: 'insensitive' } },
+                  { lastName: { contains: search, mode: 'insensitive' } }
+                ]
+              }
+            }
+          }
+        }
+      ];
+    }
+
+    if (industrySector) {
+      whereClause.industrySector = industrySector;
+    }
+
+    if (budgetRange) {
+      whereClause.budgetRange = budgetRange;
+    }
+
+    // Get sponsors with relations
+    const [sponsors, total] = await Promise.all([
+      prisma.sponsor_registrations.findMany({
+        where: whereClause,
+        include: {
+          user: {
+            include: {
+              user_accounts: true,
+              user_details: true
+            }
+          }
+        },
+        orderBy: { created_at: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.sponsor_registrations.count({ where: whereClause })
+    ]);
 
     return NextResponse.json({
       success: true,
-      data: sponsorships
+      data: {
+        sponsors,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+          hasNext: page * limit < total,
+          hasPrev: page > 1
+        }
+      },
+      message: "Sponsors retrieved successfully"
     });
 
   } catch (error) {
-    console.error('Error fetching sponsorship registrations:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Error fetching sponsors:", error);
+
+    return NextResponse.json({
+      success: false,
+      error: "Internal server error",
+      message: "Failed to retrieve sponsors"
+    }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 }
 
-// PUT - Update sponsorship registration
+// PUT - Update sponsor registration
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sponsorshipId, ...updateData } = body;
+    const { sponsorId, ...updateData } = body;
 
-    if (!sponsorshipId) {
-      return NextResponse.json(
-        { error: 'sponsorshipId is required' },
-        { status: 400 }
-      );
+    if (!sponsorId) {
+      return NextResponse.json({
+        success: false,
+        error: "Missing sponsor ID",
+        message: "Sponsor ID is required for updates"
+      } as SponsorRegistrationResponse, { status: 400 });
     }
 
-    // Validate update data with partial schema
-    const partialSchema = sponsorshipApiRegistrationSchema.partial();
-    const validatedData = partialSchema.parse(updateData);
+    // Validate the update data (excluding file fields for JSON updates)
+    const validatedData = sponsorRegistrationSchema.omit({
+      faceScannedUrl: true,
+      uploadLogoUrl: true
+    }).parse(updateData);
 
-    const updatedSponsorship = await prisma.sponsorship_interests.update({
-      where: { id: sponsorshipId },
-      data: validatedData,
-      include: {
-        user: true
-      }
+    // Check if sponsor exists
+    const existingSponsor = await prisma.sponsor_registrations.findUnique({
+      where: { id: sponsorId },
+      include: { user: true }
+    });
+
+    if (!existingSponsor) {
+      return NextResponse.json({
+        success: false,
+        error: "Sponsor not found",
+        message: "The specified sponsor registration does not exist"
+      } as SponsorRegistrationResponse, { status: 404 });
+    }
+
+    // Separate data for different models
+    const {
+      // user_details fields
+      firstName,
+      lastName,
+      middleName,
+      suffix,
+      preferredName,
+      gender,
+      genderOthers,
+      ageBracket,
+      nationality,
+      position,
+      // user_accounts fields
+      email,
+      mobileNumber,
+      mailingAddress,
+      landline,
+      // Everything else goes to sponsor_registrations model
+      ...sponsorData
+    } = validatedData;
+
+    // Update sponsor and related data in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Update user details
+      await tx.user_details.updateMany({
+        where: { userId: existingSponsor.userId },
+        data: {
+          firstName,
+          lastName,
+          middleName,
+          suffix,
+          preferredName,
+          gender,
+          genderOthers,
+          ageBracket,
+          nationality,
+          position,
+
+        }
+      });
+
+      // Update user account
+      await tx.user_accounts.updateMany({
+        where: { userId: existingSponsor.userId },
+        data: {
+          email,
+          mobileNumber,
+          mailingAddress,
+          landline,
+          updated_at: new Date(),
+        }
+      });
+
+      // Update sponsor registration
+      const updatedSponsor = await tx.sponsor_registrations.update({
+        where: { id: sponsorId },
+        data: {
+          companyName: sponsorData.companyName,
+          businessRegistrationName: sponsorData.businessRegistrationName,
+          industrySector: sponsorData.industrySector,
+          industrySectorOthers: sponsorData.industrySectorOthers,
+          companyAddress: sponsorData.companyAddress,
+          companyWebsite: sponsorData.companyWebsite,
+          companyProfile: sponsorData.companyProfile,
+          sponsorshipCategories: sponsorData.sponsorshipCategories,
+          targetAudience: sponsorData.targetAudience,
+          targetAudienceOthers: sponsorData.targetAudienceOthers,
+          activationPreferences: sponsorData.activationPreferences,
+          activationOthers: sponsorData.activationOthers,
+          launchProduct: sponsorData.launchProduct,
+          budgetRange: sponsorData.budgetRange,
+          customizedProposal: sponsorData.customizedProposal,
+          additionalComments: sponsorData.additionalComments,
+          updated_at: new Date(),
+        }
+      });
+
+      return updatedSponsor;
     });
 
     return NextResponse.json({
       success: true,
-      data: updatedSponsorship
-    });
+      data: {
+        sponsorId: result.id,
+        userId: result.userId,
+        faceImageUrl: null, // File updates would need separate endpoint
+        logoUrl: result.uploadLogoUrl,
+      },
+      message: "Sponsor registration updated successfully"
+    } as SponsorRegistrationResponse);
 
   } catch (error) {
-    console.error('Error updating sponsorship registration:', error);
+    console.error("Sponsor update error:", error);
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.issues },
-        { status: 400 }
-      );
+    if (error instanceof ZodError) {
+      return NextResponse.json({
+        success: false,
+        error: "Validation failed",
+        errors: error.issues.map(err => ({
+          path: err.path.map(String),
+          message: err.message
+        })),
+        message: "Please check your input and try again"
+      } as SponsorRegistrationResponse, { status: 400 });
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: "Internal server error",
+      message: "Failed to update sponsor registration"
+    } as SponsorRegistrationResponse, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 }
 
-// DELETE - Remove sponsorship registration
+// DELETE - Delete sponsor registration
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const sponsorshipId = searchParams.get('sponsorshipId');
+    const sponsorId = searchParams.get('sponsorId');
 
-    if (!sponsorshipId) {
-      return NextResponse.json(
-        { error: 'sponsorshipId parameter is required' },
-        { status: 400 }
-      );
+    if (!sponsorId) {
+      return NextResponse.json({
+        success: false,
+        error: "Missing sponsor ID",
+        message: "Sponsor ID is required for deletion"
+      }, { status: 400 });
     }
 
-    await prisma.sponsorship_interests.delete({
-      where: { id: sponsorshipId }
+    // Check if sponsor exists
+    const existingSponsor = await prisma.sponsor_registrations.findUnique({
+      where: { id: sponsorId }
+    });
+
+    if (!existingSponsor) {
+      return NextResponse.json({
+        success: false,
+        error: "Sponsor not found",
+        message: "The specified sponsor registration does not exist"
+      }, { status: 404 });
+    }
+
+    // Delete sponsor registration and related data
+    await prisma.$transaction(async (tx) => {
+      // Delete sponsor registration
+      await tx.sponsor_registrations.delete({
+        where: { id: sponsorId }
+      });
+
+      // Delete user details
+      await tx.user_details.deleteMany({
+        where: { userId: existingSponsor.userId }
+      });
+
+      // Delete user accounts
+      await tx.user_accounts.deleteMany({
+        where: { userId: existingSponsor.userId }
+      });
+
+      // Delete user
+      await tx.users.delete({
+        where: { id: existingSponsor.userId }
+      });
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Sponsorship registration deleted successfully'
+      message: "Sponsor registration deleted successfully"
     });
 
   } catch (error) {
-    console.error('Error deleting sponsorship registration:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Sponsor deletion error:", error);
+
+    return NextResponse.json({
+      success: false,
+      error: "Internal server error",
+      message: "Failed to delete sponsor registration"
+    }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }

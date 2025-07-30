@@ -22,6 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Package Management
 - `npm install` - Install dependencies (includes automatic `prisma generate` via postinstall)
+- Postinstall automatically rebuilds lightningcss for Linux x64 compatibility
 
 ## Project Architecture
 

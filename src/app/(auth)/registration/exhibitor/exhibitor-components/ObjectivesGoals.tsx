@@ -15,10 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  ExhibitorRegistrationFormData, 
-  goalTypeOptions, 
-  yesNoMaybeOptions 
+import {
+  ExhibitorRegistrationFormData,
+  goalTypeOptions,
+  yesNoMaybeOptions,
 } from "@/types/exhibitor/registration";
 
 interface ObjectivesGoalsProps {
@@ -38,7 +38,9 @@ export function ObjectivesGoals({ form }: ObjectivesGoalsProps) {
           render={() => (
             <FormItem>
               <div className="mb-4">
-                <FormLabel className="text-base">Company Goals & Objectives *</FormLabel>
+                <FormLabel className="text-base">
+                  1. Company Goals & Objectives *
+                </FormLabel>
                 <p className="text-sm text-muted-foreground">
                   What do you hope to achieve by participating in BEACON 2025?
                 </p>
@@ -92,10 +94,10 @@ export function ObjectivesGoals({ form }: ObjectivesGoalsProps) {
               <FormItem>
                 <FormLabel>Specify Other Goals *</FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="Please specify your other goals and objectives" 
-                    {...field} 
-                    value={field.value || ""} 
+                  <Input
+                    placeholder="Please specify your other goals and objectives"
+                    {...field}
+                    value={field.value || ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -110,13 +112,10 @@ export function ObjectivesGoals({ form }: ObjectivesGoalsProps) {
           name="exploreSponsorship"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Interest in Sponsorship Opportunities</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value || ""}
-              >
+              <FormLabel>2. Interest in Sponsorship Opportunities</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value || ""}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full md:max-w-56 overflow-hidden">
                     <SelectValue placeholder="Would you like to explore sponsorship opportunities?" />
                   </SelectTrigger>
                 </FormControl>
@@ -129,9 +128,10 @@ export function ObjectivesGoals({ form }: ObjectivesGoalsProps) {
                 </SelectContent>
               </Select>
               <FormMessage />
-              <p className="text-xs text-muted-foreground">
-                Sponsorship opportunities include branding, speaking slots, and premium positioning
-              </p>
+              <FormLabel className="text-xs text-muted-foreground">
+                Sponsorship opportunities include branding, speaking slots, and
+                premium positioning
+              </FormLabel>
             </FormItem>
           )}
         />

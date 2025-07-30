@@ -233,7 +233,7 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
               </div>
               <Alert className="border-blue-300 ">
                 <Info className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="">
+                <AlertDescription className="text-accent-foreground">
                   <strong>How to pay:</strong> Scan the QR code above using your
                   GCash app or send payment to the InstaPay details shown. After
                   payment, upload your receipt below for verification.

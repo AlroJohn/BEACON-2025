@@ -124,7 +124,7 @@ function LogoUpload({ onFileSelect, selectedFile }: LogoUploadProps) {
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <FileImage className="h-5 w-5 text-primary" />
-          Company Logo
+          3. Company Logo
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           Upload your company logo for marketing materials and event promotions
@@ -295,7 +295,7 @@ export function LogisticsMarketing({ form }: LogisticsMarketingProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-base font-medium">
-                  Will you bring large equipment or machinery?
+                  1. Will you bring large equipment or machinery?
                 </FormLabel>
                 <Select
                   onValueChange={field.onChange}
@@ -326,7 +326,7 @@ export function LogisticsMarketing({ form }: LogisticsMarketingProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-base font-medium">
-                  Marketing Collaterals Status
+                  2. Marketing Collaterals Status
                 </FormLabel>
                 <Select
                   onValueChange={field.onChange}

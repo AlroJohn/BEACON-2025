@@ -24,7 +24,7 @@ export function ContactInformation({ form }: ContactInformationProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email Address *</FormLabel>
+              <FormLabel>1. Email Address *</FormLabel>
               <FormControl>
                 <Input
                   placeholder="your.email@company.com"
@@ -78,7 +78,7 @@ export function ContactInformation({ form }: ContactInformationProps) {
             name="landline"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Landline Number</FormLabel>
+                <FormLabel>3. Landline Number</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="+63 2 XXX XXXX"
@@ -99,7 +99,7 @@ export function ContactInformation({ form }: ContactInformationProps) {
           name="mailingAddress"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mailing Address</FormLabel>
+              <FormLabel>4. Mailing Address</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Complete mailing address for correspondence"

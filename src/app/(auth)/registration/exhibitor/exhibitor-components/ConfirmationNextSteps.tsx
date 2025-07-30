@@ -159,11 +159,11 @@ function LetterOfIntentUpload({
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full dark:bg-c1/30 bg-muted">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" />
-          Letter of Intent
+          2. Letter of Intent
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           Upload a formal letter of intent - supports documents and images
@@ -268,19 +268,19 @@ function LetterOfIntentUpload({
 
           {/* File Format Info */}
           <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs md:bg-c1/30 bg-muted">
               PDF
             </Badge>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs md:bg-c1/30 bg-muted">
               DOC
             </Badge>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs md:bg-c1/30 bg-muted">
               DOCX
             </Badge>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs md:bg-c1/30 bg-muted">
               JPG
             </Badge>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs md:bg-c1/30 bg-muted">
               PNG
             </Badge>
           </div>
@@ -314,7 +314,7 @@ export function ConfirmationNextSteps({ form }: ConfirmationNextStepsProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-base font-medium">
-                Confirmation of Intent *
+                1. Confirmation of Intent *
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
@@ -360,7 +360,7 @@ export function ConfirmationNextSteps({ form }: ConfirmationNextStepsProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-base font-medium">
-                Additional Comments
+                3. Additional Comments
               </FormLabel>
               <FormControl>
                 <Textarea

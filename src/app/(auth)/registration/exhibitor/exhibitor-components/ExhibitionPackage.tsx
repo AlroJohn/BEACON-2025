@@ -40,7 +40,7 @@ export function ExhibitionPackage({ form }: ExhibitionPackageProps) {
             <FormItem>
               <div className="mb-4">
                 <FormLabel className="text-base">
-                  Participation Types *
+                  1. Participation Types *
                 </FormLabel>
                 <p className="text-sm text-muted-foreground">
                   Select all that apply to your exhibition needs
@@ -124,7 +124,7 @@ export function ExhibitionPackage({ form }: ExhibitionPackageProps) {
           name="boothDescription"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Booth Description *</FormLabel>
+              <FormLabel>2. Booth Description *</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Describe your booth setup, products/services to be displayed, and any special requirements"
@@ -148,7 +148,7 @@ export function ExhibitionPackage({ form }: ExhibitionPackageProps) {
             name="launchNewProduct"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Launching New Product/Service?</FormLabel>
+                <FormLabel>3. Launching New Product/Service?</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value || ""}
@@ -176,7 +176,7 @@ export function ExhibitionPackage({ form }: ExhibitionPackageProps) {
             name="requireDemoArea"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Require Demo/Presentation Area?</FormLabel>
+                <FormLabel>4. Require Demo/Presentation Area?</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value || ""}

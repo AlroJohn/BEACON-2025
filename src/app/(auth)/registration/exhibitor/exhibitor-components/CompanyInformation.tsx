@@ -30,15 +30,15 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4 pr-1">
+      <div className="space-y-4">
         {/* Company Name */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="companyName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company Name *</FormLabel>
+                <FormLabel>1. Company Name *</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter company name" {...field} />
                 </FormControl>
@@ -52,7 +52,7 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
             name="businessRegistrationName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Business Registration Name</FormLabel>
+                <FormLabel>2. Business Registration Name</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Official registered business name (if different)"
@@ -64,20 +64,15 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
               </FormItem>
             )}
           />
-        </div>
-
-        {/* Industry Sector */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Show Others field if OTHERS is selected */}
           <FormField
             control={form.control}
             name="industrySector"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Industry Sector *</FormLabel>
+                <FormLabel>3. Industry Sector *</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full overflow-hidden">
                       <SelectValue placeholder="Select industry sector" />
                     </SelectTrigger>
                   </FormControl>
@@ -93,26 +88,28 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
               </FormItem>
             )}
           />
-          {industrySector === "OTHERS" && (
-            <FormField
-              control={form.control}
-              name="industrySectorOthers"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Specify Industry Sector *</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Please specify your industry sector"
-                      {...field}
-                      value={field.value || ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
         </div>
+
+        {/* Industry Sector */}
+        {industrySector === "OTHERS" && (
+          <FormField
+            control={form.control}
+            name="industrySectorOthers"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Specify Industry Sector *</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Please specify your industry sector"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         {/* Company Address */}
         <FormField
@@ -120,7 +117,7 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
           name="companyAddress"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Company Address</FormLabel>
+              <FormLabel>4. Company Address</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Enter complete company address"
@@ -140,7 +137,7 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
           name="companyWebsite"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Company Website</FormLabel>
+              <FormLabel>5. Company Website</FormLabel>
               <FormControl>
                 <Input
                   placeholder="https://www.yourcompany.com"
@@ -160,7 +157,7 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
           name="companyProfile"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Company Profile</FormLabel>
+              <FormLabel>6. Company Profile</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Brief description of your company, products, and services (max 500 characters)"

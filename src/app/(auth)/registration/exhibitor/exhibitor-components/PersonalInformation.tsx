@@ -40,7 +40,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
         <Card className="border-dashed dark:bg-c1/30 bg-muted">
           <CardContent className="p-4">
             <div className="space-y-2">
-              <h3 className="font-medium text-sm">Face Capture *</h3>
+              <h3 className="font-medium text-sm">1.Face Capture *</h3>
               <p className="text-xs text-muted-foreground">
                 Take a clear photo for your exhibitor badge and identification
               </p>
@@ -70,7 +70,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Name *</FormLabel>
+                <FormLabel>2. First Name *</FormLabel>
                 <FormControl>
                   <Input placeholder="First name" {...field} />
                 </FormControl>
@@ -84,7 +84,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Last Name *</FormLabel>
+                <FormLabel>3. Last Name *</FormLabel>
                 <FormControl>
                   <Input placeholder="Last name" {...field} />
                 </FormControl>
@@ -98,7 +98,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             name="middleName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Middle Name</FormLabel>
+                <FormLabel>4. Middle Name</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Middle name"
@@ -120,7 +120,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             name="suffix"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Suffix</FormLabel>
+                <FormLabel>5. Suffix</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Jr., Sr., III"
@@ -137,7 +137,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             name="preferredName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Preferred Name</FormLabel>
+                <FormLabel>6. Preferred Name</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Name you'd like to be called"
@@ -154,7 +154,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             name="position"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Job Title/Position*</FormLabel>
+                <FormLabel>7. Job Title/Position*</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter your position" {...field} />
                 </FormControl>
@@ -171,7 +171,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             name="gender"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Gender *</FormLabel>
+                <FormLabel>8. Gender *</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
@@ -217,7 +217,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             name="ageBracket"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Age Bracket *</FormLabel>
+                <FormLabel>9. Age Bracket *</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
@@ -243,7 +243,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             name="nationality"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nationality *</FormLabel>
+                <FormLabel>10. Nationality *</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="e.g., Filipino, American, Japanese"

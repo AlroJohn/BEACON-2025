@@ -120,7 +120,7 @@ function LogoUpload({ onFileSelect, selectedFile }: LogoUploadProps) {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full dark:bg-c1/30 bg-muted">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <FileImage className="h-5 w-5 text-primary" />
@@ -233,19 +233,34 @@ function LogoUpload({ onFileSelect, selectedFile }: LogoUploadProps) {
 
           {/* File Format Info */}
           <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary" className="text-xs">
+            <Badge
+              variant="secondary"
+              className="text-xs dark:bg-c1/30 bg-muted"
+            >
               PNG
             </Badge>
-            <Badge variant="secondary" className="text-xs">
+            <Badge
+              variant="secondary"
+              className="text-xs dark:bg-c1/30 bg-muted"
+            >
               JPG
             </Badge>
-            <Badge variant="secondary" className="text-xs">
+            <Badge
+              variant="secondary"
+              className="text-xs dark:bg-c1/30 bg-muted"
+            >
               SVG
             </Badge>
-            <Badge variant="secondary" className="text-xs">
+            <Badge
+              variant="secondary"
+              className="text-xs dark:bg-c1/30 bg-muted"
+            >
               GIF
             </Badge>
-            <Badge variant="secondary" className="text-xs">
+            <Badge
+              variant="secondary"
+              className="text-xs dark:bg-c1/30 bg-muted"
+            >
               WebP
             </Badge>
           </div>
@@ -273,60 +288,68 @@ export function LogisticsMarketing({ form }: LogisticsMarketingProps) {
     <div className="space-y-6">
       <div className="space-y-6">
         {/* Large Equipment */}
-        <FormField
-          control={form.control}
-          name="bringLargeEquipment"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-medium">
-                Will you bring large equipment or machinery?
-              </FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ""}>
-                <FormControl>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select option" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {yesNoMaybeOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
+          <FormField
+            control={form.control}
+            name="bringLargeEquipment"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-medium">
+                  Will you bring large equipment or machinery?
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger className="h-11 w-full">
+                      <SelectValue placeholder="Select option" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {yesNoMaybeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Marketing Collaterals */}
-        <FormField
-          control={form.control}
-          name="haveMarketingCollaterals"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-medium">
-                Marketing Collaterals Status
-              </FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ""}>
-                <FormControl>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select your marketing materials status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {marketingCollateralsOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          {/* Marketing Collaterals */}
+          <FormField
+            control={form.control}
+            name="haveMarketingCollaterals"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-medium">
+                  Marketing Collaterals Status
+                </FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger className="h-11 w-full">
+                      <SelectValue placeholder="Select your marketing materials status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {marketingCollateralsOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Company Logo Upload */}
         <FormField

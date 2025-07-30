@@ -15,12 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
-import { 
-  ExhibitorRegistrationFormData, 
-  participationTypeOptions, 
-  boothSizeOptions, 
-  yesNoMaybeOptions 
+import {
+  ExhibitorRegistrationFormData,
+  participationTypeOptions,
+  boothSizeOptions,
+  yesNoMaybeOptions,
 } from "@/types/exhibitor/registration";
 
 interface ExhibitionPackageProps {
@@ -40,7 +39,9 @@ export function ExhibitionPackage({ form }: ExhibitionPackageProps) {
           render={() => (
             <FormItem>
               <div className="mb-4">
-                <FormLabel className="text-base">Participation Types *</FormLabel>
+                <FormLabel className="text-base">
+                  Participation Types *
+                </FormLabel>
                 <p className="text-sm text-muted-foreground">
                   Select all that apply to your exhibition needs
                 </p>
@@ -86,7 +87,7 @@ export function ExhibitionPackage({ form }: ExhibitionPackageProps) {
         />
 
         {/* Booth Size - Show only if Indoor Booth or Raw Space is selected */}
-        {(participationTypes.includes("INDOOR_BOOTH") || 
+        {(participationTypes.includes("INDOOR_BOOTH") ||
           participationTypes.includes("RAW_SPACE")) && (
           <FormField
             control={form.control}
@@ -99,7 +100,7 @@ export function ExhibitionPackage({ form }: ExhibitionPackageProps) {
                   value={field.value || ""}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select booth size" />
                     </SelectTrigger>
                   </FormControl>
@@ -125,11 +126,11 @@ export function ExhibitionPackage({ form }: ExhibitionPackageProps) {
             <FormItem>
               <FormLabel>Booth Description *</FormLabel>
               <FormControl>
-                <Textarea 
+                <Textarea
                   placeholder="Describe your booth setup, products/services to be displayed, and any special requirements"
                   className="min-h-[100px]"
                   maxLength={1000}
-                  {...field} 
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -153,7 +154,7 @@ export function ExhibitionPackage({ form }: ExhibitionPackageProps) {
                   value={field.value || ""}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select option" />
                     </SelectTrigger>
                   </FormControl>
@@ -181,7 +182,7 @@ export function ExhibitionPackage({ form }: ExhibitionPackageProps) {
                   value={field.value || ""}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select option" />
                     </SelectTrigger>
                   </FormControl>

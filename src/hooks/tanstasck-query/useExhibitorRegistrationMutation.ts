@@ -55,7 +55,7 @@ export const useExhibitorRegistrationMutation = () => {
     mutationFn: submitExhibitorRegistration,
     onSuccess: (data) => {
       console.log('Exhibitor registration successful:', data);
-      
+
       // Invalidate and refetch any related queries
       queryClient.invalidateQueries({ queryKey: ['exhibitors'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'exhibitors'] });
@@ -69,7 +69,7 @@ export const useExhibitorRegistrationMutation = () => {
 // Hook for fetching exhibitor registrations
 export const useExhibitorQuery = (userId?: string, email?: string, exhibitorId?: string) => {
   const queryParams = new URLSearchParams();
-  
+
   if (userId) queryParams.append('userId', userId);
   if (email) queryParams.append('email', email);
   if (exhibitorId) queryParams.append('exhibitorId', exhibitorId);
@@ -112,7 +112,7 @@ export const useExhibitorUpdateMutation = () => {
     mutationFn: updateExhibitorRegistration,
     onSuccess: (data) => {
       console.log('Exhibitor registration updated successfully:', data);
-      
+
       // Invalidate and refetch any related queries
       queryClient.invalidateQueries({ queryKey: ['exhibitors'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'exhibitors'] });
@@ -144,7 +144,7 @@ export const useExhibitorDeleteMutation = () => {
     mutationFn: deleteExhibitorRegistration,
     onSuccess: (data) => {
       console.log('Exhibitor registration deleted successfully:', data);
-      
+
       // Invalidate and refetch any related queries
       queryClient.invalidateQueries({ queryKey: ['exhibitors'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'exhibitors'] });

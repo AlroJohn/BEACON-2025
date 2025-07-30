@@ -3,7 +3,6 @@ import {
   Gender,
   IndustrySector,
   ParticipationType,
-  BoothSize,
   YesNoMaybe,
   GoalType,
   ConfirmIntent
@@ -25,6 +24,7 @@ export const baseExhibitorSchema = z.object({
   genderOthers: z.string().optional().nullable(),
   ageBracket: z.nativeEnum(AgeBracket),
   nationality: z.string().min(1, "Nationality is required"),
+  position: z.string().min(1, "Job title or position is required"),
 
   // user_accounts fields
   email: z.string().email("Invalid email format"),
@@ -34,16 +34,16 @@ export const baseExhibitorSchema = z.object({
 
   // exhibitor_registrations fields - Section 1: Company Information
   companyName: z.string().min(1, "Company name is required"),
-  businessRegistrationName: z.string().optional().nullable(),
+  businessRegistrationName: z.string().min(1, 'Businedd Name is required'),
   industrySector: z.nativeEnum(IndustrySector),
   industrySectorOthers: z.string().optional().nullable(),
-  companyAddress: z.string().optional().nullable(),
-  companyWebsite: z.string().url("Invalid website URL").optional().nullable().or(z.literal("")),
-  companyProfile: z.string().optional().nullable(),
+  companyAddress: z.string().min(1, "Company address is required"),
+  companyWebsite: z.string().url("Invalid website URL").or(z.literal("")),
+  companyProfile: z.string().min(1, "Company profile is required"),
 
   // Section 4: Exhibition Package & Preferences
   participationTypes: z.array(z.nativeEnum(ParticipationType)).min(1, "Select at least one participation type"),
-  boothSize: z.nativeEnum(BoothSize).optional().nullable(),
+  boothSize: z.string().min(1, 'Booth size is required'),
   boothDescription: z.string().min(1, "Booth description is required"),
   launchNewProduct: z.nativeEnum(YesNoMaybe).optional().nullable(),
   requireDemoArea: z.nativeEnum(YesNoMaybe).optional().nullable(),
@@ -139,6 +139,7 @@ export const defaultExhibitorRegistrationValues: Partial<ExhibitorRegistrationFo
   genderOthers: null,
   ageBracket: AgeBracket.AGE_25_34,
   nationality: "",
+  position: '',
 
   // user_accounts fields
   email: "",
@@ -148,16 +149,16 @@ export const defaultExhibitorRegistrationValues: Partial<ExhibitorRegistrationFo
 
   // Company Information
   companyName: "",
-  businessRegistrationName: null,
+  businessRegistrationName: '',
   industrySector: IndustrySector.MARITIME_EQUIPMENT_TECHNOLOGY,
   industrySectorOthers: null,
-  companyAddress: null,
-  companyWebsite: null,
-  companyProfile: null,
+  companyAddress: '',
+  companyWebsite: '',
+  companyProfile: '',
 
   // Exhibition Package & Preferences
   participationTypes: [],
-  boothSize: null,
+  boothSize: '',
   boothDescription: "",
   launchNewProduct: null,
   requireDemoArea: null,
@@ -200,19 +201,19 @@ export const participationTypeOptions = [
   { value: ParticipationType.CO_BRANDING, label: "Co-Branding" },
 ] as const;
 
-export const boothSizeOptions = [
-  { value: BoothSize.SIZE_2X2, label: "2x2 meters" },
-  { value: BoothSize.SIZE_2X3, label: "2x3 meters" },
-  { value: BoothSize.SIZE_3X3, label: "3x3 meters" },
-  { value: BoothSize.SIZE_6X3, label: "6x3 meters" },
-  { value: BoothSize.RAW_SPACE_MIN_18, label: "Raw Space (minimum 18 sqm)" },
-  { value: BoothSize.CUSTOM_SETUP, label: "Custom Setup" },
-] as const;
-
 export const yesNoMaybeOptions = [
   { value: YesNoMaybe.YES, label: "Yes" },
   { value: YesNoMaybe.NO, label: "No" },
   { value: YesNoMaybe.MAYBE, label: "Maybe" },
+] as const;
+
+export const boothSizeOptions = [
+  { value: '2m x 2m', label: "2x2 meters" },
+  { value: '2m x 3m', label: "2x3 meters" },
+  { value: '3m x 3m', label: "3x3 meters" },
+  { value: '6m x 3m', label: "6x3 meters" },
+  { value: 'Raw Space (Minimum 18sqm)', label: "Raw Space (minimum 18 sqm)" },
+  { value: 'custom setup', label: "Custom Setup" },
 ] as const;
 
 export const goalTypeOptions = [
@@ -324,13 +325,13 @@ export interface ExhibitorWithRelations {
   businessRegistrationName?: string | null;
   industrySector: IndustrySector;
   industrySectorOthers?: string | null;
-  companyAddress?: string | null;
-  companyWebsite?: string | null;
-  companyProfile?: string | null;
+  companyAddress: string;
+  companyWebsite: string;
+  companyProfile: string;
 
   // Exhibition Package & Preferences
   participationTypes: ParticipationType[];
-  boothSize?: BoothSize | null;
+  boothSize?: string;
   boothDescription: string;
   launchNewProduct?: YesNoMaybe | null;
   requireDemoArea?: YesNoMaybe | null;
@@ -374,6 +375,7 @@ export interface ExhibitorWithRelations {
       genderOthers?: string | null;
       ageBracket: AgeBracket;
       nationality: string;
+      position: string;
     }>;
   };
 }

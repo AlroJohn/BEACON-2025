@@ -19,11 +19,18 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ExhibitorRegistrationFormData, 
-  confirmIntentOptions 
+import {
+  ExhibitorRegistrationFormData,
+  confirmIntentOptions,
 } from "@/types/exhibitor/registration";
-import { Upload, X, FileText, AlertCircle, CheckCircle2, File } from "lucide-react";
+import {
+  Upload,
+  X,
+  FileText,
+  AlertCircle,
+  CheckCircle2,
+  File,
+} from "lucide-react";
 
 interface ConfirmationNextStepsProps {
   form: UseFormReturn<ExhibitorRegistrationFormData>;
@@ -34,33 +41,52 @@ interface LetterOfIntentUploadProps {
   selectedFile: File | null;
 }
 
-function LetterOfIntentUpload({ onFileSelect, selectedFile }: LetterOfIntentUploadProps) {
+function LetterOfIntentUpload({
+  onFileSelect,
+  selectedFile,
+}: LetterOfIntentUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "uploading" | "success" | "error"
+  >("idle");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const maxFileSize = 10 * 1024 * 1024; // 10MB
   const acceptedTypes = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/gif',
-    'image/bmp',
-    'image/tiff',
-    'image/webp'
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/bmp",
+    "image/tiff",
+    "image/webp",
   ];
 
-  const acceptedExtensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'];
+  const acceptedExtensions = [
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".bmp",
+    ".tiff",
+    ".webp",
+  ];
 
   const validateFile = (file: File): string | null => {
     if (file.size > maxFileSize) {
-      return 'File size must be less than 10MB';
+      return "File size must be less than 10MB";
     }
-    if (!acceptedTypes.includes(file.type) && !acceptedExtensions.some(ext => file.name.toLowerCase().endsWith(ext))) {
-      return 'Please upload a valid document (PDF, DOC, DOCX) or image file';
+    if (
+      !acceptedTypes.includes(file.type) &&
+      !acceptedExtensions.some((ext) => file.name.toLowerCase().endsWith(ext))
+    ) {
+      return "Please upload a valid document (PDF, DOC, DOCX) or image file";
     }
     return null;
   };
@@ -68,19 +94,19 @@ function LetterOfIntentUpload({ onFileSelect, selectedFile }: LetterOfIntentUplo
   const handleFileSelect = (file: File) => {
     const error = validateFile(file);
     if (error) {
-      setUploadStatus('error');
+      setUploadStatus("error");
       return;
     }
 
-    setUploadStatus('uploading');
+    setUploadStatus("uploading");
     onFileSelect(file);
-    setUploadStatus('success');
+    setUploadStatus("success");
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       handleFileSelect(files[0]);
@@ -106,9 +132,9 @@ function LetterOfIntentUpload({ onFileSelect, selectedFile }: LetterOfIntentUplo
 
   const removeFile = () => {
     onFileSelect(null);
-    setUploadStatus('idle');
+    setUploadStatus("idle");
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -117,10 +143,16 @@ function LetterOfIntentUpload({ onFileSelect, selectedFile }: LetterOfIntentUplo
   };
 
   const getFileIcon = (filename: string) => {
-    const extension = filename.toLowerCase().split('.').pop();
-    if (['pdf'].includes(extension || '')) return <FileText className="h-8 w-8 text-red-500" />;
-    if (['doc', 'docx'].includes(extension || '')) return <FileText className="h-8 w-8 text-blue-500" />;
-    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'].includes(extension || '')) {
+    const extension = filename.toLowerCase().split(".").pop();
+    if (["pdf"].includes(extension || ""))
+      return <FileText className="h-8 w-8 text-red-500" />;
+    if (["doc", "docx"].includes(extension || ""))
+      return <FileText className="h-8 w-8 text-blue-500" />;
+    if (
+      ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"].includes(
+        extension || ""
+      )
+    ) {
       return <File className="h-8 w-8 text-green-500" />;
     }
     return <File className="h-8 w-8 text-gray-500" />;
@@ -143,11 +175,16 @@ function LetterOfIntentUpload({ onFileSelect, selectedFile }: LetterOfIntentUplo
           <div
             className={`
               relative border-2 border-dashed rounded-lg p-6 transition-all duration-200 cursor-pointer
-              ${isDragOver 
-                ? 'border-primary bg-primary/5 scale-[1.02]' 
-                : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50'
+              ${
+                isDragOver
+                  ? "border-primary bg-primary/5 scale-[1.02]"
+                  : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
               }
-              ${uploadStatus === 'error' ? 'border-destructive bg-destructive/5' : ''}
+              ${
+                uploadStatus === "error"
+                  ? "border-destructive bg-destructive/5"
+                  : ""
+              }
             `}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
@@ -161,16 +198,16 @@ function LetterOfIntentUpload({ onFileSelect, selectedFile }: LetterOfIntentUplo
               onChange={handleInputChange}
               className="hidden"
             />
-            
+
             <div className="flex flex-col items-center justify-center space-y-3">
-              {uploadStatus === 'uploading' ? (
+              {uploadStatus === "uploading" ? (
                 <>
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
                     <Upload className="h-5 w-5 text-primary" />
                   </div>
                   <p className="text-sm font-medium">Uploading...</p>
                 </>
-              ) : uploadStatus === 'success' && selectedFile ? (
+              ) : uploadStatus === "success" && selectedFile ? (
                 <>
                   <div className="relative">
                     <div className="flex flex-col items-center space-y-2 p-4 bg-background rounded-lg border">
@@ -201,12 +238,14 @@ function LetterOfIntentUpload({ onFileSelect, selectedFile }: LetterOfIntentUplo
                 </>
               ) : (
                 <>
-                  <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
-                    uploadStatus === 'error' 
-                      ? 'bg-destructive/10 text-destructive' 
-                      : 'bg-primary/10 text-primary'
-                  }`}>
-                    {uploadStatus === 'error' ? (
+                  <div
+                    className={`h-12 w-12 rounded-full flex items-center justify-center ${
+                      uploadStatus === "error"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    {uploadStatus === "error" ? (
                       <AlertCircle className="h-6 w-6" />
                     ) : (
                       <Upload className="h-6 w-6" />
@@ -214,7 +253,9 @@ function LetterOfIntentUpload({ onFileSelect, selectedFile }: LetterOfIntentUplo
                   </div>
                   <div className="text-center space-y-1">
                     <p className="text-sm font-medium">
-                      {uploadStatus === 'error' ? 'Upload failed' : 'Drop your letter here, or click to browse'}
+                      {uploadStatus === "error"
+                        ? "Upload failed"
+                        : "Drop your letter here, or click to browse"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       PDF, DOC, DOCX, or image files up to 10MB
@@ -272,13 +313,12 @@ export function ConfirmationNextSteps({ form }: ConfirmationNextStepsProps) {
           name="confirmIntent"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-medium">Confirmation of Intent *</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value}
-              >
+              <FormLabel className="text-base font-medium">
+                Confirmation of Intent *
+              </FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <SelectTrigger className="h-11">
+                  <SelectTrigger className="h-11 w-full">
                     <SelectValue placeholder="Please confirm your participation intent" />
                   </SelectTrigger>
                 </FormControl>
@@ -319,14 +359,16 @@ export function ConfirmationNextSteps({ form }: ConfirmationNextStepsProps) {
           name="additionalComments"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-medium">Additional Comments</FormLabel>
+              <FormLabel className="text-base font-medium">
+                Additional Comments
+              </FormLabel>
               <FormControl>
-                <Textarea 
+                <Textarea
                   placeholder="Any additional information, special requests, or questions you'd like to share with the organizing team"
                   className="min-h-[120px] resize-none"
                   maxLength={1000}
-                  {...field} 
-                  value={field.value || ""} 
+                  {...field}
+                  value={field.value || ""}
                 />
               </FormControl>
               <FormMessage />
@@ -340,24 +382,35 @@ export function ConfirmationNextSteps({ form }: ConfirmationNextStepsProps) {
         {/* Information Notice */}
         <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg text-blue-900 dark:text-blue-100">Next Steps</CardTitle>
+            <CardTitle className="text-lg text-blue-900 dark:text-blue-100">
+              Next Steps
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
               <p className="flex items-start gap-2">
-                <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                <span className="text-blue-600 dark:text-blue-400 mt-0.5">
+                  •
+                </span>
                 You will receive a confirmation email within 24 hours
               </p>
               <p className="flex items-start gap-2">
-                <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
-                Our team will contact you for booth allocation and payment details
+                <span className="text-blue-600 dark:text-blue-400 mt-0.5">
+                  •
+                </span>
+                Our team will contact you for booth allocation and payment
+                details
               </p>
               <p className="flex items-start gap-2">
-                <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                <span className="text-blue-600 dark:text-blue-400 mt-0.5">
+                  •
+                </span>
                 Technical requirements and setup guidelines will be provided
               </p>
               <p className="flex items-start gap-2">
-                <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
+                <span className="text-blue-600 dark:text-blue-400 mt-0.5">
+                  •
+                </span>
                 Marketing collaboration opportunities will be discussed
               </p>
             </div>

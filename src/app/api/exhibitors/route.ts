@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
+import { exhibitorRegistrationSchema } from '@/types/exhibitor/registration';
 
 const prisma = new PrismaClient();
 
@@ -102,89 +103,7 @@ async function uploadFileToSupabase(file: File, userId: string, type: 'logo' | '
 
 
 // Validation schema for exhibitor registration API (aligned with Prisma schema)
-const exhibitorRegistrationSchema = z.object({
-  // Form-only fields (for processing, not stored in any model directly)
-  faceScannedUrl: z.string().min(1, 'Face capture is required'),
 
-  // user_details fields (matches Prisma user_details model)
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  middleName: z.string().optional().nullable(),
-  suffix: z.string().optional().nullable(),
-  preferredName: z.string().optional().nullable(),
-  gender: z.enum(['MALE', 'FEMALE', 'PREFER_NOT_TO_SAY', 'OTHERS']),
-  genderOthers: z.string().optional().nullable(),
-  ageBracket: z.enum(['UNDER_18', 'AGE_18_24', 'AGE_25_34', 'AGE_35_44', 'AGE_45_54', 'AGE_55_ABOVE']),
-  nationality: z.string().min(1, 'Nationality is required'),
-
-  // user_accounts fields (matches Prisma user_accounts model)
-  email: z.string().email('Valid email is required'),
-  mobileNumber: z.string().min(1, 'Mobile number is required'),
-  mailingAddress: z.string().optional().nullable(),
-  landline: z.string().optional().nullable(),
-
-  // exhibitor_registrations fields - Company Information
-  companyName: z.string().min(1, 'Company name is required'),
-  businessRegistrationName: z.string().optional().nullable(),
-  industrySector: z.enum([
-    'SHIPBUILDING_BOATBUILDING',
-    'MARITIME_EQUIPMENT_TECHNOLOGY',
-    'NAVAL_DEFENSE',
-    'PORT_LOGISTICS',
-    'MARINE_TOURISM',
-    'RENEWABLE_GREEN',
-    'FASHION_LIFESTYLE',
-    'EDUCATION_TRAINING',
-    'OTHERS'
-  ]),
-  industrySectorOthers: z.string().optional().nullable(),
-  companyAddress: z.string().optional().nullable(),
-  companyWebsite: z.string().optional().nullable(),
-  companyProfile: z.string().optional().nullable(),
-
-  // Exhibition Package & Preferences
-  participationTypes: z.array(z.enum([
-    'INDOOR_BOOTH',
-    'RAW_SPACE',
-    'IN_WATER_DISPLAY',
-    'BLUE_RUNWAY',
-    'PRODUCT_LAUNCH',
-    'CO_BRANDING'
-  ])).min(1, 'Please select at least one participation type'),
-  boothSize: z.enum([
-    'SIZE_2X2',
-    'SIZE_2X3',
-    'SIZE_3X3',
-    'SIZE_6X3',
-    'RAW_SPACE_MIN_18',
-    'CUSTOM_SETUP'
-  ]).optional().nullable(),
-  boothDescription: z.string().min(1, 'Booth description is required'),
-  launchNewProduct: z.enum(['YES', 'NO', 'MAYBE']).optional().nullable(),
-  requireDemoArea: z.enum(['YES', 'NO', 'MAYBE']).optional().nullable(),
-
-  // Logistics & Marketing Coordination
-  bringLargeEquipment: z.enum(['YES', 'NO', 'MAYBE']).optional().nullable(),
-  haveMarketingCollaterals: z.string().optional().nullable(),
-
-  // Company Objectives & Collaboration
-  goals: z.array(z.enum([
-    'SHOWCASE_PRODUCTS',
-    'MEET_BUYERS',
-    'PROMOTE_BRAND',
-    'LAUNCH_NEW_PRODUCT',
-    'ENGAGE_GOV_AGENCIES',
-    'JOIN_BLUE_ECONOMY',
-    'RECRUIT_TALENT',
-    'OTHERS'
-  ])).min(1, 'Please select at least one goal'),
-  goalsOthers: z.string().optional().nullable(),
-  exploreSponsorship: z.enum(['YES', 'NO', 'MAYBE']).optional().nullable(),
-
-  // Confirmation & Next Steps
-  confirmIntent: z.enum(['YES_RESERVE', 'TENTATIVE', 'NO_EXPLORING']),
-  additionalComments: z.string().optional().nullable(),
-});
 
 // POST - Create new exhibitor registration
 export async function POST(request: NextRequest) {
@@ -240,6 +159,7 @@ export async function POST(request: NextRequest) {
       genderOthers,
       ageBracket,
       nationality,
+      position,
       // user_accounts fields
       email,
       mobileNumber,
@@ -336,6 +256,7 @@ export async function POST(request: NextRequest) {
             genderOthers,
             ageBracket,
             nationality,
+            position,
             faceScannedUrl: null // Will be updated after image upload
           }
         });
@@ -364,6 +285,7 @@ export async function POST(request: NextRequest) {
               genderOthers,
               ageBracket,
               nationality,
+              position,
               faceScannedUrl: null // Will be updated after image upload
             }
           }

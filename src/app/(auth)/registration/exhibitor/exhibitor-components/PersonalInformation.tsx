@@ -148,6 +148,19 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="position"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Job Title/Position*</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your position" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Gender and Age */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -159,7 +172,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
                 <FormLabel>Gender *</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                   </FormControl>
@@ -205,7 +218,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
                 <FormLabel>Age Bracket *</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select age bracket" />
                     </SelectTrigger>
                   </FormControl>

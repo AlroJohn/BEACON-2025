@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
-import { exhibitorRegistrationSchema } from '@/types/exhibitor/registration';
+import { baseExhibitorSchema } from '@/types/exhibitor/registration';
+import { exhibitorOnlySchema, nullIfEmpty, toNullableSet } from '@/types/exhibitor/helper';
 
 const prisma = new PrismaClient();
 
@@ -144,7 +145,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Processed jsonData before validation:', jsonData);
 
-    const validatedData = exhibitorRegistrationSchema.parse(jsonData);
+    const validatedData = baseExhibitorSchema.parse(jsonData);
 
     // Separate data for different models
     const {
@@ -514,10 +515,11 @@ export async function GET(request: NextRequest) {
 }
 
 // PUT - Update exhibitor registration
+// PUT - Update exhibitor registration
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { exhibitorId, ...updateData } = body;
+    const { exhibitorId, ...rawUpdate } = body;
 
     if (!exhibitorId) {
       return NextResponse.json(
@@ -526,13 +528,63 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Validate update data with partial schema
-    const partialSchema = exhibitorRegistrationSchema.partial();
-    const validatedData = partialSchema.parse(updateData);
+    // Validate only fields that belong to exhibitor_registrations
+    const validated = exhibitorOnlySchema.parse(rawUpdate);
+
+    // --- Narrow potential File unions to string/null/undefined (JSON never has File) ---
+    const rawLogo = validated.logoUrl as unknown;
+    const rawLoI = validated.letterOfIntentUrl as unknown;
+
+    const logoUrl: string | null | undefined =
+      rawLogo === null || rawLogo === undefined
+        ? rawLogo
+        : typeof rawLogo === 'string'
+          ? rawLogo
+          : undefined; // ignore if it's not a string/null/undefined
+
+    const letterOfIntentUrl: string | null | undefined =
+      rawLoI === null || rawLoI === undefined
+        ? rawLoI
+        : typeof rawLoI === 'string'
+          ? rawLoI
+          : undefined;
+
+    // Build Prisma-safe update object (only set fields that were provided)
+    const data: Prisma.exhibitor_registrationsUpdateInput = {
+      companyName: validated.companyName,
+      businessRegistrationName: validated.businessRegistrationName,
+      industrySector: validated.industrySector,
+      industrySectorOthers: validated.industrySectorOthers,
+      companyAddress: validated.companyAddress,
+      companyWebsite: validated.companyWebsite, // normalize '' -> null
+      companyProfile: validated.companyProfile,
+
+      // Array fields: use { set: [...] } when provided, or omit to leave unchanged
+      participationTypes: validated.participationTypes
+        ? { set: validated.participationTypes }
+        : undefined,
+
+      boothSize: validated.boothSize,
+      boothDescription: validated.boothDescription,
+      launchNewProduct: validated.launchNewProduct ?? undefined,
+      requireDemoArea: validated.requireDemoArea ?? undefined,
+      bringLargeEquipment: validated.bringLargeEquipment ?? undefined,
+      haveMarketingCollaterals: validated.haveMarketingCollaterals,
+
+      // Nullable string fields: use { set: value } to allow clearing with null/'' 
+      logoUrl: toNullableSet(nullIfEmpty(logoUrl)),
+      letterOfIntentUrl: toNullableSet(nullIfEmpty(letterOfIntentUrl)),
+
+      goals: validated.goals ? { set: validated.goals } : undefined,
+      goalsOthers: validated.goalsOthers,
+      exploreSponsorship: validated.exploreSponsorship ?? undefined,
+      confirmIntent: validated.confirmIntent,
+      additionalComments: validated.additionalComments,
+    };
 
     const updatedExhibitor = await prisma.exhibitor_registrations.update({
       where: { id: exhibitorId },
-      data: validatedData,
+      data,
       include: {
         user: {
           include: {
@@ -566,6 +618,7 @@ export async function PUT(request: NextRequest) {
     await prisma.$disconnect();
   }
 }
+
 
 // DELETE - Remove exhibitor registration
 export async function DELETE(request: NextRequest) {

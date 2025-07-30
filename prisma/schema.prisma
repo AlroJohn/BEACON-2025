@@ -164,15 +164,6 @@ enum ParticipationType {
   CO_BRANDING
 }
 
-enum BoothSize {
-  SIZE_2X2
-  SIZE_2X3
-  SIZE_3X3
-  SIZE_6X3
-  RAW_SPACE_MIN_18
-  CUSTOM_SETUP
-}
-
 enum YesNoMaybe {
   YES
   NO
@@ -271,6 +262,7 @@ model Users {
   CodeDistribution       CodeDistribution[]
   ExhibitorRegistrations exhibitor_registrations[]
   sponsorship_interests  sponsorship_interests[]
+  sponsor_registrations  sponsor_registrations[]
 
   @@map("users")
 }
@@ -302,6 +294,7 @@ model user_details {
   suffix         String?
   preferredName  String?
   faceScannedUrl String?
+  position       String?
   gender         Gender // there will be others input field genderOthers
   genderOthers   String?
   ageBracket     AgeBracket
@@ -310,7 +303,10 @@ model user_details {
   @@map("user_details")
 }
 
-// BEACON 2025 Registration Models
+//===========================================================================================
+// BEACON 2025 Conference-specific Registration Model
+//===========================================================================================
+
 model Visitors {
   id             String   @id @default(uuid())
   userId         String?
@@ -351,8 +347,6 @@ model Visitors {
   @@map("visitors")
 }
 
-// BEACON 2025 Conference-specific Registration Model
-
 model Conference {
   id        String   @id @default(uuid())
   userId    String
@@ -387,7 +381,102 @@ model Conference {
   @@map("conferences")
 }
 
-// Conference Payment Model - ONLY for Conference registrations
+model exhibitor_registrations {
+  id         String   @id @default(cuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // 👇 Foreign key relation to Users
+  userId String
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // 🔷 SECTION 1: Company Information
+  companyName              String
+  businessRegistrationName String
+  industrySector           IndustrySector
+  industrySectorOthers     String?
+  companyAddress           String
+  companyWebsite           String
+  companyProfile           String //brief description about the company (Who you are & what you do)
+  //Section 2 is the user_details
+  //section 3 is the user_accounts
+
+  // 🔷 SECTION 4: Exhibition Package & Preferences
+  participationTypes ParticipationType[]
+  boothSize          String //2m x 2m || 2m x 3m || 3m x 3m || 6m x 3m || Raw Space (Minimum 18sqm) || Inquire for Custom Setups
+  boothDescription   String
+  launchNewProduct   YesNoMaybe?
+  requireDemoArea    YesNoMaybe?
+
+  // 🔷 SECTION 5: Logistics & Marketing Coordination
+  bringLargeEquipment      YesNoMaybe?
+  haveMarketingCollaterals String? //Yes have collaterals, No, need assistance, working on it
+  logoUrl                  String?
+
+  // 🔷 SECTION 7: Company Objectives & Collaboration
+  goals              GoalType[]
+  goalsOthers        String?
+  exploreSponsorship YesNoMaybe?
+
+  // 🔷 SECTION 7: Confirmation & Next Steps
+  confirmIntent      ConfirmIntent
+  letterOfIntentUrl  String?
+  additionalComments String?
+
+  @@map("exhibitor_registrations")
+}
+
+// edited exhibitor 
+
+model sponsor_registrations {
+  id         String   @id @default(cuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // 👇 Link to the account holder/contact via Users
+  // Use related user_details (name) and user_accounts (email/mobile) for contact info
+  userId String
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // 🔷 SECTION 1: Company & Details (Contact person details are NOT stored here)
+  companyName              String
+  businessRegistrationName String?
+  industrySector           IndustrySector
+  industrySectorOthers     String?
+  companyAddress           String?
+  companyWebsite           String?
+  companyProfile           String?
+
+  // 🔷 SECTION 3: Sponsorship Interest
+  sponsorshipCategories SponsorshipCategory[] // multi-select
+  targetAudience        SponsorshipAudience[] // multi-select
+  targetAudienceOthers  String?
+
+  // 🔷 SECTION 4: Activation Preferences
+  activationPreferences String //the options are below
+  //Speaking Slot / Product Presentation
+  // Logo Visibility on Stage / Program / Banners
+  // Digital Media Promotions (FB, IG, Website, Email)
+  // Booth / Product Display
+  // Inclusion in Press Materials
+  // VIP Networking Access
+  // Co-branded Activities / Competitions
+  // Other: _______________ (if other enter desire value)
+  activationOthers      String?
+  launchProduct         YesNoMaybe? // Yes / No / Maybe
+
+  // 🔷 SECTION 5: Budget & Next Steps
+  budgetRange        SponsorshipBudgetRange
+  customizedProposal ProposalOption // Yes / No / Schedule Meeting
+  uploadLogoUrl      String? // optional file path
+  additionalComments String?
+
+  @@map("sponsor_registrations")
+}
+
+//===========================================================================================
+//***********************OTHER MODELS
+//===========================================================================================
 model ConferencePayment {
   id           String   @id @default(uuid())
   conferenceId String   @unique // One payment per conference registration
@@ -474,51 +563,6 @@ model CodeDistribution {
   user Users? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("code_distribution")
-}
-
-model exhibitor_registrations {
-  id         String   @id @default(cuid())
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  // 👇 Foreign key relation to Users
-  userId String
-  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  // 🔷 SECTION 1: Company Information
-  companyName              String
-  businessRegistrationName String?
-  industrySector           IndustrySector
-  industrySectorOthers     String?
-  companyAddress           String?
-  companyWebsite           String?
-  companyProfile           String?
-  //Section 2 is the user_details
-  //section 3 is the user_accounts
-
-  // 🔷 SECTION 4: Exhibition Package & Preferences
-  participationTypes ParticipationType[]
-  boothSize          BoothSize?
-  boothDescription   String
-  launchNewProduct   YesNoMaybe?
-  requireDemoArea    YesNoMaybe?
-
-  // 🔷 SECTION 5: Logistics & Marketing Coordination
-  bringLargeEquipment      YesNoMaybe?
-  haveMarketingCollaterals String? //Yes have collaterals, No, need assistance, working on it
-  logoUrl                  String?
-
-  // 🔷 SECTION 7: Company Objectives & Collaboration
-  goals              GoalType[]
-  goalsOthers        String?
-  exploreSponsorship YesNoMaybe?
-
-  // 🔷 SECTION 7: Confirmation & Next Steps
-  confirmIntent      ConfirmIntent
-  letterOfIntentUrl  String?
-  additionalComments String?
-
-  @@map("exhibitor_registrations")
 }
 
 model sponsorship_interests {

@@ -30,7 +30,7 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
+      <div className="space-y-4 pr-1">
         {/* Company Name */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
@@ -68,6 +68,7 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
 
         {/* Industry Sector */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Show Others field if OTHERS is selected */}
           <FormField
             control={form.control}
             name="industrySector"
@@ -92,8 +93,6 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
               </FormItem>
             )}
           />
-
-          {/* Show Others field if OTHERS is selected */}
           {industrySector === "OTHERS" && (
             <FormField
               control={form.control}

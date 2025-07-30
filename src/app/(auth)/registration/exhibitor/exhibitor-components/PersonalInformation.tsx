@@ -64,7 +64,7 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
         </Card>
 
         {/* Name Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="firstName"
@@ -110,7 +110,11 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
               </FormItem>
             )}
           />
+        </div>
 
+        {/* Preferred Name */}
+
+        <div className="gap-4 grid md:grid-cols-3 grid-cols-1">
           <FormField
             control={form.control}
             name="suffix"
@@ -128,42 +132,40 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="preferredName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preferred Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Name you'd like to be called"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="position"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Job Title/Position*</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your position" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
-        {/* Preferred Name */}
-        <FormField
-          control={form.control}
-          name="preferredName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Preferred Name</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Name you'd like to be called"
-                  {...field}
-                  value={field.value || ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="position"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Job Title/Position*</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your position" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         {/* Gender and Age */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="gender"
@@ -234,25 +236,25 @@ export function PersonalInformation({ form }: PersonalInformationProps) {
               </FormItem>
             )}
           />
-        </div>
 
-        {/* Nationality */}
-        <FormField
-          control={form.control}
-          name="nationality"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nationality *</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="e.g., Filipino, American, Japanese"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          {/* Nationality */}
+          <FormField
+            control={form.control}
+            name="nationality"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nationality *</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="e.g., Filipino, American, Japanese"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </div>
     </div>
   );

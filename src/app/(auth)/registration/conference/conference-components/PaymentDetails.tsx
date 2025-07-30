@@ -219,12 +219,16 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-center">
-                <div className="relative max-w-xs">
+                <div className="relative max-w-xs flex flex-col gap-4 justify-center items-center">
                   <img
                     src="/images/instapay.jpg"
                     alt="InstaPay QR Code"
                     className="w-full h-auto rounded-lg border border-blue-200 shadow-sm"
                   />
+                  <p className="lg:text-2xl text-xl">
+                    <span className="uppercase text-red-500">GCASH No.</span>{" "}
+                    09369118818
+                  </p>
                 </div>
               </div>
               <Alert className="border-blue-300 ">

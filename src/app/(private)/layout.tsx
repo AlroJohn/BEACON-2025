@@ -18,26 +18,28 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const checkAuth = () => {
-      console.log('🔍 AuthGuard: Checking authentication...', {
+      console.log("🔍 AuthGuard: Checking authentication...", {
         isAuthenticated,
         isSessionValid: isSessionValid(),
-        hasRedirected
+        hasRedirected,
       });
 
       // Give a small delay to allow Zustand to rehydrate from localStorage
       setTimeout(() => {
         const sessionValid = isSessionValid();
-        
+
         // If session is invalid, clear everything and redirect
         if (!isAuthenticated || !sessionValid) {
-          console.log('❌ AuthGuard: Authentication failed, redirecting to login');
-          
+          console.log(
+            "❌ AuthGuard: Authentication failed, redirecting to login"
+          );
+
           // Ensure we clear the session completely
           if (isAuthenticated && !sessionValid) {
-            console.log('🔒 AuthGuard: Clearing expired session');
+            console.log("🔒 AuthGuard: Clearing expired session");
             clearSession();
           }
-          
+
           // Prevent multiple redirects
           if (!hasRedirected) {
             setHasRedirected(true);
@@ -45,7 +47,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
             router.push(`/login?returnUrl=${returnUrl}`);
           }
         } else {
-          console.log('✅ AuthGuard: Authentication valid');
+          console.log("✅ AuthGuard: Authentication valid");
           setIsLoading(false);
         }
       }, 150); // Slightly longer delay to ensure Zustand hydration
@@ -61,7 +63,9 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin" />
           <p className="text-sm text-muted-foreground">
-            {hasRedirected ? 'Redirecting to login...' : 'Verifying authentication...'}
+            {hasRedirected
+              ? "Redirecting to login..."
+              : "Verifying authentication..."}
           </p>
         </div>
       </div>
@@ -78,7 +82,7 @@ export default function AdminLayout({
 }) {
   return (
     <AuthGuard>
-      <SidebarProvider>
+      <SidebarProvider className="flex flex-row overflow-hidden w-full h-full">
         <AppSidebar />
         <div className="flex h-screen w-full flex-col bg-muted">
           <PrivateHeader />

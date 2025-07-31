@@ -15,53 +15,51 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import {
   Loader2,
-  Building2,
+  HandHeart,
   LogOut,
   AlertCircle,
   Wifi,
   WifiOff,
+  DollarSign,
 } from "lucide-react";
 import { useAdminStore } from "@/stores/adminStore";
 import {
-  useAdminExhibitors,
-  useAdminExhibitorsRealtime,
-  useDeleteExhibitor,
-} from "@/hooks/tanstasck-query/useAdminExhibitors";
+  useAdminSponsors,
+  useAdminSponsorsRealtime,
+  useDeleteSponsor,
+} from "@/hooks/tanstasck-query/useAdminSponsors";
 import { useAdminLogout } from "@/hooks/tanstasck-query/useAdminAuth";
-import { ExhibitorsDataTable } from "@/components/admin/exhibitors-data-table";
+import { SponsorsDataTable } from "@/components/admin/sponsors-data-table";
 
-export default function ExhibitorsDashboard() {
+export default function SponsorsDashboard() {
   const router = useRouter();
   const { currentAdmin } = useAdminStore();
   const logout = useAdminLogout();
 
   // Use the realtime-enabled hook
   const {
-    data: exhibitorsData,
+    data: sponsorsData,
     isLoading,
     error,
     refetch,
     isRealtimeEnabled,
     realtimeStatus,
     isFallbackMode,
-  } = useAdminExhibitorsRealtime();
-  const deleteExhibitor = useDeleteExhibitor();
+  } = useAdminSponsorsRealtime();
+  const deleteSponsor = useDeleteSponsor();
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
-  const handleDeleteExhibitor = (
-    exhibitorId: string,
-    exhibitorName: string
-  ) => {
-    deleteExhibitor.mutate(exhibitorId, {
+  const handleDeleteSponsor = (sponsorId: string, sponsorName: string) => {
+    deleteSponsor.mutate(sponsorId, {
       onSuccess: () => {
-        toast.success(`Exhibitor ${exhibitorName} deleted successfully`);
+        toast.success(`Sponsor ${sponsorName} deleted successfully`);
       },
       onError: (error) => {
-        toast.error(`Failed to delete exhibitor: ${error.message}`);
+        toast.error(`Failed to delete sponsor: ${error.message}`);
       },
     });
   };
@@ -71,7 +69,7 @@ export default function ExhibitorsDashboard() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-          <p className="text-muted-foreground">Loading exhibitors...</p>
+          <p className="text-muted-foreground">Loading sponsors...</p>
         </div>
       </div>
     );
@@ -84,7 +82,7 @@ export default function ExhibitorsDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
               <AlertCircle className="h-5 w-5" />
-              Error Loading Exhibitors
+              Error Loading Sponsors
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -93,7 +91,7 @@ export default function ExhibitorsDashboard() {
               <AlertDescription>
                 {error instanceof Error
                   ? error.message
-                  : "Failed to load exhibitors data"}
+                  : "Failed to load sponsors data"}
               </AlertDescription>
             </Alert>
             <div className="flex gap-2">
@@ -115,25 +113,34 @@ export default function ExhibitorsDashboard() {
     );
   }
 
-  const exhibitors = exhibitorsData?.data || [];
-  const totalCount = exhibitorsData?.count || 0;
+  const sponsors = sponsorsData?.data || [];
+  const totalCount = sponsorsData?.count || 0;
+
+  // Calculate budget distribution
+  const budgetRanges = [
+    { key: "RANGE_50K_100K", label: "₱50K-₱100K", color: "bg-blue-500" },
+    { key: "RANGE_100K_250K", label: "₱100K-₱250K", color: "bg-green-500" },
+    { key: "RANGE_250K_500K", label: "₱250K-₱500K", color: "bg-yellow-500" },
+    { key: "RANGE_500K_1M", label: "₱500K-₱1M", color: "bg-orange-500" },
+    { key: "RANGE_1M_PLUS", label: "₱1M+", color: "bg-red-500" },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-6 px-4">
-        {/* Exhibitors Data Table */}
+        {/* Sponsors Data Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Exhibitor Registrations</CardTitle>
+            <CardTitle>Sponsor Registrations</CardTitle>
             <CardDescription>
-              View and manage all exhibitor registrations for BEACON 2025
+              View and manage all sponsor registrations for BEACON 2025
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ExhibitorsDataTable
-              data={exhibitors}
-              onDeleteExhibitor={handleDeleteExhibitor}
-              isDeleting={deleteExhibitor.isPending}
+            <SponsorsDataTable
+              data={sponsors}
+              onDeleteSponsor={handleDeleteSponsor}
+              isDeleting={deleteSponsor.isPending}
               currentAdminStatus={
                 currentAdmin?.status as "SUPERADMIN" | "ADMIN"
               }

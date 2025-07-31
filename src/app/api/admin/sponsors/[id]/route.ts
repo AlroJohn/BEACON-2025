@@ -49,7 +49,7 @@ async function verifyAdminToken(authHeader: string | null) {
 // DELETE - Remove sponsor registration (SUPERADMIN only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify admin authentication
@@ -64,7 +64,7 @@ export async function DELETE(
       );
     }
 
-    const sponsorId = params.id;
+    const sponsorId = (await params).id;
 
     if (!sponsorId) {
       return NextResponse.json(
@@ -105,7 +105,7 @@ export async function DELETE(
 
   } catch (error) {
     console.error('Error deleting sponsor registration:', error);
-    
+
     if (error instanceof Error && error.message.includes('authorization')) {
       return NextResponse.json(
         { error: error.message },

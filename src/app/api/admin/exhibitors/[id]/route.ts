@@ -49,7 +49,7 @@ async function verifyAdminToken(authHeader: string | null) {
 // DELETE - Remove exhibitor registration (SUPERADMIN only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify admin authentication
@@ -64,7 +64,7 @@ export async function DELETE(
       );
     }
 
-    const exhibitorId = params.id;
+    const exhibitorId = (await params).id;
 
     if (!exhibitorId) {
       return NextResponse.json(
@@ -105,7 +105,7 @@ export async function DELETE(
 
   } catch (error) {
     console.error('Error deleting exhibitor registration:', error);
-    
+
     if (error instanceof Error && error.message.includes('authorization')) {
       return NextResponse.json(
         { error: error.message },

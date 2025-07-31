@@ -144,18 +144,25 @@ export function ExhibitorsDataTable({
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
+      // Personal Info - Hide most details
       middleName: false,
       suffix: false,
       gender: false,
       ageBracket: false,
       nationality: false,
       position: false,
+      // Contact Info - Hide additional contact details
+      mobile: false,
       landline: false,
       mailingAddress: false,
+      // Company Info - Hide detailed company info
       businessRegistrationName: false,
       companyAddress: false,
       companyWebsite: false,
       companyProfile: false,
+      // Hide detailed exhibition info - show only key columns
+      industry: false,
+      participationTypes: false,
       boothDescription: false,
       launchNewProduct: false,
       requireDemoArea: false,
@@ -294,7 +301,7 @@ export function ExhibitorsDataTable({
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm font-medium">
+        <div className="text-sm font-medium max-w-[150px] truncate">
           {row.original.companyInfo.companyName}
         </div>
       ),
@@ -316,7 +323,7 @@ export function ExhibitorsDataTable({
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm">{row.original.contactInfo.email}</div>
+        <div className="text-sm max-w-[180px] truncate">{row.original.contactInfo.email}</div>
       ),
     },
     {
@@ -393,7 +400,7 @@ export function ExhibitorsDataTable({
       id: "participationTypes",
       header: "Participation",
       cell: ({ row }) => (
-        <div className="text-sm max-w-xs truncate">
+        <div className="text-sm max-w-[200px] truncate">
           {formatArrayField(row.original.exhibitionInfo.participationTypes)}
         </div>
       ),
@@ -551,7 +558,7 @@ export function ExhibitorsDataTable({
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-x-auto">
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter exhibitors..."

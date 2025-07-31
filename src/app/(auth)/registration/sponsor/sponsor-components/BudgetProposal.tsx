@@ -64,64 +64,67 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        {/* Budget Range */}
-        <FormField
-          control={form.control}
-          name="budgetRange"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>1. Sponsorship Budget Range *</FormLabel>
-              <p className="text-sm text-muted-foreground mb-3">
-                What is your estimated budget range for this sponsorship
-                opportunity?
-              </p>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select budget range" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {budgetRangeOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Customized Proposal */}
-        <FormField
-          control={form.control}
-          name="customizedProposal"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>2. Customized Sponsorship Proposal *</FormLabel>
-              <p className="text-sm text-muted-foreground mb-3">
-                Would you like to receive a customized sponsorship proposal?
-              </p>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your preference" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {proposalOptionOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid md:grid-cols-2 grid-cols-1">
+          {/* Budget Range */}
+          <FormField
+            control={form.control}
+            name="budgetRange"
+            render={({ field }) => (
+              <FormItem className="col-span-1">
+                <FormLabel>1. Sponsorship Budget Range *</FormLabel>
+                <p className="text-sm text-muted-foreground mb-3">
+                  What is your estimated budget range for this sponsorship
+                  opportunity?
+                </p>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full overflow-hidden">
+                      <SelectValue placeholder="Select budget range" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {budgetRangeOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid md:grid-cols-2 grid-cols-1">
+          {/* Customized Proposal */}
+          <FormField
+            control={form.control}
+            name="customizedProposal"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>2. Customized Sponsorship Proposal *</FormLabel>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Would you like to receive a customized sponsorship proposal?
+                </p>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full overflow-hidden">
+                      <SelectValue placeholder="Select your preference" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {proposalOptionOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Logo Upload */}
         <div className="space-y-3">

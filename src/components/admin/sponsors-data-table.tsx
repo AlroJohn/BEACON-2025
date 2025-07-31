@@ -139,18 +139,25 @@ export function SponsorsDataTable({
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
+      // Personal Info - Hide most details
       middleName: false,
       suffix: false,
       gender: false,
       ageBracket: false,
       nationality: false,
       position: false,
+      // Contact Info - Hide additional contact details
       landline: false,
       mailingAddress: false,
+      // Company Info - Hide detailed company info
       businessRegistrationName: false,
       companyAddress: false,
       companyWebsite: false,
       companyProfile: false,
+      // Hide detailed sponsorship info - show only key columns
+      industry: false,
+      budgetRange: false,
+      sponsorshipCategories: false,
       targetAudience: false,
       targetAudienceOthers: false,
       activationPreferences: false,
@@ -298,7 +305,7 @@ export function SponsorsDataTable({
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm font-medium">
+        <div className="text-sm font-medium max-w-[150px] truncate">
           {row.original.companyInfo.companyName}
         </div>
       ),
@@ -320,7 +327,9 @@ export function SponsorsDataTable({
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm">{row.original.contactInfo.email}</div>
+        <div className="text-sm max-w-[180px] truncate">
+          {row.original.contactInfo.email}
+        </div>
       ),
     },
     {
@@ -375,7 +384,7 @@ export function SponsorsDataTable({
       id: "sponsorshipCategories",
       header: "Sponsorship Categories",
       cell: ({ row }) => (
-        <div className="text-sm max-w-xs truncate">
+        <div className="text-sm max-w-[200px] truncate">
           {formatArrayField(row.original.sponsorshipInfo.sponsorshipCategories)}
         </div>
       ),

@@ -66,6 +66,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import VisitorRegistrationDialog from "@/components/reuseable/page-components/view-visitor-details";
+import { useAdminVisitorsRealtime } from "@/hooks/tanstasck-query/useAdminVisitors";
 
 // Types
 export interface VisitorData {
@@ -137,6 +138,12 @@ export function VisitorsDataTable({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const {
+    data: visitorsData,
+
+    refetch,
+  } = useAdminVisitorsRealtime();
+
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
       middleName: false,
@@ -680,11 +687,18 @@ export function VisitorsDataTable({
           className="max-w-sm"
         />
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
+          <div className="w-full flex justify-end items-center">
+            <div className="flex gap-4">
+              <Button variant="outline" onClick={() => refetch()}>
+                Refresh
+              </Button>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-auto">
+                  Columns <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+            </div>
+          </div>
           <DropdownMenuContent align="end" className="max-h-56">
             {table
               .getAllColumns()

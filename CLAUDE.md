@@ -213,9 +213,13 @@ api/
 ```
 
 ### Linting & Code Quality
-- ESLint configured but disabled by default
-- TypeScript strict mode enforced
+- ESLint configured but disabled by default (`npm run lint`)
+- TypeScript strict mode enforced with ES2017 target
 - Prisma client regeneration on build and install
+
+### Testing & Quality Assurance
+- No automated test suite currently configured
+- Quality checks rely on TypeScript strict mode and ESLint
 
 ## Email System Architecture
 
@@ -253,3 +257,20 @@ api/
 - **Query Invalidation**: Remove immediate invalidation from payment mutations to prevent modal closing
 - **Global Modal State**: Keep modal state outside table render cycle for persistence
 - **Realtime Compatibility**: Admin tables work with Supabase realtime without disrupting user interactions
+
+## Environment Configuration
+
+### Required Environment Variables
+- `DATABASE_URL` - Supabase PostgreSQL database connection string
+- `DIRECT_URL` - Direct database connection for migrations and seeding
+- `SENDGRID_API_KEY` - SendGrid API key for email notifications
+- `NEXT_PUBLIC_SUPABASE_URL` - Public Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous/public API key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key for server-side operations
+
+### Development Setup
+1. Install dependencies: `npm install`
+2. Set up environment variables in `.env.local`
+3. Start Supabase local development: `npx supabase start` (optional)
+4. Push database schema: `npx prisma db push`
+5. Start development server: `npm run dev`

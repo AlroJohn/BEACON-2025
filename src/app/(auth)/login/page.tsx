@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Shield } from "lucide-react";
 import { useAdminLogin } from "@/hooks/tanstasck-query/useAdminAuth";
 import { useAdminStore } from "@/stores/adminStore";
+import { ModeToggle } from "@/components/reuseable/page-components/ModeToggle";
 
 function AdminLoginForm() {
   const [username, setUsername] = useState("");
@@ -95,7 +96,10 @@ function AdminLoginForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md relative ">
+        <div className="absolute top-2 right-2">
+          <ModeToggle />
+        </div>
         <CardHeader className="space-y-1 text-center">
           <div className="flex items-center justify-center mb-4">
             <Shield className="h-12 w-12 text-blue-600" />

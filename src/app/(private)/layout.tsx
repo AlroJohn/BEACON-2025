@@ -82,7 +82,7 @@ export default function AdminLayout({
 }) {
   return (
     <AuthGuard>
-      <SidebarProvider className="flex flex-row overflow-hidden w-full h-full">
+      <SidebarProvider className="flex flex-row w-full h-full">
         <AppSidebar />
         <div className="flex h-screen w-full flex-col bg-muted">
           <PrivateHeader />

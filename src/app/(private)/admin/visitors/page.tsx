@@ -27,12 +27,19 @@ export default function VisitorsDashboard() {
   const router = useRouter();
   const { currentAdmin } = useAdminStore();
   const logout = useAdminLogout();
-  
+
   // Use the realtime-enabled hook
-  const { data: visitorsData, isLoading, error, refetch, isRealtimeEnabled, realtimeStatus, isFallbackMode } = useAdminVisitorsRealtime();
+  const {
+    data: visitorsData,
+    isLoading,
+    error,
+    refetch,
+    isRealtimeEnabled,
+    isFallbackMode,
+  } = useAdminVisitorsRealtime();
   const deleteVisitor = useDeleteVisitor();
 
-// Authentication is now handled by the layout, so we don't need these checks here
+  // Authentication is now handled by the layout, so we don't need these checks here
 
   const handleLogout = () => {
     logout();
@@ -50,7 +57,7 @@ export default function VisitorsDashboard() {
     });
   };
 
-// No need to check authentication here since layout handles it
+  // No need to check authentication here since layout handles it
 
   return (
     <div className="max-w-7xl mx-auto p-4">
@@ -61,25 +68,26 @@ export default function VisitorsDashboard() {
             Registered Visitors
             {(isRealtimeEnabled || isFallbackMode) && (
               <div className="flex items-center gap-2 ml-auto">
-                <div className={`h-2 w-2 rounded-full ${
-                  isRealtimeEnabled 
-                    ? 'bg-green-500 animate-pulse' 
-                    : 'bg-yellow-500 animate-ping'
-                }`}></div>
+                <div
+                  className={`h-2 w-2 rounded-full ${
+                    isRealtimeEnabled
+                      ? "bg-green-500 animate-pulse"
+                      : "bg-yellow-500 animate-ping"
+                  }`}
+                ></div>
                 <span className="text-sm text-muted-foreground">
-                  {isRealtimeEnabled ? 'Live' : 'Polling'}
+                  {isRealtimeEnabled ? "Live" : "Polling"}
                 </span>
               </div>
             )}
           </CardTitle>
           <CardDescription>
             All visitor registrations for BEACON 2025 event
-            {isRealtimeEnabled && (
+            {/* {isRealtimeEnabled && (
               <span className="text-green-600 ml-2">
                 • Real-time updates enabled
               </span>
-            )}
-       
+            )} */}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -109,30 +117,6 @@ export default function VisitorsDashboard() {
 
           {visitorsData && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Total Visitors:{" "}
-                    <span className="font-semibold">{visitorsData.count}</span>
-                  </p>
-                  {isRealtimeEnabled && (
-                    <p className="text-sm text-green-600">
-                      ⚡ Realtime Active
-                    </p>
-                  )}
-                  {isFallbackMode && (
-                    <p className="text-sm text-yellow-600">
-                      🔄 Polling Mode (Status: {realtimeStatus})
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => refetch()}>
-                    Refresh
-                  </Button>
-                </div>
-              </div>
-
               <VisitorsDataTable
                 data={visitorsData.data}
                 onDeleteVisitor={handleDeleteVisitor}

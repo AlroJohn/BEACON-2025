@@ -8,8 +8,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SponsorRegistrationFormData, industrySectorOptions } from "@/types/sponsors/registration";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  SponsorRegistrationFormData,
+  industrySectorOptions,
+} from "@/types/sponsors/registration";
 
 interface CompanyInformationProps {
   form: UseFormReturn<SponsorRegistrationFormData>;
@@ -21,42 +30,46 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        {/* Company Name */}
-        <FormField
-          control={form.control}
-          name="companyName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>1. Company/Organization Name *</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter your company or organization name"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Company Name */}
+          <FormField
+            control={form.control}
+            name="companyName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>1. Company/Organization Name *</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter your company or organization name"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Business Registration Name */}
-        <FormField
-          control={form.control}
-          name="businessRegistrationName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>2. Registered Business Name (if different)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter registered business name (optional)"
-                  {...field}
-                  value={field.value || ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          {/* Business Registration Name */}
+          <FormField
+            control={form.control}
+            name="businessRegistrationName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  2. Registered Business Name (if different)
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter registered business name (optional)"
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Industry Sector */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -68,7 +81,7 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
                 <FormLabel>3. Industry Sector *</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full overflow-hidden">
                       <SelectValue placeholder="Select industry sector" />
                     </SelectTrigger>
                   </FormControl>
@@ -85,13 +98,32 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
             )}
           />
 
+          {/* Company Website */}
+          <FormField
+            control={form.control}
+            name="companyWebsite"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>5. Company Website</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://www.yourcompany.com"
+                    type="url"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* Industry Sector Others */}
           {industrySector === "OTHERS" && (
             <FormField
               control={form.control}
               name="industrySectorOthers"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="col-span-2">
                   <FormLabel>Please specify *</FormLabel>
                   <FormControl>
                     <Input
@@ -118,25 +150,6 @@ export function CompanyInformation({ form }: CompanyInformationProps) {
                 <Textarea
                   placeholder="Enter complete company address"
                   className="min-h-[80px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Company Website */}
-        <FormField
-          control={form.control}
-          name="companyWebsite"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>5. Company Website</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="https://www.yourcompany.com"
-                  type="url"
                   {...field}
                 />
               </FormControl>

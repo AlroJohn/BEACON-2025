@@ -19,83 +19,84 @@ interface ContactDetailsProps {
 
 export function ContactDetails({ form }: ContactDetailsProps) {
   const email = form.watch("email");
-  const { data: emailCheck, isLoading: emailLoading } =
-    useEmailValidation(email, 'sponsor');
+  const { data: emailCheck, isLoading: emailLoading } = useEmailValidation(
+    email,
+    "sponsor"
+  );
 
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        {/* Email */}
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <FormLabel className="flex items-center gap-2">
-                  1. Email Address *
-                </FormLabel>
-              </div>
+        {/* Phone Numbers */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+          {/* Email */}
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <FormLabel className="flex items-center gap-2">
+                    1. Email Address *
+                  </FormLabel>
+                </div>
 
-              <div className="relative">
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="email"
-                    placeholder="your.email@company.com"
-                    className={`text-base pr-10 ${
-                      emailCheck?.exists
-                        ? "border-red-500 focus-visible:ring-red-500"
-                        : email &&
-                          email.includes("@") &&
-                          !emailCheck?.exists &&
-                          !emailLoading
-                        ? "border-green-500 focus-visible:ring-green-500"
-                        : ""
-                    }`}
-                  />
-                </FormControl>
-                {email && email.includes("@") && email.length > 5 && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    {emailLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-                    ) : emailCheck?.exists ? (
-                      <XCircle className="h-4 w-4 text-red-500" />
-                    ) : (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    )}
-                  </div>
-                )}
-              </div>
+                <div className="relative">
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      placeholder="your.email@company.com"
+                      className={`text-base pr-10 ${
+                        emailCheck?.exists
+                          ? "border-red-500 focus-visible:ring-red-500"
+                          : email &&
+                            email.includes("@") &&
+                            !emailCheck?.exists &&
+                            !emailLoading
+                          ? "border-green-500 focus-visible:ring-green-500"
+                          : ""
+                      }`}
+                    />
+                  </FormControl>
+                  {email && email.includes("@") && email.length > 5 && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      {emailLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                      ) : emailCheck?.exists ? (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      )}
+                    </div>
+                  )}
+                </div>
 
-              {emailCheck?.exists && (
-                <Alert variant="destructive" className="py-2 bg-background">
-                  <XCircle className="h-4 w-4" />
-                  <AlertDescription className="text-sm">
-                    This email is already registered for sponsor registration.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {email &&
-                email.includes("@") &&
-                email.length > 5 &&
-                !emailCheck?.exists &&
-                !emailLoading && (
-                  <Alert className="py-2 border-green-200 bg-green-50">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-sm text-green-600">
-                      Email is available!
+                {emailCheck?.exists && (
+                  <Alert variant="destructive" className="py-2 bg-background">
+                    <XCircle className="h-4 w-4" />
+                    <AlertDescription className="text-sm">
+                      This email is already registered for sponsor registration.
                     </AlertDescription>
                   </Alert>
                 )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
-        {/* Phone Numbers */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {email &&
+                  email.includes("@") &&
+                  email.length > 5 &&
+                  !emailCheck?.exists &&
+                  !emailLoading && (
+                    <Alert className="py-2 border-green-200 bg-green-50">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <AlertDescription className="text-sm text-green-600">
+                        Email is available!
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="mobileNumber"

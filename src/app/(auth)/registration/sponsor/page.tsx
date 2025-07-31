@@ -82,7 +82,7 @@ export default function SponsorRegistrationPage() {
   const sponsorshipCategories = form.watch("sponsorshipCategories");
   const targetAudience = form.watch("targetAudience");
   const faceScannedUrl = form.watch("faceScannedUrl");
-  const { data: emailCheck } = useEmailValidation(email, 'sponsor');
+  const { data: emailCheck } = useEmailValidation(email, "sponsor");
 
   // Function to calculate number of vertical lines based on content container height
   const calculateLineCount = useCallback(
@@ -418,7 +418,8 @@ export default function SponsorRegistrationPage() {
             <CardDescription className="">
               <div className="text-accent-foreground">
                 <p className="font-semibold">
-                  Official Sponsor Registration Form – Partner with Maritime Leaders
+                  Official Sponsor Registration Form – Partner with Maritime
+                  Leaders
                 </p>
                 <p>
                   September 29 – October 1, 2025 | SMX Convention Center, MOA
@@ -428,9 +429,9 @@ export default function SponsorRegistrationPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden flex flex-col p-0">
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto pr-1">
               <Form {...form}>
-                <div className="relative lg:pr-0 pr-1">
+                <div className="relative lg:pr-0 ">
                   {isSubmitting && (
                     <div className="fixed inset-0 bg-background/50 backdrop-blur-sm z-40 flex items-center justify-center">
                       <div className="text-center space-y-2">
@@ -617,14 +618,12 @@ export default function SponsorRegistrationPage() {
                           width="24"
                           height="24"
                         />
-                        {Array.from({ length: budgetLineCount }).map(
-                          (_, i) => (
-                            <span
-                              key={i}
-                              className="border-l-2 border-c1 h-2"
-                            ></span>
-                          )
-                        )}
+                        {Array.from({ length: budgetLineCount }).map((_, i) => (
+                          <span
+                            key={i}
+                            className="border-l-2 border-c1 h-2"
+                          ></span>
+                        ))}
                       </div>
                       <div className="flex-1 flex flex-col lg:mt-3">
                         <h1 className="text-lg font-semibold">
@@ -648,14 +647,12 @@ export default function SponsorRegistrationPage() {
                           width="24"
                           height="24"
                         />
-                        {Array.from({ length: reviewLineCount }).map(
-                          (_, i) => (
-                            <span
-                              key={i}
-                              className="border-l-2 border-c1 h-2"
-                            ></span>
-                          )
-                        )}
+                        {Array.from({ length: reviewLineCount }).map((_, i) => (
+                          <span
+                            key={i}
+                            className="border-l-2 border-c1 h-2"
+                          ></span>
+                        ))}
                       </div>
                       <div className="flex-1 flex flex-col lg:mt-3">
                         <h1 className="text-lg font-semibold">
@@ -668,17 +665,28 @@ export default function SponsorRegistrationPage() {
                                 Review Your Information
                               </h3>
                               <p className="text-muted-foreground">
-                                Please review all information before submitting your sponsorship registration.
+                                Please review all information before submitting
+                                your sponsorship registration.
                               </p>
                             </div>
-                            
+
                             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                              <h4 className="font-medium text-blue-900 mb-2">Ready to Submit:</h4>
+                              <h4 className="font-medium text-blue-900 mb-2">
+                                Ready to Submit:
+                              </h4>
                               <ul className="text-sm text-blue-800 space-y-1">
-                                <li>• All required fields have been completed</li>
+                                <li>
+                                  • All required fields have been completed
+                                </li>
                                 <li>• Face capture has been completed</li>
-                                <li>• Sponsorship proposal will be sent within 3-5 business days</li>
-                                <li>• Partnership discussions will be scheduled after review</li>
+                                <li>
+                                  • Sponsorship proposal will be sent within 3-5
+                                  business days
+                                </li>
+                                <li>
+                                  • Partnership discussions will be scheduled
+                                  after review
+                                </li>
                               </ul>
                             </div>
                           </div>
@@ -734,7 +742,6 @@ export default function SponsorRegistrationPage() {
           </CardContent>
         </Card>
       </div>
-
 
       {/* Success Dialog */}
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>

@@ -1,6 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -8,7 +9,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SponsorRegistrationFormData, sponsorshipCategoryOptions, targetAudienceOptions } from "@/types/sponsors/registration";
+import {
+  SponsorRegistrationFormData,
+  sponsorshipCategoryOptions,
+  targetAudienceOptions,
+} from "@/types/sponsors/registration";
 import { SponsorshipCategory, SponsorshipAudience } from "@prisma/client";
 
 interface SponsorshipInterestProps {
@@ -32,9 +37,9 @@ export function SponsorshipInterest({ form }: SponsorshipInterestProps) {
                 <FormLabel className="text-base">
                   1. Sponsorship Categories of Interest *
                 </FormLabel>
-                <p className="text-sm text-muted-foreground">
-                  Select all categories that align with your sponsorship goals
-                </p>
+                <FormDescription className="text-sm text-muted-foreground">
+                  Which sponsorship category are you most interested in?
+                </FormDescription>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {sponsorshipCategoryOptions.map((item) => (
@@ -54,10 +59,15 @@ export function SponsorshipInterest({ form }: SponsorshipInterestProps) {
                               onCheckedChange={(checked) => {
                                 const currentValues = field.value || [];
                                 if (checked) {
-                                  field.onChange([...currentValues, item.value]);
+                                  field.onChange([
+                                    ...currentValues,
+                                    item.value,
+                                  ]);
                                 } else {
                                   field.onChange(
-                                    currentValues.filter((value) => value !== item.value)
+                                    currentValues.filter(
+                                      (value) => value !== item.value
+                                    )
                                   );
                                 }
                               }}
@@ -87,9 +97,9 @@ export function SponsorshipInterest({ form }: SponsorshipInterestProps) {
                 <FormLabel className="text-base">
                   2. Target Audience *
                 </FormLabel>
-                <p className="text-sm text-muted-foreground">
-                  Which audience segments are you most interested in reaching?
-                </p>
+                <FormDescription className="text-sm text-muted-foreground">
+                  What is your target exposure or audience?
+                </FormDescription>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {targetAudienceOptions.map((item) => (
@@ -109,10 +119,15 @@ export function SponsorshipInterest({ form }: SponsorshipInterestProps) {
                               onCheckedChange={(checked) => {
                                 const currentValues = field.value || [];
                                 if (checked) {
-                                  field.onChange([...currentValues, item.value]);
+                                  field.onChange([
+                                    ...currentValues,
+                                    item.value,
+                                  ]);
                                 } else {
                                   field.onChange(
-                                    currentValues.filter((value) => value !== item.value)
+                                    currentValues.filter(
+                                      (value) => value !== item.value
+                                    )
                                   );
                                 }
                               }}
@@ -139,7 +154,9 @@ export function SponsorshipInterest({ form }: SponsorshipInterestProps) {
             name="targetAudienceOthers"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Please specify your other target audience *</FormLabel>
+                <FormLabel>
+                  Please specify your other target audience *
+                </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Describe your other target audience"

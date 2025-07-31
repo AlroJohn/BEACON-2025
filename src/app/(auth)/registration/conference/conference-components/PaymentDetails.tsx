@@ -226,10 +226,31 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
                     alt="InstaPay QR Code"
                     className="w-full h-auto rounded-lg border border-blue-200 shadow-sm"
                   />
-                  <p className="lg:text-2xl text-xl">
-                    <span className="uppercase text-red-500">GCASH No.</span>{" "}
-                    09369118818
-                  </p>
+                  <div className="w-full flex md:flex-row flex-col md:items-center items-start justify-start gap-2">
+                    <span className="uppercase font-medium lg:text-2xl text-xl whitespace-nowrap text-red-500">
+                      GCASH No.
+                    </span>{" "}
+                    <div className="flex gap-2 flex-row items-center">
+                      <p className="lg:text-2xl text-xl font-medium">
+                        09369118818
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          copyToClipboard("09369118818", "Gcash Number")
+                        }
+                        className="text-green-600 hover:text-green-700"
+                      >
+                        {copiedField === "Gcash Number" ? (
+                          <CopyCheck className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <Alert className="border-blue-300 ">

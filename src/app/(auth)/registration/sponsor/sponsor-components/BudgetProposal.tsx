@@ -8,11 +8,22 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { SponsorRegistrationFormData, budgetRangeOptions, proposalOptionOptions } from "@/types/sponsors/registration";
+import {
+  SponsorRegistrationFormData,
+  budgetRangeOptions,
+  proposalOptionOptions,
+} from "@/types/sponsors/registration";
 import { Upload, X } from "lucide-react";
 import { useSponsorRegistrationStore } from "@/hooks/standard-hooks/sponsor/useSponsorRegistrationStore";
+import { Button } from "@/components/ui/button";
 
 interface BudgetProposalProps {
   form: UseFormReturn<SponsorRegistrationFormData>;
@@ -25,18 +36,23 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "application/pdf",
+      ];
       if (!allowedTypes.includes(file.type)) {
-        alert('Please upload only JPG, PNG, or PDF files');
+        alert("Please upload only JPG, PNG, or PDF files");
         return;
       }
-      
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
+        alert("File size must be less than 5MB");
         return;
       }
-      
+
       setLogoFile(file);
     }
   };
@@ -56,7 +72,8 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
             <FormItem>
               <FormLabel>1. Sponsorship Budget Range *</FormLabel>
               <p className="text-sm text-muted-foreground mb-3">
-                What is your estimated budget range for this sponsorship opportunity?
+                What is your estimated budget range for this sponsorship
+                opportunity?
               </p>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
@@ -110,9 +127,10 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
         <div className="space-y-3">
           <Label>3. Company Logo (Optional)</Label>
           <p className="text-sm text-muted-foreground">
-            Upload your company logo for the sponsorship proposal (JPG, PNG, or PDF, max 5MB)
+            Upload your company logo for the sponsorship proposal (JPG, PNG, or
+            PDF, max 5MB)
           </p>
-          
+
           {!logoFile ? (
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
               <Upload className="mx-auto h-12 w-12 text-gray-400" />
@@ -129,7 +147,9 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
                     onChange={handleLogoUpload}
                   />
                 </label>
-                <p className="text-xs text-gray-500 mt-1">JPG, PNG, PDF up to 5MB</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  JPG, PNG, PDF up to 5MB
+                </p>
               </div>
             </div>
           ) : (
@@ -147,13 +167,13 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
                   </p>
                 </div>
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={removeLogoFile}
                 className="flex-shrink-0 text-red-400 hover:text-red-600"
               >
                 <X className="h-5 w-5" />
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -166,7 +186,8 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
             <FormItem>
               <FormLabel>4. Additional Comments or Requirements</FormLabel>
               <p className="text-sm text-muted-foreground mb-3">
-                Share any specific requirements, expectations, or additional information
+                Share any specific requirements, expectations, or additional
+                information
               </p>
               <FormControl>
                 <Textarea
@@ -180,17 +201,6 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
             </FormItem>
           )}
         />
-
-        {/* Information Note */}
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="font-medium text-blue-900 mb-2">Next Steps:</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Our sponsorship team will review your registration</li>
-            <li>• You'll receive a customized proposal within 3-5 business days</li>
-            <li>• We'll schedule a call to discuss partnership opportunities</li>
-            <li>• Final sponsorship agreements will be prepared based on your preferences</li>
-          </ul>
-        </div>
       </div>
     </div>
   );

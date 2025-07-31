@@ -132,22 +132,6 @@ export function ActivationPreferences({ form }: ActivationPreferencesProps) {
               </p>
             </div>
           )}
-
-        {/* Information Note */}
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-          <h4 className="font-medium text-gray-900 mb-2">
-            Activation Options Include:
-          </h4>
-          <ul className="text-sm text-gray-700 space-y-1">
-            <li>• Speaking slot or product presentation opportunities</li>
-            <li>• Logo visibility on stage, programs, and banners</li>
-            <li>• Digital media promotions across social platforms</li>
-            <li>• Booth or product display space</li>
-            <li>• Inclusion in press materials and media coverage</li>
-            <li>• VIP networking access and exclusive events</li>
-            <li>• Co-branded activities and competitions</li>
-          </ul>
-        </div>
       </div>
     </div>
   );

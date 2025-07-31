@@ -40,6 +40,8 @@ import { ActivationPreferences } from "./sponsor-components/ActivationPreference
 import { BudgetProposal } from "./sponsor-components/BudgetProposal";
 import { Icon } from "@iconify/react";
 import { ModeToggle } from "@/components/reuseable/page-components/ModeToggle";
+import Link from "next/link";
+import { SponsorAds } from "./sponsor-components/Ads";
 
 export default function SponsorRegistrationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -429,6 +431,9 @@ export default function SponsorRegistrationPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden flex flex-col p-0">
+            <div className="mb-4 shrink-0">
+              <SponsorAds />
+            </div>
             <div className="flex-1 overflow-y-auto pr-1">
               <Form {...form}>
                 <div className="relative lg:pr-0 ">
@@ -660,34 +665,26 @@ export default function SponsorRegistrationPage() {
                         </h1>
                         <div className="lg:ml-4 py-4 h-fit">
                           <div className="space-y-6">
-                            <div className="text-center">
-                              <h3 className="text-lg font-semibold mb-2">
+                            <div className="text-lg">
+                              {/* <h3 className="text-xl font-semibold mb-2">
                                 Review Your Information
-                              </h3>
-                              <p className="text-muted-foreground">
-                                Please review all information before submitting
-                                your sponsorship registration.
+                              </h3> */}
+                              <p className="pb-4">
+                                Our BEACON 2025 Sponsorship Team will reach out
+                                to coordinate your ideal package, branding
+                                integration, and activation plans.
                               </p>
-                            </div>
-
-                            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                              <h4 className="font-medium text-blue-900 mb-2">
-                                Ready to Submit:
-                              </h4>
-                              <ul className="text-sm text-blue-800 space-y-1">
-                                <li>
-                                  • All required fields have been completed
-                                </li>
-                                <li>• Face capture has been completed</li>
-                                <li>
-                                  • Sponsorship proposal will be sent within 3-5
-                                  business days
-                                </li>
-                                <li>
-                                  • Partnership discussions will be scheduled
-                                  after review
-                                </li>
-                              </ul>
+                              <span className="">
+                                For immediate inquiries:{" "}
+                                <a
+                                  href="https://mail.google.com/mail/?view=cm&fs=1&to=mlbeacon2023@gmail.com"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 dark:text-blue-400 underline"
+                                >
+                                  mlbeacon2023@gmail.com
+                                </a>
+                              </span>
                             </div>
                           </div>
                         </div>

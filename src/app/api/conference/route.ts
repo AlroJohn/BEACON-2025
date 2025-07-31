@@ -263,7 +263,8 @@ export async function POST(request: NextRequest) {
           data: {
             email,
             mobileNumber,
-            mailingAddress
+            mailingAddress,
+            conference: true
           }
         });
       }
@@ -294,7 +295,8 @@ export async function POST(request: NextRequest) {
               email,
               mobileNumber,
               mailingAddress,
-              status: 'ACTIVE'
+              status: 'ACTIVE',
+              conference: true
             }
           },
           user_details: {

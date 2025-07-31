@@ -17,7 +17,7 @@ import { useEmailValidation } from "@/hooks/tanstasck-query/useEmailValidation";
 export default function ContactDetails({ form }: ContactDetailsProps) {
   const email = form.watch("email");
   const { data: emailCheck, isLoading: emailLoading } =
-    useEmailValidation(email);
+    useEmailValidation(email, 'conference');
 
   return (
     <div className="space-y-6">
@@ -70,8 +70,7 @@ export default function ContactDetails({ form }: ContactDetailsProps) {
                   <Alert variant="destructive" className="py-2 bg-background">
                     <XCircle className="h-4 w-4" />
                     <AlertDescription className="text-sm">
-                      This email is already registered. Please use a different
-                      email address.
+                      This email is already registered for conference registration.
                     </AlertDescription>
                   </Alert>
                 )}

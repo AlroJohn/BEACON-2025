@@ -10,17 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
-import { ExhibitorRegistrationFormData } from "@/types/exhibitor/registration";
+import { SponsorRegistrationFormData } from "@/types/sponsors/registration";
 import { useEmailValidation } from "@/hooks/tanstasck-query/useEmailValidation";
 
-interface ContactInformationProps {
-  form: UseFormReturn<ExhibitorRegistrationFormData>;
+interface ContactDetailsProps {
+  form: UseFormReturn<SponsorRegistrationFormData>;
 }
 
-export function ContactInformation({ form }: ContactInformationProps) {
+export function ContactDetails({ form }: ContactDetailsProps) {
   const email = form.watch("email");
   const { data: emailCheck, isLoading: emailLoading } =
-    useEmailValidation(email, 'exhibitor');
+    useEmailValidation(email, 'sponsor');
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -71,7 +72,7 @@ export function ContactInformation({ form }: ContactInformationProps) {
                 <Alert variant="destructive" className="py-2 bg-background">
                   <XCircle className="h-4 w-4" />
                   <AlertDescription className="text-sm">
-                    This email is already registered for exhibitor registration.
+                    This email is already registered for sponsor registration.
                   </AlertDescription>
                 </Alert>
               )}
@@ -100,23 +101,20 @@ export function ContactInformation({ form }: ContactInformationProps) {
             name="mobileNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base">2. Phone *</FormLabel>
+                <FormLabel>2. Mobile Number *</FormLabel>
                 <FormControl>
                   <div className="relative flex items-center">
-                    {/* Static prefix */}
                     <div className="absolute left-3 z-10 px-1">+63</div>
                     <Input
                       placeholder="9XXXXXXXXX"
                       {...field}
-                      // Display only the part after +63
                       value={field.value?.replace("+63", "") || ""}
                       onChange={(e) => {
                         let numbersOnly = e.target.value.replace(/\D/g, "");
-                        // enforce first digit is 9
                         if (numbersOnly.length > 0 && numbersOnly[0] !== "9") {
                           numbersOnly = "9" + numbersOnly.replace(/^9*/, "");
                         }
-                        const truncated = numbersOnly.slice(0, 10); // enforce 10 digits including the starting 9
+                        const truncated = numbersOnly.slice(0, 10);
                         field.onChange(`+63${truncated}`);
                       }}
                       className="pl-12"
@@ -134,23 +132,17 @@ export function ContactInformation({ form }: ContactInformationProps) {
             name="landline"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base">2. Phone *</FormLabel>
+                <FormLabel>3. Landline (Optional)</FormLabel>
                 <FormControl>
                   <div className="relative flex items-center">
-                    {/* Static prefix */}
                     <div className="absolute left-3 z-10 px-1">+63</div>
                     <Input
-                      placeholder="9XXXXXXXXX"
+                      placeholder="2XXXXXXXX"
                       {...field}
-                      // Display only the part after +63
                       value={field.value?.replace("+63", "") || ""}
                       onChange={(e) => {
                         let numbersOnly = e.target.value.replace(/\D/g, "");
-                        // enforce first digit is 9
-                        // if (numbersOnly.length > 0 && numbersOnly[0] !== "9") {
-                        //   numbersOnly = "9" + numbersOnly.replace(/^9*/, "");
-                        // }
-                        const truncated = numbersOnly.slice(0, 10); // enforce 10 digits including the starting 9
+                        const truncated = numbersOnly.slice(0, 10);
                         field.onChange(`+63${truncated}`);
                       }}
                       className="pl-12"

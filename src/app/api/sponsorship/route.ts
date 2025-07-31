@@ -202,6 +202,7 @@ export async function POST(request: NextRequest) {
             mobileNumber,
             mailingAddress,
             landline,
+            sponsor: true,
             updated_at: new Date(),
           }
         });
@@ -237,6 +238,7 @@ export async function POST(request: NextRequest) {
               mobileNumber,
               mailingAddress,
               landline,
+              sponsor: true,
               created_at: new Date(),
               updated_at: new Date(),
             }

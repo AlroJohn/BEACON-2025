@@ -197,7 +197,8 @@ export async function POST(request: NextRequest) {
           mobileNumber: validatedData.mobileNumber,
           landline: validatedData.landline || null,
           status: 'VISITOR',
-          mailingAddress: validatedData.mailingAddress
+          mailingAddress: validatedData.mailingAddress,
+          visitor: true
         },
       });
 

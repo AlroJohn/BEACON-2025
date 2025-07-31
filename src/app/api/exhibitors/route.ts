@@ -239,7 +239,8 @@ export async function POST(request: NextRequest) {
             email,
             mobileNumber,
             mailingAddress,
-            landline
+            landline,
+            exhibitor: true
           }
         });
       }
@@ -272,7 +273,8 @@ export async function POST(request: NextRequest) {
               mobileNumber,
               mailingAddress,
               landline,
-              status: 'ACTIVE'
+              status: 'ACTIVE',
+              exhibitor: true
             }
           },
           user_details: {

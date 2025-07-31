@@ -279,6 +279,10 @@ model user_accounts {
   mobileNumber   String
   mailingAddress String?
   landline       String?
+  visitor        Boolean      @default(false)
+  conference     Boolean      @default(false)
+  exhibitor      Boolean      @default(false)
+  sponsor        Boolean      @default(false)
 
   @@map("user_accounts")
 }

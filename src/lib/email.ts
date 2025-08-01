@@ -123,13 +123,31 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
         </div>
 
         <!-- Success Message -->
-        <div style="padding: 30px; text-align: center; background-color: #f0fdf4; border-bottom: 1px solid #e5e7eb;">
-          <div style="width: 60px; height: 60px; background-color: #10b981; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
-            <span style="color: white; font-size: 24px;">✓</span>
-          </div>
-          <h2 style="color: #059669; margin: 0 0 8px 0; font-size: 24px;">Registration Successful!</h2>
-          <p style="color: #065f46; margin: 0; font-size: 16px;">Thank you for registering for BEACON 2025</p>
-        </div>
+       <div style="
+  padding:30px;
+  text-align:center;
+  background-color:#f0fdf4;
+  border-bottom:1px solid #e5e7eb;
+">
+  <!-- circle -->
+  <div style="
+    width:60px;
+    height:60px;
+    background-color:#10b981;
+    border-radius:50%;
+    margin:0 auto 16px;    
+    text-align:center;      
+    line-height:60px;       
+  ">
+    <span style="color:#ffffff;font-size:24px;display:inline-block;">✓</span>
+  </div>
+
+  <h2 style="color:#059669;margin:0 0 8px;font-size:24px;">Registration Successful!</h2>
+  <p  style="color:#065f46;margin:0;font-size:16px;">
+    Thank you for registering for BEACON 2025
+  </p>
+</div>
+
 
         <!-- Registration Details -->
         <div style="padding: 30px;">
@@ -226,7 +244,7 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
             <h4 style="color: #1f2937; margin: 0 0 12px 0;">Need Help?</h4>
             <p style="margin: 0; color: #6b7280; line-height: 1.5;">
               If you have any questions about your registration, please contact us:<br>
-              <strong>Email:</strong> info@beacon2025.com<br>
+              <strong>Email:</strong> mlbeacon2023@gmail.com<br>
               <strong>Phone:</strong> +63 (02) 123-4567
             </p>
           </div>
@@ -481,7 +499,7 @@ export function generatePaymentStatusEmail(data: PaymentStatusEmailData): string
             <h4 style="color: #1f2937; margin: 0 0 12px 0;">Need Help?</h4>
             <p style="margin: 0; color: #6b7280; line-height: 1.5;">
               If you have any questions about this payment update, please contact us:<br>
-              <strong>Email:</strong> payments@beacon2025.com<br>
+              <strong>Email:</strong> mlbeacon2023@gmail.com<br>
               <strong>Phone:</strong> +63 (02) 123-4567<br>
               <strong>Reference ID:</strong> ${conferenceId}
             </p>
@@ -740,9 +758,12 @@ export function generateExhibitorRegistrationEmail(data: ExhibitorRegistrationEm
     return labels[intent] || intent;
   };
 
-  const participationHTML = participationTypes.map(type => `
-    <li style="margin-bottom: 4px; color: #4b5563;">• ${type}</li>
-  `).join('');
+  const participationHTML = participationTypes
+    .map(type => {
+      const label = type.replace(/_/g, ' '); // convert "product_presentation" → "product presentation"
+      return `<li style="margin-bottom: 4px; color: #4b5563;">• ${label}</li>`;
+    })
+    .join('');
 
   return `
     <!DOCTYPE html>
@@ -870,6 +891,198 @@ export function generateExhibitorRegistrationEmail(data: ExhibitorRegistrationEm
     </body>
     </html>
   `;
+}
+
+// Visitor registration email data
+export interface VisitorRegistrationEmailData {
+  userEmail: string;
+  userName: string;
+  visitorId: string;
+  attendeeType: string;
+  companyName?: string;
+  jobTitle?: string;
+  eventParts: string[];
+  attendingDays: any;
+}
+
+// Generate visitor registration confirmation email HTML
+function generateVisitorRegistrationEmail(data: VisitorRegistrationEmailData): string {
+  const { userName, visitorId, attendeeType, companyName, jobTitle, eventParts, attendingDays } = data;
+
+  // Format event parts
+  const eventPartsHTML = eventParts.map(part => `<li style="margin-bottom: 4px;">• ${part}</li>`).join('');
+
+  // Format attending days with detailed dates
+  const attendingDaysHTML = Object.entries(attendingDays || {})
+    .filter(([_, dates]) => Array.isArray(dates) && dates.length > 0)
+    .map(([eventName, dates]) => {
+      // → build a nested <ul> where each date is its own <li>
+      const datesBullets = (dates as string[])
+        .map(date => {
+          const d = new Date(date)
+          const pretty = d.toLocaleDateString('en-US', {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          })
+          return `<li style="color:#6b7280;font-size:14px;">${pretty}</li>`
+        })
+        .join('')
+
+      return `
+      <li style="margin-bottom:12px;">
+        <strong style="color:#1e40af;">${eventName}</strong>
+        <ul style="list-style-type:disc;margin-left:20px;margin-top:4px;">
+          ${datesBullets}
+        </ul>
+      </li>
+    `
+    })
+    .join('')
+
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>BEACON 2025 Visitor Registration Confirmation</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%); padding: 30px 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
+          <p style="color: #e0e7ff; margin: 8px 0 0 0; font-size: 16px;">Visitor Registration Confirmed</p>
+        </div>
+
+        <!-- Main Content -->
+        <div style="padding: 40px 30px;">
+          <!-- Success Message -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <div style="background-color: #dcfce7; border-radius: 50%; width: 60px; height: 60px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+              <span style="color: #16a34a; font-size: 30px;">✓</span>
+            </div>
+            <h2 style="color: #1f2937; margin: 0 0 8px 0; font-size: 24px;">Registration Successful!</h2>
+            <p style="color: #6b7280; margin: 0; font-size: 16px;">Welcome to BEACON 2025, ${userName}!</p>
+          </div>
+
+          <!-- Registration Summary -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Your Registration Details</h3>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #374151; font-weight: 500; width: 140px;">Registration ID:</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-weight: bold;">${visitorId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #374151; font-weight: 500;">Attendee Type:</td>
+                  <td style="padding: 8px 0; color: #1f2937;">${attendeeType.replace(/_/g, ' ')}</td>
+                </tr>
+                ${jobTitle ? `
+                <tr>
+                  <td style="padding: 8px 0; color: #374151; font-weight: 500;">Job Title:</td>
+                  <td style="padding: 8px 0; color: #1f2937;">${jobTitle}</td>
+                </tr>
+                ` : ''}
+                ${companyName ? `
+                <tr>
+                  <td style="padding: 8px 0; color: #374151; font-weight: 500;">Company:</td>
+                  <td style="padding: 8px 0; color: #1f2937;">${companyName}</td>
+                </tr>
+                ` : ''}
+              </table>
+            </div>
+          </div>
+
+          <!-- Event Participation -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Your Event Access</h3>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+              <div style="margin-bottom: 16px;">
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Event Parts:</h4>
+                <ul style="margin: 0; padding-left: 0; list-style: none; color: #1e40af;">
+                  ${eventPartsHTML}
+                </ul>
+              </div>
+              ${attendingDaysHTML ? `
+              <div>
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Attending Days:</h4>
+                <ul style="margin: 0; padding-left: 0; list-style: none; color: #1e40af;">
+                  ${attendingDaysHTML}
+                </ul>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- Status Information -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">What's Next?</h3>
+            <div style="background-color: #dcfce7; padding: 20px; border-radius: 8px; border-left: 4px solid #16a34a;">
+              <p style="margin: 0 0 12px 0; color: #166534; font-weight: 500;">
+                <strong>✅ You're All Set!</strong>
+              </p>
+              <p style="margin: 0; color: #15803d; line-height: 1.5;">
+                Your visitor registration is confirmed! Get ready for an amazing experience at BEACON 2025 from September 29 - October 1, 2025 at SMX Convention Center, MOA Complex, Pasay City.
+              </p>
+            </div>
+          </div>
+
+          <!-- Event Information -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Event Information</h3>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+              <ul style="margin: 0; padding-left: 20px; color: #4b5563; line-height: 1.6;">
+                <li style="margin-bottom: 8px;">📅 <strong>Dates:</strong> September 29 - October 1, 2025</li>
+                <li style="margin-bottom: 8px;">📍 <strong>Venue:</strong> SMX Convention Center, MOA Complex, Pasay City</li>
+                <li style="margin-bottom: 8px;">🕘 <strong>Hours:</strong> 9:00 AM - 6:00 PM daily</li>
+                <li style="margin-bottom: 8px;">🎟️ <strong>Entry:</strong> FREE admission with this registration</li>
+                <li style="margin-bottom: 8px;">📧 <strong>Updates:</strong> Check your email for event updates</li>
+                <li>🎁 <strong>Benefits:</strong> Access to exhibitions, networking opportunities, and industry insights</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+            <h4 style="color: #1f2937; margin: 0 0 12px 0;">Questions About Your Visit?</h4>
+            <p style="margin: 0; color: #6b7280; line-height: 1.5;">
+              For any inquiries about your visit, please contact us:<br>
+              <strong>Email:</strong> <a href="mailto:mlbeacon2023@gmail.com" style="color: #2563eb;">mlbeacon2023@gmail.com</a><br>
+              <strong>Phone:</strong> +63 (02) 123-4567<br>
+              <strong>Registration ID:</strong> ${visitorId}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #1f2937; padding: 20px; text-align: center;">
+          <p style="color: #9ca3af; margin: 0; font-size: 14px;">
+            © 2025 BEACON Maritime Conference & Exhibition. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+// Send visitor registration confirmation email
+export async function sendVisitorRegistrationEmail(data: VisitorRegistrationEmailData): Promise<boolean> {
+  const emailHTML = generateVisitorRegistrationEmail(data);
+
+  const subject = `BEACON 2025 Visitor Registration Confirmed - Welcome! | ${data.userName}`;
+
+  return await sendEmail({
+    to: data.userEmail,
+    subject,
+    html: emailHTML,
+    from: 'noreply@thebeaconexpo.com'
+  });
 }
 
 // Send exhibitor registration confirmation email

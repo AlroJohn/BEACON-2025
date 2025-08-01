@@ -275,7 +275,7 @@ model user_accounts {
   userId         String
   user           Users        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   // Section 2: Account Details
-  email          String       @unique
+  email          String
   mobileNumber   String
   mailingAddress String?
   landline       String?

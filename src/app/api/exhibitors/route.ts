@@ -426,10 +426,10 @@ export async function POST(request: NextRequest) {
         userEmail: email,
         userName: `${firstName} ${lastName}`,
         exhibitorId: exhibitor.id,
-        companyName: companyName,
-        participationTypes: participationTypes,
-        boothSize: boothSize || "Not specified",
-        confirmIntent: confirmIntent,
+        companyName: exhibitorData.companyName,
+        participationTypes: exhibitorData.participationTypes,
+        boothSize: exhibitorData.boothSize || "Not specified",
+        confirmIntent: exhibitorData.confirmIntent,
       };
 
       const emailSent = await sendExhibitorRegistrationEmail(emailData);

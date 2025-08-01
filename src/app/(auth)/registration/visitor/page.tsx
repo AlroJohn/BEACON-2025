@@ -741,7 +741,7 @@ export default function VisitorRegistrationPage() {
 
       {/* Success Dialog */}
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="md:max-w-md max-w-[95dvw]">
           <AlertDialogHeader>
             <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full">
               <CheckCircle2 className="w-8 h-8 text-green-600" />

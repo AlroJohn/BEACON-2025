@@ -16,48 +16,53 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Check if email exists in user_accounts
-    const existingUser = await prisma.user_accounts.findUnique({
+    // Check if email exists in user_accounts for the specific registration type
+    const existingUsers = await prisma.user_accounts.findMany({
       where: {
         email: email
       }
     });
 
-    if (!existingUser) {
+    if (existingUsers.length === 0) {
       return NextResponse.json({
         exists: false,
         message: "Email is available"
       });
     }
 
-    // If registration type is specified, check specific boolean flag
+    // If registration type is specified, check specific boolean flag across all users with this email
     if (registrationType) {
       let alreadyRegistered = false;
       let registrationTypeName = '';
 
-      switch (registrationType) {
-        case 'conference':
-          alreadyRegistered = existingUser.conference;
-          registrationTypeName = 'conference';
-          break;
-        case 'visitor':
-          alreadyRegistered = existingUser.visitor;
-          registrationTypeName = 'visitor';
-          break;
-        case 'exhibitor':
-          alreadyRegistered = existingUser.exhibitor;
-          registrationTypeName = 'exhibitor';
-          break;
-        case 'sponsor':
-          alreadyRegistered = existingUser.sponsor;
-          registrationTypeName = 'sponsor';
-          break;
-        default:
-          // If invalid type, fall back to general email exists check
-          return NextResponse.json({
-            exists: true,
-            message: "Email already exists"
-          });
+      // Check if any user with this email already has the specific registration type
+      for (const existingUser of existingUsers) {
+        switch (registrationType) {
+          case 'conference':
+            if (existingUser.conference) alreadyRegistered = true;
+            registrationTypeName = 'conference';
+            break;
+          case 'visitor':
+            if (existingUser.visitor) alreadyRegistered = true;
+            registrationTypeName = 'visitor';
+            break;
+          case 'exhibitor':
+            if (existingUser.exhibitor) alreadyRegistered = true;
+            registrationTypeName = 'exhibitor';
+            break;
+          case 'sponsor':
+            if (existingUser.sponsor) alreadyRegistered = true;
+            registrationTypeName = 'sponsor';
+            break;
+          default:
+            // If invalid type, fall back to general email exists check
+            return NextResponse.json({
+              exists: true,
+              message: "Email already exists"
+            });
+        }
+
+        if (alreadyRegistered) break; // Exit loop if already registered
       }
 
       if (alreadyRegistered) {

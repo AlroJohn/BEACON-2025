@@ -370,10 +370,10 @@ export async function POST(request: NextRequest) {
         userEmail: email,
         userName: `${firstName} ${lastName}`,
         sponsorId: sponsor.id,
-        companyName: companyName,
-        sponsorshipCategories: sponsorshipCategories,
-        budgetRange: budgetRange,
-        proposalStatus: customizedProposal,
+        companyName: sponsorData.companyName,
+        sponsorshipCategories: sponsorData.sponsorshipCategories,
+        budgetRange: sponsorData.budgetRange,
+        proposalStatus: sponsorData.customizedProposal,
       };
 
       const emailSent = await sendSponsorRegistrationEmail(emailData);

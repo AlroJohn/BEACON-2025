@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { AgeBracket, AttendeeType, Gender, HearAboutEvent, Industry, InterestArea, Prisma, PrismaClient } from '@prisma/client';
 import { baseVisitorSchema } from '@/types/visitor/registration';
+import { sendVisitorRegistrationEmail, VisitorRegistrationEmailData } from '@/lib/email';
 
 
 const prisma = new PrismaClient();
@@ -182,6 +183,29 @@ export async function POST(request: NextRequest) {
     const validatedData = visitorRegistrationSchema.parse(body);
     console.log("API: Validation successful");
 
+    // Check if user already has a visitor registration specifically
+    const existingVisitorUser = await prisma.users.findFirst({
+      where: {
+        user_accounts: {
+          some: {
+            email: validatedData.email,
+            visitor: true
+          }
+        }
+      },
+      include: {
+        user_accounts: true,
+        Visitors: true
+      }
+    });
+
+    if (existingVisitorUser && existingVisitorUser.Visitors.length > 0) {
+      return NextResponse.json({
+        success: false,
+        message: "User already has a visitor registration",
+      }, { status: 409 });
+    }
+
     // Create user and related records in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Create User
@@ -277,6 +301,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Send confirmation email after successful registration
+    try {
+      console.log("API: Sending visitor confirmation email...");
+
+      const emailData: VisitorRegistrationEmailData = {
+        userEmail: validatedData.email,
+        userName: `${validatedData.firstName} ${validatedData.lastName}`,
+        visitorId: result.visitor.id,
+        attendeeType: validatedData.attendeeType,
+        companyName: validatedData.companyName || undefined,
+        jobTitle: validatedData.jobTitle || undefined,
+        eventParts: validatedData.eventParts,
+        attendingDays: validatedData.attendingDays || {},
+      };
+
+      const emailSent = await sendVisitorRegistrationEmail(emailData);
+
+      if (emailSent) {
+        console.log("API: Visitor confirmation email sent successfully to:", validatedData.email);
+      } else {
+        console.error("API: Failed to send visitor confirmation email to:", validatedData.email);
+      }
+    } catch (emailError) {
+      console.error("API: Error sending visitor confirmation email:", emailError);
+      // Don't fail the registration if email fails
+    }
+
     return NextResponse.json({
       success: true,
       message: "Visitor registration completed successfully",
@@ -306,7 +357,7 @@ export async function POST(request: NextRequest) {
       console.error('API: Unique constraint error');
       return NextResponse.json({
         success: false,
-        message: "Email already exists",
+        message: "Email already exists for visitor registration",
       }, { status: 409 });
     }
 

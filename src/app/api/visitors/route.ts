@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
         user_accounts: {
           some: {
             email: validatedData.email,
-            visitor: true
+            user_type: 'VISITOR'
           }
         }
       },
@@ -220,9 +220,9 @@ export async function POST(request: NextRequest) {
           email: validatedData.email,
           mobileNumber: validatedData.mobileNumber,
           landline: validatedData.landline || null,
-          status: 'VISITOR',
+          status: 'ACTIVE',
           mailingAddress: validatedData.mailingAddress,
-          visitor: true
+          user_type: 'VISITOR'
         },
       });
 
@@ -308,6 +308,7 @@ export async function POST(request: NextRequest) {
       const emailData: VisitorRegistrationEmailData = {
         userEmail: validatedData.email,
         userName: `${validatedData.firstName} ${validatedData.lastName}`,
+        userId: result.user.id, // Add userId for QR code generation
         visitorId: result.visitor.id,
         attendeeType: validatedData.attendeeType,
         companyName: validatedData.companyName || undefined,

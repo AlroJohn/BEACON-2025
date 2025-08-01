@@ -126,28 +126,23 @@ export default function SponsorsDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-6 px-4">
-        {/* Sponsors Data Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sponsor Registrations</CardTitle>
-            <CardDescription>
-              View and manage all sponsor registrations for BEACON 2025
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SponsorsDataTable
-              data={sponsors}
-              onDeleteSponsor={handleDeleteSponsor}
-              isDeleting={deleteSponsor.isPending}
-              currentAdminStatus={
-                currentAdmin?.status as "SUPERADMIN" | "ADMIN"
-              }
-            />
-          </CardContent>
-        </Card>
-      </div>
+    <div className="max-w-[76rem] mx-auto p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Sponsor Registrations</CardTitle>
+          <CardDescription>
+            View and manage all sponsor registrations for BEACON 2025
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SponsorsDataTable
+            data={sponsors}
+            onDeleteSponsor={handleDeleteSponsor}
+            isDeleting={deleteSponsor.isPending}
+            currentAdminStatus={currentAdmin?.status as "SUPERADMIN" | "ADMIN"}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -130,6 +130,8 @@ export async function PATCH(
             eventDate: new Date(payment.event.eventDate),
             eventPrice: Number(payment.event.eventPrice),
           })),
+          // Add userId for QR code generation when payment is CONFIRMED
+          userId: validatedData.paymentStatus === 'CONFIRMED' ? conference.user?.id : undefined,
         };
 
         const emailSent = await sendPaymentStatusEmail(emailData);

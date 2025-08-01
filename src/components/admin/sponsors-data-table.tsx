@@ -168,7 +168,8 @@ export function SponsorsDataTable({
       additionalComments: false,
     });
   const [rowSelection, setRowSelection] = React.useState({});
-  const [selectedSponsor, setSelectedSponsor] = React.useState<SponsorData | null>(null);
+  const [selectedSponsor, setSelectedSponsor] =
+    React.useState<SponsorData | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
 
   const handleViewDetails = (sponsor: SponsorData) => {
@@ -578,7 +579,7 @@ export function SponsorsDataTable({
   });
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full">
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter sponsors..."

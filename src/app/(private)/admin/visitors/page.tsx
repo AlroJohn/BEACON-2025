@@ -60,7 +60,7 @@ export default function VisitorsDashboard() {
   // No need to check authentication here since layout handles it
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
+    <div className="max-w-[76rem] mx-auto p-4">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

@@ -25,24 +25,26 @@ export default function CodesDashboard() {
   const handleDeleteCode = async (codeId: string, code: string) => {
     try {
       const response = await fetch(`/api/codes?id=${codeId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to delete code');
+        throw new Error(error.error || "Failed to delete code");
       }
 
       toast.success(`Code ${code} deleted successfully!`);
       refetch();
     } catch (error) {
-      console.error('Error deleting code:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to delete code');
+      console.error("Error deleting code:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete code"
+      );
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
+    <div className="max-w-[76rem] mx-auto p-4">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

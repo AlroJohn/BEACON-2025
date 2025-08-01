@@ -20,11 +20,10 @@ datasource db {
 // ENUM
 
 enum UserType {
-  SEAFARER
-  CORPORATE_PROFESSIONAL
-  STUDENTS
-  OTHERS
-  SUPERADMIN
+  VISITOR
+  CONFERENCE
+  EXHIBITOR
+  SPONSOR
 }
 
 enum Sex {
@@ -37,7 +36,6 @@ enum ActiveStatus {
   ACTIVE
   INACTIVE
   PENDING
-  VISITOR
 }
 
 // BEACON 2025 Registration Enums
@@ -279,10 +277,7 @@ model user_accounts {
   mobileNumber   String
   mailingAddress String?
   landline       String?
-  visitor        Boolean      @default(false)
-  conference     Boolean      @default(false)
-  exhibitor      Boolean      @default(false)
-  sponsor        Boolean      @default(false)
+  user_type      UserType
 
   @@map("user_accounts")
 }

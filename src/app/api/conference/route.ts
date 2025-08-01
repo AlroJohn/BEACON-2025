@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MaritimeLeagueMembership, PrismaClient } from '@prisma/client';
+import { MaritimeLeagueMembership, ConferenceInterestArea, PrismaClient, PaymentMode } from '@prisma/client';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { sendConferenceRegistrationEmail, ConferenceRegistrationEmailData } from '@/lib/email';
+import { conferenceRegistrationSchema } from '@/types/conference/registration';
 
 const prisma = new PrismaClient();
 
@@ -10,6 +11,20 @@ const prisma = new PrismaClient();
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Map frontend payment mode to Prisma PaymentMode enum
+function mapPaymentMode(paymentMode: string | null | undefined): PaymentMode {
+  switch (paymentMode) {
+    case 'BANK_DEPOSIT_TRANSFER':
+      return PaymentMode.BANK_DEPOSIT_TRANSFER;
+    case 'GCASH':
+      return PaymentMode.GCASH;
+    case 'FREE':
+      return PaymentMode.FREE;
+    default:
+      return PaymentMode.BANK_DEPOSIT_TRANSFER;
+  }
+}
 
 // Helper function to upload base64 image to Supabase Storage
 async function uploadImageToSupabase(base64Image: string, userId: string): Promise<string> {
@@ -51,65 +66,6 @@ async function uploadImageToSupabase(base64Image: string, userId: string): Promi
   }
 }
 
-// Validation schema for conference registration API (aligned with actual Prisma schema)
-const conferenceRegistrationSchema = z.object({
-  // Form-only fields (for processing, not stored in any model directly)
-  selectedEventIds: z.array(z.string()).min(1, 'Please select at least one event'),
-  faceScannedUrl: z.string().min(1, 'Face capture is required'),
-
-  // user_details fields (matches Prisma user_details model)
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  middleName: z.string().optional().nullable(),
-  suffix: z.string().optional().nullable(),
-  preferredName: z.string().optional().nullable(),
-  gender: z.enum(['MALE', 'FEMALE', 'PREFER_NOT_TO_SAY', 'OTHERS']),
-  genderOthers: z.string().optional().nullable(),
-  ageBracket: z.enum(['UNDER_18', 'AGE_18_24', 'AGE_25_34', 'AGE_35_44', 'AGE_45_54', 'AGE_55_ABOVE']),
-  nationality: z.string().min(1, 'Nationality is required'),
-
-  // user_accounts fields (matches Prisma user_accounts model)
-  email: z.string().email('Valid email is required'),
-  mobileNumber: z.string().min(1, 'Mobile number is required'),
-  mailingAddress: z.string().optional().nullable(),
-
-  // Conference model fields (matches actual Prisma Conference model)
-  isMaritimeLeagueMember: z.enum(['YES', 'NO']),
-  tmlMemberCode: z.string().optional().nullable(),
-
-  // Professional Information (Conference model fields)
-  jobTitle: z.string().optional().nullable(),
-  companyName: z.string().optional().nullable(),
-  industry: z.string().optional().nullable(),
-  companyAddress: z.string().optional().nullable(),
-  companyWebsite: z.string().optional().nullable(),
-
-  // Areas of Interest (Conference model fields)
-  interestAreas: z.array(z.enum([
-    'SHIPBUILDING_SHIP_REPAIR',
-    'BOATBUILDING_YACHT_BUILDING',
-    'MARINE_TECHNOLOGY',
-    'NAVAL_DEFENSE_SECURITY',
-    'MARITIME_TOURISM',
-    'INNOVATION_SUSTAINABILITY',
-    'BLUE_ECONOMY',
-    'LIFESTYLE_FASHION',
-    'WOMEN_YOUTH_IN_MARITIME',
-    'OTHERS'
-  ])).min(1, 'Please select at least one interest area'),
-  otherInterests: z.string().optional().nullable(),
-  receiveEventInvites: z.boolean().default(false),
-
-  // Payment Details (Conference model fields)
-  totalPaymentAmount: z.number().optional().nullable(),
-  paymentMode: z.enum(['BANK_DEPOSIT_TRANSFER', 'GCASH']).optional().nullable(),
-  referenceNumber: z.string().optional().nullable(),
-
-  // Consent & Confirmation (Conference model fields)
-  emailCertificate: z.boolean().default(false),
-  photoVideoConsent: z.boolean().default(false),
-  dataUsageConsent: z.boolean().refine(val => val === true, 'Data usage consent is required'),
-});
 
 // POST - Create new conference registration
 export async function POST(request: NextRequest) {
@@ -140,7 +96,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Convert string booleans to actual booleans
-      ['dataUsageConsent', 'emailCertificate', 'photoVideoConsent', 'receiveEventInvites'].forEach(field => {
+      ['dataUsageConsent', 'emailCertificate', 'photoVideoConsent', 'receiveEventInvites', 'hasConferenceDiscount'].forEach(field => {
         if (jsonData[field] !== undefined) {
           jsonData[field] = jsonData[field] === 'true';
         }
@@ -151,12 +107,15 @@ export async function POST(request: NextRequest) {
         jsonData.totalPaymentAmount = parseFloat(jsonData.totalPaymentAmount);
       }
 
+      // Receipt file is handled separately like face scan - don't include in validation
+
     } catch (parseError) {
       console.error('Error parsing FormData fields:', parseError);
       throw new Error('Invalid form data format');
     }
 
     console.log('Processed jsonData before validation:', jsonData);
+    console.log('Receipt file present:', !!receiptFile);
 
     const validatedData = conferenceRegistrationSchema.parse(jsonData);
 
@@ -264,7 +223,7 @@ export async function POST(request: NextRequest) {
             email,
             mobileNumber,
             mailingAddress,
-            conference: true
+            user_type: 'CONFERENCE'
           }
         });
       }
@@ -296,7 +255,7 @@ export async function POST(request: NextRequest) {
               mobileNumber,
               mailingAddress,
               status: 'ACTIVE',
-              conference: true
+              user_type: 'CONFERENCE'
             }
           },
           user_details: {
@@ -423,7 +382,7 @@ export async function POST(request: NextRequest) {
     let paymentRecord = null;
     if (requiresPayment && calculatedAmount > 0) {
       // Non-TML members who need to pay
-      const paymentMode = conferenceData.paymentMode || 'BANK_DEPOSIT_TRANSFER';
+      const paymentMode = mapPaymentMode(conferenceData.paymentMode);
 
       paymentRecord = await prisma.conferencePayment.create({
         data: {
@@ -442,7 +401,7 @@ export async function POST(request: NextRequest) {
         data: {
           conferenceId: conference.id,
           totalAmount: 0, // Free for TML members
-          paymentMode: 'FREE', // Default payment mode for free registration
+          paymentMode: PaymentMode.FREE, // Default payment mode for free registration
           paymentStatus: 'CONFIRMED', // Automatically confirmed for TML members
           receiptImageUrl: null, // No receipt needed for free registration
           referenceNumber: null,
@@ -564,6 +523,7 @@ export async function POST(request: NextRequest) {
 
       // Prepare email data - use the email from the database user_accounts
       const emailData: ConferenceRegistrationEmailData = {
+        userId: user.id,
         userEmail: user.user_accounts?.[0]?.email || email,
         userName: `${firstName} ${lastName}`,
         conferenceId: conference.id,

@@ -42,7 +42,7 @@ export const baseConferenceSchema = z.object({
   // Section 6: Payment Details
   totalPaymentAmount: z.number().optional().nullable(),
   customPaymentAmount: z.string().optional().nullable(),
-  paymentMode: z.enum(['BANK_DEPOSIT_TRANSFER', 'GCASH', 'WALK_IN_ON_SITE']).optional().nullable(),
+  paymentMode: z.enum(['BANK_DEPOSIT_TRANSFER', 'GCASH', 'FREE']).optional().nullable(),
   hasConferenceDiscount: z.boolean().optional().nullable(),
   receiptImageUrl: z.any().optional().nullable(), // Will be File object, validated separately
   referenceNumber: z.string().optional().nullable(),
@@ -111,19 +111,7 @@ export const conferenceRegistrationSchema = baseConferenceSchema
     message: "Please provide a valid website URL",
     path: ["companyWebsite"],
   })
-  .refine((data) => {
-    // Receipt file is required for non-TML members when payment is required
-    if (data.isMaritimeLeagueMember === MaritimeLeagueMembership.NO) {
-      // If they have selected events and payment is required, receipt is mandatory
-      if (data.selectedEventIds && data.selectedEventIds.length > 0) {
-        return data.receiptImageUrl instanceof File;
-      }
-    }
-    return true;
-  }, {
-    message: "Receipt image is required for payment verification",
-    path: ["receiptImageUrl"],
-  });
+  // Remove receipt validation - handle it like face scan (upload after record creation)
 
 export type ConferenceRegistrationFormData = z.infer<typeof conferenceRegistrationSchema>;
 

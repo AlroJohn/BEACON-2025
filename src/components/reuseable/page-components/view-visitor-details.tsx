@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Eye,
@@ -24,6 +23,7 @@ import {
   ZoomIn,
   UserCheck,
   MapPin,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 import { VisitorData } from "@/components/admin/visitors-data-table";
@@ -31,451 +31,347 @@ import { VisitorData } from "@/components/admin/visitors-data-table";
 interface VisitorRegistrationDialogProps {
   visitor: VisitorData;
   getStatusBadge: (status: string) => React.ReactNode;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-// Utility Components
-const InfoField: React.FC<{
-  label: string;
-  value: string | number | null | undefined;
-  fallback?: string;
-  className?: string;
-  copyable?: boolean;
-}> = ({ label, value, fallback = "N/A", className = "", copyable = false }) => (
-  <div className={`space-y-2 ${className}`}>
-    <label className="text-sm font-semibold uppercase tracking-wide">
-      {label}
-    </label>
-    <div className="flex items-center gap-2">
-      <p className="text-base font-medium">{value || fallback}</p>
-      {copyable && value && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigator.clipboard.writeText(String(value))}
-          className="h-6 w-6 p-0 hover:bg-border"
-        >
-          <Eye className="h-3 w-3" />
-        </Button>
-      )}
-    </div>
-  </div>
-);
 
-const SectionCard: React.FC<{
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  className?: string;
-}> = ({ title, icon, children, className = "" }) => (
-  <Card className={`border-0 shadow-sm dark:bg-c1/30 bg-muted ${className}`}>
-    <CardHeader className="pb-4 border-b border-border">
-      <CardTitle className="text-lg font-bold flex items-center gap-3">
-        <div className="p-2 dark:bg-c1/30 rounded-lg text-blue-600">{icon}</div>
-        {title}
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="pt-6">{children}</CardContent>
-  </Card>
-);
 
-// Image Modal Component
-const ImageModal: React.FC<{
-  src: string;
-  alt: string;
-  isOpen: boolean;
-  onClose: () => void;
-}> = ({ src, alt, isOpen, onClose }) => (
-  <Dialog open={isOpen} onOpenChange={onClose}>
-    <DialogContent className="max-w-4xl max-h-[90vh] p-2">
-      <DialogHeader>
-        <DialogTitle>{alt}</DialogTitle>
-      </DialogHeader>
-      <div className="flex justify-center">
-        <img
-          src={src}
-          alt={alt}
-          className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
-        />
-      </div>
-    </DialogContent>
-  </Dialog>
-);
-
-// Section Components
-const PersonalInfoSection: React.FC<{
-  personalInfo: VisitorData["personalInfo"];
-}> = ({ personalInfo }) => {
-  const [showFaceModal, setShowFaceModal] = useState(false);
-
-  const fullName = [
-    personalInfo.firstName,
-    personalInfo.middleName,
-    personalInfo.lastName,
-    personalInfo.suffix,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const genderDisplay = personalInfo.genderOthers
-    ? `${personalInfo.gender} (${personalInfo.genderOthers})`
-    : personalInfo.gender;
-
-  return (
-    <SectionCard
-      title="Personal Information"
-      icon={<User className="h-5 w-5" />}
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Face Photo Section */}
-        {personalInfo.faceScannedUrl && (
-          <div className="lg:col-span-3 mb-4">
-            <label className="text-sm font-semibold uppercase tracking-wide mb-3 block">
-              Face Photo
-            </label>
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <img
-                  className="w-32 h-32 object-cover rounded-xl shadow-md border cursor-pointer hover:shadow-lg transition-shadow"
-                  src={personalInfo.faceScannedUrl}
-                  alt="Face Photo"
-                  onClick={() => setShowFaceModal(true)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowFaceModal(true)}
-                  className="flex items-center gap-2 w-fit"
-                >
-                  <ZoomIn className="h-4 w-4" />
-                  View Full Size
-                </Button>
-                <Link
-                  href={personalInfo.faceScannedUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium w-fit"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Open in New Tab
-                </Link>
-              </div>
-            </div>
-
-            <ImageModal
-              src={personalInfo.faceScannedUrl}
-              alt="Face Photo"
-              isOpen={showFaceModal}
-              onClose={() => setShowFaceModal(false)}
-            />
-          </div>
-        )}
-
-        <InfoField
-          label="Full Name"
-          value={fullName}
-          className="lg:col-span-2"
-        />
-        <InfoField label="Preferred Name" value={personalInfo.preferredName} />
-        <InfoField label="Gender" value={genderDisplay} />
-        <InfoField label="Age Bracket" value={personalInfo.ageBracket} />
-        <InfoField label="Nationality" value={personalInfo.nationality} />
-      </div>
-    </SectionCard>
-  );
-};
-
-const ContactInfoSection: React.FC<{
-  contactInfo: VisitorData["contactInfo"];
-  getStatusBadge: (status: string) => React.ReactNode;
-}> = ({ contactInfo, getStatusBadge }) => (
-  <SectionCard title="Contact Information" icon={<Phone className="h-5 w-5" />}>
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <InfoField label="Email Address" value={contactInfo.email} copyable />
-      <InfoField
-        label="Mobile Number"
-        value={contactInfo.mobileNumber}
-        copyable
-      />
-      <InfoField label="Landline" value={contactInfo.landline} />
-      <InfoField
-        label="Mailing Address"
-        value={contactInfo.mailingAddress}
-        className="lg:col-span-2"
-      />
-      <div className="space-y-2">
-        <label className="text-sm font-semibold uppercase tracking-wide">
-          Status
-        </label>
-        <div>{getStatusBadge(contactInfo.status)}</div>
-      </div>
-    </div>
-  </SectionCard>
-);
-
-const ProfessionalInfoSection: React.FC<{
-  professionalInfo: VisitorData["professionalInfo"];
-}> = ({ professionalInfo }) => {
-  const industryDisplay = professionalInfo.industryOthers
-    ? `${professionalInfo.industry} (${professionalInfo.industryOthers})`
-    : professionalInfo.industry;
-
-  return (
-    <SectionCard
-      title="Professional Information"
-      icon={<Building className="h-5 w-5" />}
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <InfoField label="Job Title" value={professionalInfo.jobTitle} />
-        <InfoField label="Company Name" value={professionalInfo.companyName} />
-        <InfoField label="Industry" value={industryDisplay} />
-        <InfoField
-          label="Business Email"
-          value={professionalInfo.businessEmail}
-          copyable
-        />
-        <InfoField
-          label="Company Address"
-          value={professionalInfo.companyAddress}
-        />
-        <InfoField
-          label="Company Website"
-          value={professionalInfo.companyWebsite}
-        />
-      </div>
-    </SectionCard>
-  );
-};
-
-const EventInfoSection: React.FC<{
-  eventInfo: VisitorData["eventInfo"];
-}> = ({ eventInfo }) => (
-  <SectionCard
-    title="Event Information"
-    icon={<Calendar className="h-5 w-5" />}
-  >
-    <div className="space-y-6">
-      {/* Attending Days */}
-      <div>
-        <label className="text-sm font-semibold uppercase tracking-wide mb-3 block">
-          Attending Days
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {eventInfo.attendingDays.length > 0 ? (
-            eventInfo.attendingDays.map((day, index) => (
-              <Badge
-                key={index}
-                variant="secondary"
-                className="bg-green-50 text-green-700 hover:bg-green-100 px-3 py-1 text-sm font-medium"
-              >
-                {day}
-              </Badge>
-            ))
-          ) : (
-            <span className="text-slate-500 italic">None specified</span>
-          )}
-        </div>
-      </div>
-
-      {/* Event Parts */}
-      <div>
-        <label className="text-sm font-semibold uppercase tracking-wide mb-3 block">
-          Event Parts
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {eventInfo.eventParts.length > 0 ? (
-            eventInfo.eventParts.map((part, index) => (
-              <Badge
-                key={index}
-                variant="outline"
-                className="px-3 py-1 text-sm font-medium"
-              >
-                {part}
-              </Badge>
-            ))
-          ) : (
-            <span className="text-slate-500 italic">None specified</span>
-          )}
-        </div>
-      </div>
-
-      {/* Attendee Type */}
-      <InfoField label="Attendee Type" value={eventInfo.attendeeType} />
-
-      {/* Interest Areas */}
-      <div>
-        <label className="text-sm font-semibold uppercase tracking-wide mb-3 block">
-          Interest Areas
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {eventInfo.interestAreas.length > 0 ? (
-            eventInfo.interestAreas.map((interest, index) => (
-              <Badge
-                key={index}
-                variant="secondary"
-                className="bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1 text-sm font-medium"
-              >
-                {interest
-                  .replace(/_/g, " ")
-                  .toLowerCase()
-                  .replace(/\b\w/g, (l) => l.toUpperCase())}
-              </Badge>
-            ))
-          ) : (
-            <span className="text-slate-500 italic">None specified</span>
-          )}
-        </div>
-      </div>
-
-      {/* Preferences */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-6 border-t border-border">
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-3 h-3 rounded-full ${
-              eventInfo.receiveUpdates ? "bg-green-500" : "bg-gray-300"
-            }`}
-          />
-          <span className="text-sm font-medium">Receive Updates</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-3 h-3 rounded-full ${
-              eventInfo.inviteToFutureEvents ? "bg-green-500" : "bg-gray-300"
-            }`}
-          />
-          <span className="text-sm font-medium">Invite to Future Events</span>
-        </div>
-      </div>
-    </div>
-  </SectionCard>
-);
-
-const EmergencyInfoSection: React.FC<{
-  emergencyInfo: VisitorData["emergencyInfo"];
-}> = ({ emergencyInfo }) => (
-  <SectionCard
-    title="Emergency & Safety Information"
-    icon={<Shield className="h-5 w-5" />}
-  >
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <InfoField
-        label="Emergency Contact Person"
-        value={emergencyInfo.emergencyContactPerson}
-        copyable
-      />
-      <InfoField
-        label="Emergency Contact Number"
-        value={emergencyInfo.emergencyContactNumber}
-        copyable
-      />
-      <InfoField
-        label="Special Assistance"
-        value={emergencyInfo.specialAssistance}
-        className="lg:col-span-2"
-      />
-    </div>
-  </SectionCard>
-);
-
-const ConsentInfoSection: React.FC<{
-  consentInfo: VisitorData["consentInfo"];
-}> = ({ consentInfo }) => {
-  const hearAboutDisplay = consentInfo.hearAboutOthers
-    ? `${consentInfo.hearAboutEvent} (${consentInfo.hearAboutOthers})`
-    : consentInfo.hearAboutEvent;
-
-  return (
-    <SectionCard
-      title="Consent & Privacy Information"
-      icon={<UserCheck className="h-5 w-5" />}
-    >
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-3 h-3 rounded-full ${
-              consentInfo.dataPrivacyConsent ? "bg-green-500" : "bg-red-500"
-            }`}
-          />
-          <span className="text-sm font-medium">
-            Data Privacy Consent:{" "}
-            {consentInfo.dataPrivacyConsent ? "Given" : "Not Given"}
-          </span>
-        </div>
-
-        <InfoField
-          label="How did you hear about this event?"
-          value={hearAboutDisplay}
-        />
-      </div>
-    </SectionCard>
-  );
-};
-
-// Main Dialog Component
 const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
   visitor,
   getStatusBadge,
+  isOpen: externalIsOpen,
+  onOpenChange: externalOnOpenChange,
 }) => {
+  if (!visitor) return null;
+
   const fullName = `${visitor.personalInfo.firstName} ${visitor.personalInfo.lastName}`;
+  
+  // Use external state if provided, otherwise internal state
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const onOpenChange = externalOnOpenChange || setInternalIsOpen;
+  
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const genderDisplay = visitor.personalInfo.genderOthers
+    ? `${visitor.personalInfo.gender} (${visitor.personalInfo.genderOthers})`
+    : visitor.personalInfo.gender;
+
+  const industryDisplay = visitor.professionalInfo.industryOthers
+    ? `${visitor.professionalInfo.industry} (${visitor.professionalInfo.industryOthers})`
+    : visitor.professionalInfo.industry;
+
+  const hearAboutDisplay = visitor.consentInfo.hearAboutOthers
+    ? `${visitor.consentInfo.hearAboutEvent} (${visitor.consentInfo.hearAboutOthers})`
+    : visitor.consentInfo.hearAboutEvent;
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-          <Eye className="mr-2 h-4 w-4" />
-          View details
-        </DropdownMenuItem>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      {/* Only render trigger if using internal state (for backward compatibility) */}
+      {externalIsOpen === undefined && (
+        <DialogTrigger asChild>
+          <DropdownMenuItem 
+            onSelect={(e) => {
+              e.preventDefault();
+              onOpenChange(true);
+            }}
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            View details
+          </DropdownMenuItem>
+        </DialogTrigger>
+      )}
 
-      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
-        <DialogHeader className="space-y-3 pb-6">
-          <DialogTitle className="text-3xl font-bold flex items-center gap-3">
-            <div className="p-3 rounded-xl">
-              <User className="h-8 w-8 text-blue-600" />
-            </div>
-            Visitor Registration
+      <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Visitor Details
           </DialogTitle>
-          <DialogDescription className="text-lg font-medium">
-            Complete registration details for {fullName}
+          <DialogDescription>
+            Complete information for {fullName}
           </DialogDescription>
-          <div className="flex items-center gap-4 text-sm text-slate-500">
-            <span>ID: {visitor.id}</span>
-            <span>•</span>
-            <span>
-              Registered: {new Date(visitor.createdAt).toLocaleDateString()}
-            </span>
-            {visitor.updatedAt !== visitor.createdAt && (
-              <>
-                <span>•</span>
-                <span>
-                  Updated: {new Date(visitor.updatedAt).toLocaleDateString()}
-                </span>
-              </>
-            )}
-          </div>
         </DialogHeader>
 
-        <Separator className="bg-slate-200" />
+        <ScrollArea className="max-h-[70vh] pr-4">
+          <div className="space-y-6">
+            {/* Personal Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Personal Information
+              </h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Full Name:</span>
+                  <p className="mt-1">{fullName}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Preferred Name:</span>
+                  <p className="mt-1">
+                    {visitor.personalInfo.preferredName || "Not specified"}
+                  </p>
+                </div>
+                <div>
+                  <span className="font-medium">Gender:</span>
+                  <p className="mt-1">{genderDisplay}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Age Bracket:</span>
+                  <p className="mt-1">{visitor.personalInfo.ageBracket}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Nationality:</span>
+                  <p className="mt-1">{visitor.personalInfo.nationality}</p>
+                </div>
+                {visitor.personalInfo.faceScannedUrl && (
+                  <div className="col-span-2">
+                    <span className="font-medium">Face Capture:</span>
+                    <p className="mt-1">
+                      <a
+                        href={visitor.personalInfo.faceScannedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        View face capture
+                      </a>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
 
-        <div className="space-y-8 py-6">
-          <PersonalInfoSection personalInfo={visitor.personalInfo} />
+            <Separator />
 
-          <ContactInfoSection
-            contactInfo={visitor.contactInfo}
-            getStatusBadge={getStatusBadge}
-          />
+            {/* Contact Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                Contact Information
+              </h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Email:</span>
+                  <p className="mt-1">{visitor.contactInfo.email}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Mobile Number:</span>
+                  <p className="mt-1">
+                    {visitor.contactInfo.mobileNumber || "Not provided"}
+                  </p>
+                </div>
+                <div>
+                  <span className="font-medium">Landline:</span>
+                  <p className="mt-1">
+                    {visitor.contactInfo.landline || "Not provided"}
+                  </p>
+                </div>
+                <div>
+                  <span className="font-medium">Status:</span>
+                  <Badge variant="outline" className="mt-1">
+                    {visitor.contactInfo.status}
+                  </Badge>
+                </div>
+                <div className="col-span-2">
+                  <span className="font-medium">Mailing Address:</span>
+                  <p className="mt-1">
+                    {visitor.contactInfo.mailingAddress || "Not provided"}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-          <ProfessionalInfoSection
-            professionalInfo={visitor.professionalInfo}
-          />
+            <Separator />
 
-          <EventInfoSection eventInfo={visitor.eventInfo} />
+            {/* Professional Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Building className="h-4 w-4" />
+                Professional Information
+              </h3>
+              <div className="grid grid-cols-1 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="font-medium">Job Title:</span>
+                    <p className="mt-1">{visitor.professionalInfo.jobTitle}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Company Name:</span>
+                    <p className="mt-1">{visitor.professionalInfo.companyName}</p>
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">Industry:</span>
+                  <p className="mt-1">{industryDisplay}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Business Email:</span>
+                  <p className="mt-1">{visitor.professionalInfo.businessEmail || "Not provided"}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Company Address:</span>
+                  <p className="mt-1 flex items-start gap-1">
+                    <MapPin className="h-3 w-3 mt-1 flex-shrink-0" />
+                    {visitor.professionalInfo.companyAddress || "Not provided"}
+                  </p>
+                </div>
+                {visitor.professionalInfo.companyWebsite && (
+                  <div>
+                    <span className="font-medium">Company Website:</span>
+                    <p className="mt-1">
+                      <a
+                        href={visitor.professionalInfo.companyWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <Globe className="h-3 w-3" />
+                        {visitor.professionalInfo.companyWebsite}
+                      </a>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <EmergencyInfoSection emergencyInfo={visitor.emergencyInfo} />
+            <Separator />
 
-          <ConsentInfoSection consentInfo={visitor.consentInfo} />
-        </div>
+            {/* Event Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Event Information
+              </h3>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <span className="font-medium">Attending Days:</span>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {visitor.eventInfo.attendingDays.length > 0 ? (
+                      visitor.eventInfo.attendingDays.map((day, index) => (
+                        <Badge key={index} variant="secondary">
+                          {day}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground">None specified</span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">Event Parts:</span>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {visitor.eventInfo.eventParts.length > 0 ? (
+                      visitor.eventInfo.eventParts.map((part, index) => (
+                        <Badge key={index} variant="outline">
+                          {part}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground">None specified</span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">Attendee Type:</span>
+                  <p className="mt-1">{visitor.eventInfo.attendeeType}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Interest Areas:</span>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {visitor.eventInfo.interestAreas.length > 0 ? (
+                      visitor.eventInfo.interestAreas.map((interest, index) => (
+                        <Badge key={index} variant="secondary">
+                          {interest.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground">None specified</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Emergency & Safety Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Emergency & Safety Information
+              </h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Emergency Contact Person:</span>
+                  <p className="mt-1">{visitor.emergencyInfo.emergencyContactPerson || "Not provided"}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Emergency Contact Number:</span>
+                  <p className="mt-1">{visitor.emergencyInfo.emergencyContactNumber || "Not provided"}</p>
+                </div>
+                <div className="col-span-2">
+                  <span className="font-medium">Special Assistance:</span>
+                  <p className="mt-1">{visitor.emergencyInfo.specialAssistance || "None required"}</p>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Consent & Privacy Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <UserCheck className="h-4 w-4" />
+                Consent & Privacy Information
+              </h3>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <span className="font-medium">Data Privacy Consent:</span>
+                  <Badge 
+                    variant={visitor.consentInfo.dataPrivacyConsent ? "default" : "destructive"} 
+                    className="mt-1 ml-2"
+                  >
+                    {visitor.consentInfo.dataPrivacyConsent ? "Given" : "Not Given"}
+                  </Badge>
+                </div>
+                <div>
+                  <span className="font-medium">How did you hear about this event?</span>
+                  <p className="mt-1 text-muted-foreground">{hearAboutDisplay}</p>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Registration Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Registration Information
+              </h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Registered:</span>
+                  <p className="mt-1">{formatDate(visitor.createdAt)}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Last Updated:</span>
+                  <p className="mt-1">{formatDate(visitor.updatedAt)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Select,
@@ -33,10 +32,11 @@ import {
   ZoomIn,
   Save,
   Loader2,
+  MapPin,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 import { ConferenceData } from "@/components/admin/conference-data-table";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useUpdatePaymentStatus } from "@/hooks/tanstasck-query/useAdminConference";
 import { toast } from "sonner";
 
@@ -49,591 +49,8 @@ interface ConferenceRegistrationDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-// Utility Components
-const InfoField: React.FC<{
-  label: string;
-  value: string | number | null | undefined;
-  fallback?: string;
-  className?: string;
-  copyable?: boolean;
-}> = ({ label, value, fallback = "N/A", className = "", copyable = false }) => (
-  <div className={`space-y-2 ${className}`}>
-    <label className="text-sm font-semibold  uppercase tracking-wide">
-      {label}
-    </label>
-    <div className="flex items-center gap-2">
-      <p className="text-base font-medium">{value || fallback}</p>
-      {copyable && value && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigator.clipboard.writeText(String(value))}
-          className="h-6 w-6 p-0 hover:bg-border"
-        >
-          <Eye className="h-3 w-3" />
-        </Button>
-      )}
-    </div>
-  </div>
-);
-
-const SectionCard: React.FC<{
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  className?: string;
-}> = ({ title, icon, children, className = "" }) => (
-  <Card className={`border-0 shadow-sm dark:bg-c1/30 bg-muted  ${className}`}>
-    <CardHeader className="pb-4 border-b border-border">
-      <CardTitle className="text-lg font-bold flex items-center gap-3">
-        <div className="p-2 dark:bg-c1/30 rounded-lg text-blue-600">{icon}</div>
-        {title}
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="pt-6">{children}</CardContent>
-  </Card>
-);
-
-// Image Modal Component
-const ImageModal: React.FC<{
-  src: string;
-  alt: string;
-  isOpen: boolean;
-  onClose: () => void;
-}> = ({ src, alt, isOpen, onClose }) => (
-  <Dialog open={isOpen} onOpenChange={onClose}>
-    <DialogContent className="w-fit max-h-[90vh] p-2">
-      <DialogHeader className="pb-6">
-        {/* ✅ Required for accessibility, but hidden visually */}
-        <VisuallyHidden>
-          <DialogTitle>{alt || "Image preview"}</DialogTitle>
-        </VisuallyHidden>
-      </DialogHeader>
-      <div className="flex justify-center">
-        <img
-          src={src}
-          alt={alt}
-          className="max-w-full max-h-[70vh] md:min-w-xl min-w-[80dvw] object-contain rounded-lg shadow-lg"
-        />
-      </div>
-    </DialogContent>
-  </Dialog>
-);
-
-// Section Components
-const PersonalInfoSection: React.FC<{
-  personalInfo: ConferenceData["personalInfo"];
-}> = ({ personalInfo }) => {
-  const [showFaceModal, setShowFaceModal] = useState(false);
-
-  const fullName = [
-    personalInfo.firstName,
-    personalInfo.middleName,
-    personalInfo.lastName,
-    personalInfo.suffix,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const genderDisplay = personalInfo.genderOthers
-    ? `${personalInfo.gender} (${personalInfo.genderOthers})`
-    : personalInfo.gender;
-
-  return (
-    <SectionCard
-      title="Personal Information"
-      icon={<User className="h-5 w-5" />}
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Face Photo Section */}
-        {personalInfo.faceScannedUrl && (
-          <div className="lg:col-span-3 mb-4">
-            <label className="text-sm font-semibold uppercase tracking-wide mb-3 block">
-              Face Photo
-            </label>
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <img
-                  className="w-32 h-32 object-cover rounded-xl shadow-md border cursor-pointer hover:shadow-lg transition-shadow"
-                  src={personalInfo.faceScannedUrl}
-                  alt="Face Photo"
-                  onClick={() => setShowFaceModal(true)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowFaceModal(true)}
-                  className="flex items-center gap-2 w-fit"
-                >
-                  <ZoomIn className="h-4 w-4" />
-                  View Full Size
-                </Button>
-                <Link
-                  href={personalInfo.faceScannedUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium w-fit"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Open in New Tab
-                </Link>
-              </div>
-            </div>
-
-            <ImageModal
-              src={personalInfo.faceScannedUrl}
-              alt="Face Photo"
-              isOpen={showFaceModal}
-              onClose={() => setShowFaceModal(false)}
-            />
-          </div>
-        )}
-
-        <InfoField
-          label="Full Name"
-          value={fullName}
-          className="lg:col-span-2"
-        />
-        <InfoField label="Preferred Name" value={personalInfo.preferredName} />
-        <InfoField label="Gender" value={genderDisplay} />
-        <InfoField label="Age Bracket" value={personalInfo.ageBracket} />
-        <InfoField label="Nationality" value={personalInfo.nationality} />
-      </div>
-    </SectionCard>
-  );
-};
-
-const ContactInfoSection: React.FC<{
-  contactInfo: ConferenceData["contactInfo"];
-  getStatusBadge: (status: string) => React.ReactNode;
-}> = ({ contactInfo, getStatusBadge }) => (
-  <SectionCard title="Contact Information" icon={<Phone className="h-5 w-5" />}>
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <InfoField label="Email Address" value={contactInfo.email} copyable />
-      <InfoField
-        label="Mobile Number"
-        value={contactInfo.mobileNumber}
-        copyable
-      />
-      <InfoField label="Landline" value={contactInfo.landline} />
-      <InfoField
-        label="Mailing Address"
-        value={contactInfo.mailingAddress}
-        className="lg:col-span-2"
-      />
-      <div className="space-y-2">
-        <label className="text-sm font-semibold  uppercase tracking-wide">
-          Status
-        </label>
-        <div>{getStatusBadge(contactInfo.status)}</div>
-      </div>
-    </div>
-  </SectionCard>
-);
-
-const ConferenceInfoSection: React.FC<{
-  conferenceInfo: ConferenceData["conferenceInfo"];
-  getMembershipBadge: (isMember: boolean) => React.ReactNode;
-}> = ({ conferenceInfo, getMembershipBadge }) => (
-  <SectionCard
-    title="Conference Information"
-    icon={<Building className="h-5 w-5" />}
-  >
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="space-y-2">
-        <label className="text-sm font-semibold  uppercase tracking-wide">
-          Maritime League Member
-        </label>
-        <div>
-          {getMembershipBadge(conferenceInfo.isMaritimeLeagueMember === "YES")}
-        </div>
-      </div>
-      <InfoField label="TML Member Code" value={conferenceInfo.tmlMemberCode} />
-      <InfoField label="Job Title" value={conferenceInfo.jobTitle} />
-      <InfoField label="Company" value={conferenceInfo.companyName} />
-      <InfoField label="Industry" value={conferenceInfo.industry} />
-      <InfoField
-        label="Company Address"
-        value={conferenceInfo.companyAddress}
-      />
-      <InfoField
-        label="Company Website"
-        value={conferenceInfo.companyWebsite}
-        className="lg:col-span-2"
-      />
-    </div>
-
-    {/* Additional Conference Preferences */}
-    <div className="mt-6 pt-6 border-t border-border">
-      <h4 className="text-sm font-semibold  uppercase tracking-wide mb-4">
-        Conference Preferences
-      </h4>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-3 h-3 rounded-full ${
-              conferenceInfo.receiveEventInvites
-                ? "bg-green-500"
-                : "bg-gray-300"
-            }`}
-          />
-          <span className="text-sm font-medium">Receive Event Invites</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-3 h-3 rounded-full ${
-              conferenceInfo.emailCertificate ? "bg-green-500" : "bg-gray-300"
-            }`}
-          />
-          <span className="text-sm font-medium">Email Certificate</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-3 h-3 rounded-full ${
-              conferenceInfo.photoVideoConsent ? "bg-green-500" : "bg-gray-300"
-            }`}
-          />
-          <span className="text-sm font-medium">Photo/Video Consent</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-3 h-3 rounded-full ${
-              conferenceInfo.dataUsageConsent ? "bg-green-500" : "bg-gray-300"
-            }`}
-          />
-          <span className="text-sm font-medium">Data Usage Consent</span>
-        </div>
-      </div>
-    </div>
-  </SectionCard>
-);
-
-const InterestAreasSection: React.FC<{
-  conferenceInfo: ConferenceData["conferenceInfo"];
-}> = ({ conferenceInfo }) => (
-  <SectionCard title="Interest Areas" icon={<Heart className="h-5 w-5" />}>
-    <div className="space-y-6">
-      <div>
-        <label className="text-sm font-semibold  uppercase tracking-wide mb-3 block">
-          Primary Interests
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {conferenceInfo.interestAreas &&
-          conferenceInfo.interestAreas.length > 0 ? (
-            conferenceInfo.interestAreas.map((interest, index) => (
-              <Badge
-                key={index}
-                variant="secondary"
-                className="bg-blue-50 text-blue-700 hover: px-3 py-1 text-sm font-medium"
-              >
-                {interest}
-              </Badge>
-            ))
-          ) : (
-            <span className="text-slate-500 italic">None specified</span>
-          )}
-        </div>
-      </div>
-      {conferenceInfo.otherInterests && (
-        <InfoField
-          label="Additional Interests"
-          value={conferenceInfo.otherInterests}
-        />
-      )}
-    </div>
-  </SectionCard>
-);
-
-const SelectedEventsSection: React.FC<{
-  selectedEvents: ConferenceData["selectedEvents"];
-}> = ({ selectedEvents }) => {
-  // Calculate total with conference discount logic (same as API)
-  const calculateTotal = () => {
-    const baseTotal = selectedEvents.reduce((sum, event) => sum + event.price, 0);
-    
-    // Apply conference discount if all 3 CONFERENCE events are selected
-    const conferenceEvents = selectedEvents.filter(event => event.status === 'CONFERENCE');
-    if (conferenceEvents.length === 3) {
-      return baseTotal - 1500; // Apply 1500 discount for selecting all 3 conference events
-    }
-    
-    return baseTotal;
-  };
-
-  const totalAmount = calculateTotal();
-
-  return (
-    <SectionCard
-      title="Selected Events"
-      icon={<Calendar className="h-5 w-5" />}
-    >
-      <div className="space-y-4">
-        {selectedEvents.length > 0 ? (
-          <>
-            {selectedEvents.map((event, index) => (
-              <div
-                key={event.id || index}
-                className="flex items-center justify-between p-4  rounded-xl border border-border hover:shadow-sm transition-shadow"
-              >
-                <div className="flex-1">
-                  <h4 className="font-bold text-lg">{event.name}</h4>
-                  <div className="flex items-center gap-3 mt-1">
-                    <Badge
-                      variant="outline"
-                      className="capitalize text-xs font-medium"
-                    >
-                      {event.status}
-                    </Badge>
-                    {event.date && (
-                      <span className="text-sm ">
-                        {new Date(event.date).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-xl ">
-                    ₱{event.price.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-            <div className="pt-4 border-t ">
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold ">Total Amount:</span>
-                <span className="text-2xl font-bold text-blue-600">
-                  ₱{totalAmount.toLocaleString()}
-                </span>
-              </div>
-            </div>
-          </>
-        ) : (
-          <p className="text-slate-500 italic text-center py-8">
-            No events selected
-          </p>
-        )}
-      </div>
-    </SectionCard>
-  );
-};
-
-const PaymentInfoSection: React.FC<{
-  paymentInfo: ConferenceData["paymentInfo"];
-  getPaymentStatusBadge: (status: string) => React.ReactNode;
-  conferenceId: string;
-}> = ({ paymentInfo, getPaymentStatusBadge, conferenceId }) => {
-  const [showImageModal, setShowImageModal] = useState(false);
-  const [newPaymentStatus, setNewPaymentStatus] = useState(paymentInfo.paymentStatus);
-  const [notes, setNotes] = useState(paymentInfo.notes || '');
-  const updatePaymentStatus = useUpdatePaymentStatus();
-
-  const handleUpdatePaymentStatus = () => {
-    if (newPaymentStatus === paymentInfo.paymentStatus && notes === paymentInfo.notes) {
-      toast.info('No changes to save');
-      return;
-    }
-
-    updatePaymentStatus.mutate({
-      conferenceId,
-      paymentStatus: newPaymentStatus as 'PENDING' | 'CONFIRMED' | 'FAILED' | 'REFUNDED',
-      notes: notes.trim() || undefined,
-    }, {
-      onSuccess: () => {
-        toast.success('Payment status updated successfully');
-      },
-      onError: (error) => {
-        toast.error(`Failed to update payment status: ${error.message}`);
-      },
-    });
-  };
-
-  return (
-    <SectionCard
-      title="Payment Information"
-      icon={<CreditCard className="h-5 w-5" />}
-    >
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold uppercase tracking-wide">
-              Payment Status
-            </label>
-            <div className="flex items-center gap-3">
-              <Select 
-                value={newPaymentStatus} 
-                onValueChange={(value) => {
-                  setNewPaymentStatus(value);
-                  // Auto-update when changed
-                  if (value !== paymentInfo.paymentStatus) {
-                    updatePaymentStatus.mutate({
-                      conferenceId,
-                      paymentStatus: value as 'PENDING' | 'CONFIRMED' | 'FAILED' | 'REFUNDED',
-                      notes: `Status changed from ${paymentInfo.paymentStatus} to ${value} by admin`,
-                    }, {
-                      onSuccess: () => {
-                        toast.success('Payment status updated successfully');
-                      },
-                      onError: (error) => {
-                        toast.error(`Failed to update payment status: ${error.message}`);
-                        setNewPaymentStatus(paymentInfo.paymentStatus); // Revert on error
-                      },
-                    });
-                  }
-                }}
-                disabled={updatePaymentStatus.isPending}
-              >
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PENDING">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                      PENDING
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="CONFIRMED">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      CONFIRMED
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="FAILED">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                      FAILED
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="REFUNDED">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-gray-500"></div>
-                      REFUNDED
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              {updatePaymentStatus.isPending && (
-                <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-              )}
-            </div>
-          </div>
-          <InfoField
-            label="Total Amount"
-            value={`₱${(paymentInfo.totalAmount || 0).toLocaleString()}`}
-          />
-          <InfoField label="Payment Mode" value={paymentInfo.paymentMode} />
-          <InfoField
-            label="Transaction Reference"
-            value={paymentInfo.referenceNumber}
-            copyable
-          />
-          <div className="space-y-2">
-            <label className="text-sm font-semibold  uppercase tracking-wide">
-              Payment Required
-            </label>
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-3 h-3 rounded-full ${
-                  paymentInfo.requiresPayment ? "bg-amber-500" : "bg-green-500"
-                }`}
-              />
-              <span className="text-sm font-medium">
-                {paymentInfo.requiresPayment ? "Yes" : "No"}
-              </span>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold  uppercase tracking-wide">
-              Payment Confirmed
-            </label>
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-3 h-3 rounded-full ${
-                  paymentInfo.isPaid ? "bg-green-500" : "bg-gray-300"
-                }`}
-              />
-              <span className="text-sm font-medium">
-                {paymentInfo.isPaid ? "Yes" : "No"}
-              </span>
-              {paymentInfo.paymentConfirmedAt && (
-                <span className="text-xs text-slate-500 ml-2">
-                  (
-                  {new Date(
-                    paymentInfo.paymentConfirmedAt
-                  ).toLocaleDateString()}
-                  )
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {paymentInfo.receiptImageUrl && (
-          <div className="space-y-4">
-            <label className="text-sm font-semibold  uppercase tracking-wide block">
-              Receipt
-            </label>
-            <div className=" rounded-xl p-4 border ">
-              <div className="flex flex-col lg:flex-row gap-4 items-start">
-                <div className="flex-shrink-0">
-                  <img
-                    className="object-contain max-w-48 max-h-48 rounded-lg shadow-md border  cursor-pointer hover:shadow-lg transition-shadow"
-                    src={paymentInfo.receiptImageUrl}
-                    alt="Payment Receipt"
-                    onClick={() => setShowImageModal(true)}
-                  />
-                </div>
-                <div className="flex flex-col gap-3 flex-1">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowImageModal(true)}
-                    className="flex items-center gap-2 w-fit"
-                  >
-                    <ZoomIn className="h-4 w-4" />
-                    View Full Size
-                  </Button>
-                  <Link
-                    href={paymentInfo.receiptImageUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm w-fit"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Open in New Tab
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <ImageModal
-              src={paymentInfo.receiptImageUrl}
-              alt="Payment Receipt"
-              isOpen={showImageModal}
-              onClose={() => setShowImageModal(false)}
-            />
-          </div>
-        )}
 
 
-        {/* Current Payment Notes */}
-        {paymentInfo.notes && (
-          <div className="space-y-2">
-            <label className="text-sm font-semibold  uppercase tracking-wide">
-              Current Payment Notes
-            </label>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-              <p className="text-amber-800 font-medium">{paymentInfo.notes}</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </SectionCard>
-  );
-};
-
-// Main Dialog Component
 const ConferenceRegistrationDialog: React.FC<
   ConferenceRegistrationDialogProps
 > = ({
@@ -644,6 +61,8 @@ const ConferenceRegistrationDialog: React.FC<
   isOpen: externalIsOpen,
   onOpenChange: externalOnOpenChange,
 }) => {
+  if (!conference) return null;
+
   const fullName = `${conference.personalInfo.firstName} ${conference.personalInfo.lastName}`;
   
   // Use external state if provided, otherwise internal state
@@ -651,9 +70,36 @@ const ConferenceRegistrationDialog: React.FC<
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const onOpenChange = externalOnOpenChange || setInternalIsOpen;
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const genderDisplay = conference.personalInfo.genderOthers
+    ? `${conference.personalInfo.gender} (${conference.personalInfo.genderOthers})`
+    : conference.personalInfo.gender;
+
+  // Calculate total with conference discount logic
+  const calculateTotal = () => {
+    const baseTotal = conference.selectedEvents.reduce((sum, event) => sum + event.price, 0);
+    const conferenceEvents = conference.selectedEvents.filter(event => event.status === 'CONFERENCE');
+    if (conferenceEvents.length === 3) {
+      return baseTotal - 1500;
+    }
+    return baseTotal;
+  };
+
+  const updatePaymentStatus = useUpdatePaymentStatus();
+  const [newPaymentStatus, setNewPaymentStatus] = useState(conference.paymentInfo.paymentStatus);
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      {/* Only render trigger if using internal state (for backward compatibility) */}
+      {/* Only render trigger if using internal state */}
       {externalIsOpen === undefined && (
         <DialogTrigger asChild>
           <DropdownMenuItem 
@@ -668,59 +114,336 @@ const ConferenceRegistrationDialog: React.FC<
         </DialogTrigger>
       )}
 
-      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto ">
-        <DialogHeader className="space-y-3 pb-6">
-          <DialogTitle className="font-bold flex items-center gap-3">
-            <div className="p-3  rounded-xl">
-              <User className="h-8 w-8 text-blue-600" />
-            </div>
-            Conference Registration
+      <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Conference Details
           </DialogTitle>
-          <DialogDescription className="text-lg  font-medium">
-            Complete registration details for {fullName}
+          <DialogDescription>
+            Complete information for {fullName}
           </DialogDescription>
-          <div className="flex items-center gap-4 text-sm text-slate-500">
-            <span>ID: {conference.id}</span>
-            <span>•</span>
-            <span>
-              Registered: {new Date(conference.createdAt).toLocaleDateString()}
-            </span>
-            {conference.updatedAt !== conference.createdAt && (
-              <>
-                <span>•</span>
-                <span>
-                  Updated: {new Date(conference.updatedAt).toLocaleDateString()}
-                </span>
-              </>
-            )}
-          </div>
         </DialogHeader>
 
-        <Separator className="bg-slate-200" />
+        <ScrollArea className="max-h-[70vh] pr-4">
+          <div className="space-y-6">
+            {/* Personal Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Personal Information
+              </h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Full Name:</span>
+                  <p className="mt-1">{fullName}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Preferred Name:</span>
+                  <p className="mt-1">
+                    {conference.personalInfo.preferredName || "Not specified"}
+                  </p>
+                </div>
+                <div>
+                  <span className="font-medium">Gender:</span>
+                  <p className="mt-1">{genderDisplay}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Age Bracket:</span>
+                  <p className="mt-1">{conference.personalInfo.ageBracket}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Nationality:</span>
+                  <p className="mt-1">{conference.personalInfo.nationality}</p>
+                </div>
+                {conference.personalInfo.faceScannedUrl && (
+                  <div className="col-span-2">
+                    <span className="font-medium">Face Capture:</span>
+                    <p className="mt-1">
+                      <a
+                        href={conference.personalInfo.faceScannedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        View face capture
+                      </a>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
 
-        <div className="space-y-8 py-6">
-          <PersonalInfoSection personalInfo={conference.personalInfo} />
+            <Separator />
 
-          <ContactInfoSection
-            contactInfo={conference.contactInfo}
-            getStatusBadge={getStatusBadge}
-          />
+            {/* Contact Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                Contact Information
+              </h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Email:</span>
+                  <p className="mt-1">{conference.contactInfo.email}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Mobile Number:</span>
+                  <p className="mt-1">
+                    {conference.contactInfo.mobileNumber || "Not provided"}
+                  </p>
+                </div>
+                <div>
+                  <span className="font-medium">Landline:</span>
+                  <p className="mt-1">
+                    {conference.contactInfo.landline || "Not provided"}
+                  </p>
+                </div>
+                <div>
+                  <span className="font-medium">Status:</span>
+                  <Badge variant="outline" className="mt-1">
+                    {conference.contactInfo.status}
+                  </Badge>
+                </div>
+                <div className="col-span-2">
+                  <span className="font-medium">Mailing Address:</span>
+                  <p className="mt-1">
+                    {conference.contactInfo.mailingAddress || "Not provided"}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-          <ConferenceInfoSection
-            conferenceInfo={conference.conferenceInfo}
-            getMembershipBadge={getMembershipBadge}
-          />
+            <Separator />
 
-          <InterestAreasSection conferenceInfo={conference.conferenceInfo} />
+            {/* Conference Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Building className="h-4 w-4" />
+                Conference Information
+              </h3>
+              <div className="grid grid-cols-1 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Maritime League Member:</span>
+                  <Badge variant="outline" className="mt-1 ml-2">
+                    {conference.conferenceInfo.isMaritimeLeagueMember}
+                  </Badge>
+                </div>
+                {conference.conferenceInfo.tmlMemberCode && (
+                  <div>
+                    <span className="font-medium">TML Member Code:</span>
+                    <p className="mt-1">{conference.conferenceInfo.tmlMemberCode}</p>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="font-medium">Job Title:</span>
+                    <p className="mt-1">{conference.conferenceInfo.jobTitle}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Company:</span>
+                    <p className="mt-1">{conference.conferenceInfo.companyName}</p>
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">Industry:</span>
+                  <p className="mt-1">{conference.conferenceInfo.industry}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Company Address:</span>
+                  <p className="mt-1 flex items-start gap-1">
+                    <MapPin className="h-3 w-3 mt-1 flex-shrink-0" />
+                    {conference.conferenceInfo.companyAddress}
+                  </p>
+                </div>
+                {conference.conferenceInfo.companyWebsite && (
+                  <div>
+                    <span className="font-medium">Company Website:</span>
+                    <p className="mt-1">
+                      <a
+                        href={conference.conferenceInfo.companyWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <Globe className="h-3 w-3" />
+                        {conference.conferenceInfo.companyWebsite}
+                      </a>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <SelectedEventsSection selectedEvents={conference.selectedEvents} />
+            <Separator />
 
-          <PaymentInfoSection
-            paymentInfo={conference.paymentInfo}
-            getPaymentStatusBadge={getPaymentStatusBadge}
-            conferenceId={conference.id}
-          />
-        </div>
+            {/* Interest Areas */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Heart className="h-4 w-4" />
+                Interest Areas
+              </h3>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <span className="font-medium">Primary Interests:</span>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {conference.conferenceInfo.interestAreas &&
+                    conference.conferenceInfo.interestAreas.length > 0 ? (
+                      conference.conferenceInfo.interestAreas.map((interest, index) => (
+                        <Badge key={index} variant="secondary">
+                          {interest}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground">None specified</span>
+                    )}
+                  </div>
+                </div>
+                {conference.conferenceInfo.otherInterests && (
+                  <div>
+                    <span className="font-medium">Additional Interests:</span>
+                    <p className="mt-1 text-muted-foreground">
+                      {conference.conferenceInfo.otherInterests}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Selected Events */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Selected Events
+              </h3>
+              <div className="space-y-4 text-sm">
+                {conference.selectedEvents.length > 0 ? (
+                  <>
+                    {conference.selectedEvents.map((event, index) => (
+                      <div key={event.id || index} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium">{event.name}</p>
+                          <Badge variant="outline" className="text-xs mt-1">
+                            {event.status}
+                          </Badge>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold">₱{event.price.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="pt-2 border-t">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Total Amount:</span>
+                        <span className="font-bold text-lg">₱{calculateTotal().toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">No events selected</p>
+                )}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Payment Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                Payment Information
+              </h3>
+              <div className="space-y-4 text-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="font-medium">Payment Status:</span>
+                    <div className="mt-1">
+                      <Select 
+                        value={newPaymentStatus} 
+                        onValueChange={(value) => {
+                          setNewPaymentStatus(value);
+                          if (value !== conference.paymentInfo.paymentStatus) {
+                            updatePaymentStatus.mutate({
+                              conferenceId: conference.id,
+                              paymentStatus: value as 'PENDING' | 'CONFIRMED' | 'FAILED' | 'REFUNDED',
+                              notes: `Status changed from ${conference.paymentInfo.paymentStatus} to ${value} by admin`,
+                            });
+                          }
+                        }}
+                        disabled={updatePaymentStatus.isPending}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PENDING">PENDING</SelectItem>
+                          <SelectItem value="CONFIRMED">CONFIRMED</SelectItem>
+                          <SelectItem value="FAILED">FAILED</SelectItem>
+                          <SelectItem value="REFUNDED">REFUNDED</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="font-medium">Total Amount:</span>
+                    <p className="mt-1 font-bold">₱{(conference.paymentInfo.totalAmount || 0).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Payment Mode:</span>
+                    <p className="mt-1">{conference.paymentInfo.paymentMode || "Not specified"}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Reference Number:</span>
+                    <p className="mt-1">{conference.paymentInfo.referenceNumber || "Not provided"}</p>
+                  </div>
+                </div>
+                {conference.paymentInfo.receiptImageUrl && (
+                  <div>
+                    <span className="font-medium">Payment Receipt:</span>
+                    <p className="mt-1">
+                      <a
+                        href={conference.paymentInfo.receiptImageUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        View payment receipt
+                      </a>
+                    </p>
+                  </div>
+                )}
+                {conference.paymentInfo.notes && (
+                  <div>
+                    <span className="font-medium">Payment Notes:</span>
+                    <p className="mt-1 text-muted-foreground">{conference.paymentInfo.notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Registration Information */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Registration Information
+              </h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium">Registered:</span>
+                  <p className="mt-1">{formatDate(conference.createdAt)}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Last Updated:</span>
+                  <p className="mt-1">{formatDate(conference.updatedAt)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

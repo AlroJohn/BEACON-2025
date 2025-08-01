@@ -1,4 +1,5 @@
 import sgMail from '@sendgrid/mail';
+import QRCode from 'qrcode';
 
 // Initialize SendGrid
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
@@ -9,6 +10,24 @@ if (!SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY);
 }
 
+// Generate high-quality QR code and convert to base64 (matching visitor email pattern)
+const generateQRCodeAsBase64 = async (data: string): Promise<string> => {
+  // First generate the QR code as data URL
+  const qrCodeDataUrl = await QRCode.toDataURL(data, {
+    width: 512,
+    margin: 2,
+    color: {
+      dark: "#1e40af", // BEACON blue color
+      light: "#FFFFFF",
+    },
+    errorCorrectionLevel: "H",
+    type: "image/png",
+  });
+
+  // Convert data URL to base64 (remove data:image/png;base64, prefix)
+  return qrCodeDataUrl.split(',')[1];
+};
+
 // Email service interface
 export interface EmailData {
   to: string;
@@ -16,12 +35,14 @@ export interface EmailData {
   html: string;
   from?: string;
   templateData?: Record<string, any>;
+  userId?: string; // Add userId for QR code generation
 }
 
 // Conference registration email data
 export interface ConferenceRegistrationEmailData {
   userEmail: string;
   userName: string;
+  userId: string; // Add userId for QR code
   conferenceId: string;
   isMaritimeLeagueMember: boolean;
   selectedEvents: Array<{
@@ -37,25 +58,55 @@ export interface ConferenceRegistrationEmailData {
 }
 
 // Send email function
-export async function sendEmail({ to, subject, html, from }: EmailData): Promise<boolean> {
+export async function sendEmail({ to, subject, html, from, userId }: EmailData): Promise<boolean> {
   try {
     if (!SENDGRID_API_KEY) {
       console.error('Cannot send email: SENDGRID_API_KEY not configured');
       return false;
     }
 
-    const msg = {
+    const msg: any = {
       to,
       from: 'noreply@thebeaconexpo.com',
       subject,
       html,
     };
 
-    await sgMail.send(msg);
+    // Generate and attach QR code if userId is provided
+    if (userId) {
+      try {
+        console.log(`Generating QR code for user: ${userId}`);
+        const base64Image = await generateQRCodeAsBase64(userId);
+
+        msg.attachments = [
+          {
+            content: base64Image,
+            filename: `BEACON_2025_Conference_Pass_${userId.slice(-8)}.png`,
+            type: 'image/png',
+            disposition: 'attachment',
+            contentId: 'qrcode'
+          }
+        ];
+        console.log('QR code generated and attached successfully');
+      } catch (qrError) {
+        console.error('Failed to generate QR code, sending email without it:', qrError);
+        // Continue sending email without QR code
+      }
+    }
+
+    console.log(`Attempting to send email to: ${to}`);
+    console.log(`Email subject: ${subject}`);
+    console.log(`From address: ${msg.from}`);
+
+    const result = await sgMail.send(msg);
     console.log(`Email sent successfully to ${to}`);
+    console.log('SendGrid response:', JSON.stringify(result[0]?.statusCode));
     return true;
   } catch (error) {
     console.error('Error sending email:', error);
+    // if (error && typeof error === 'object' && 'response' in error) {
+    //   console.error('SendGrid error details:', error.response?.body);
+    // }
     return false;
   }
 }
@@ -272,7 +323,8 @@ export async function sendConferenceRegistrationEmail(data: ConferenceRegistrati
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com'
+    from: 'noreply@thebeaconexpo.com',
+    userId: data.userId // Pass userId for QR code generation
   });
 }
 
@@ -291,6 +343,7 @@ export interface PaymentStatusEmailData {
     eventDate: Date;
     eventPrice: number;
   }>;
+  userId?: string; // Add userId for QR code generation when payment is CONFIRMED
 }
 
 // Generate payment status update email HTML
@@ -405,8 +458,17 @@ export function generatePaymentStatusEmail(data: PaymentStatusEmailData): string
 
         <!-- Status Message -->
         <div style="padding: 30px; text-align: center; background-color: ${config.bgColor}; border-bottom: 1px solid #e5e7eb;">
-          <div style="width: 60px; height: 60px; background-color: ${config.color}; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
-            <span style="color: white; font-size: 24px;">${config.icon}</span>
+          <!-- circle -->
+          <div style="
+            width:60px;
+            height:60px;
+            background-color:${config.color};
+            border-radius:50%;
+            margin:0 auto 16px;    
+            text-align:center;      
+            line-height:60px;       
+          ">
+            <span style="color:#ffffff;font-size:24px;display:inline-block;">${config.icon}</span>
           </div>
           <h2 style="color: ${config.color}; margin: 0 0 8px 0; font-size: 24px;">${config.title}</h2>
           <p style="color: #374151; margin: 0; font-size: 16px;">${config.description}</p>
@@ -534,7 +596,9 @@ export async function sendPaymentStatusEmail(data: PaymentStatusEmailData): Prom
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com'
+    from: 'noreply@thebeaconexpo.com',
+    // Include userId for QR code generation when payment is CONFIRMED
+    userId: data.newStatus === 'CONFIRMED' ? data.userId : undefined
   });
 }
 
@@ -542,6 +606,7 @@ export async function sendPaymentStatusEmail(data: PaymentStatusEmailData): Prom
 export interface SponsorRegistrationEmailData {
   userEmail: string;
   userName: string;
+  userId: string; // Add userId for QR code
   sponsorId: string;
   companyName: string;
   sponsorshipCategories: string[];
@@ -604,8 +669,18 @@ export function generateSponsorRegistrationEmail(data: SponsorRegistrationEmailD
 
         <!-- Success Message -->
         <div style="padding: 30px; text-align: center; background-color: #fef3c7; border-bottom: 1px solid #e5e7eb;">
-          <div style="width: 60px; height: 60px; background-color: #f59e0b; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
-            <span style="color: white; font-size: 24px;">🤝</span>
+       
+           <!-- circle -->
+          <div style="
+            width:60px;
+            height:60px;
+            background-color: #f59e0b;
+            border-radius:50%;
+            margin:0 auto 16px;    
+            text-align:center;      
+            line-height:60px;       
+          ">
+            <span style="color:#ffffff;font-size:24px;display:inline-block;">🤝</span>
           </div>
           <h2 style="color: #92400e; margin: 0 0 8px 0; font-size: 24px;">Sponsor Registration Submitted!</h2>
           <p style="color: #78350f; margin: 0; font-size: 16px;">Your sponsorship interest has been received and is under review</p>
@@ -723,7 +798,8 @@ export async function sendSponsorRegistrationEmail(data: SponsorRegistrationEmai
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com'
+    from: 'noreply@thebeaconexpo.com',
+    userId: data.userId // Pass userId for QR code generation
   });
 }
 
@@ -731,6 +807,7 @@ export async function sendSponsorRegistrationEmail(data: SponsorRegistrationEmai
 export interface ExhibitorRegistrationEmailData {
   userEmail: string;
   userName: string;
+  userId: string; // Add userId for QR code
   exhibitorId: string;
   companyName: string;
   participationTypes: string[];
@@ -784,9 +861,21 @@ export function generateExhibitorRegistrationEmail(data: ExhibitorRegistrationEm
 
         <!-- Success Message -->
         <div style="padding: 30px; text-align: center; background-color: #fef3c7; border-bottom: 1px solid #e5e7eb;">
-          <div style="width: 60px; height: 60px; background-color: #f59e0b; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
-            <span style="color: white; font-size: 24px;">🏢</span>
+        <!-- circle -->
+          <div style="
+            width:60px;
+            height:60px;
+            background-color: #f59e0b;
+            border-radius:50%;
+            margin:0 auto 16px;    
+            text-align:center;      
+            line-height:60px;       
+          ">
+            <span style="color:#ffffff;font-size:24px;display:inline-block;">🏢</span>
           </div>
+          <h2 style="color: #92400e; margin: 0 0 8px 0; font-size: 24px;">Sponsor Registration Submitted!</h2>
+          <p style="color: #78350f; margin: 0; font-size: 16px;">Your sponsorship interest has been received and is under review</p>
+        </div>
           <h2 style="color: #92400e; margin: 0 0 8px 0; font-size: 24px;">Exhibitor Registration Submitted!</h2>
           <p style="color: #78350f; margin: 0; font-size: 16px;">Your exhibition application has been received and is under review</p>
         </div>
@@ -897,6 +986,7 @@ export function generateExhibitorRegistrationEmail(data: ExhibitorRegistrationEm
 export interface VisitorRegistrationEmailData {
   userEmail: string;
   userName: string;
+  userId: string; // Add userId for QR code
   visitorId: string;
   attendeeType: string;
   companyName?: string;
@@ -962,9 +1052,19 @@ function generateVisitorRegistrationEmail(data: VisitorRegistrationEmailData): s
         <div style="padding: 40px 30px;">
           <!-- Success Message -->
           <div style="text-align: center; margin-bottom: 30px;">
-            <div style="background-color: #dcfce7; border-radius: 50%; width: 60px; height: 60px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
-              <span style="color: #16a34a; font-size: 30px;">✓</span>
-            </div>
+       
+          <!-- circle -->
+          <div style="
+            width:60px;
+            height:60px;
+            background-color: #dcfce7;
+            border-radius:50%;
+            margin:0 auto 16px;    
+            text-align:center;      
+            line-height:60px;       
+          ">
+            <span style="color:#ffffff;font-size:24px;display:inline-block;">✓</span>
+          </div>
             <h2 style="color: #1f2937; margin: 0 0 8px 0; font-size: 24px;">Registration Successful!</h2>
             <p style="color: #6b7280; margin: 0; font-size: 16px;">Welcome to BEACON 2025, ${userName}!</p>
           </div>
@@ -1081,7 +1181,8 @@ export async function sendVisitorRegistrationEmail(data: VisitorRegistrationEmai
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com'
+    from: 'noreply@thebeaconexpo.com',
+    userId: data.userId // Pass userId for QR code generation
   });
 }
 
@@ -1095,6 +1196,7 @@ export async function sendExhibitorRegistrationEmail(data: ExhibitorRegistration
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com'
+    from: 'noreply@thebeaconexpo.com',
+    userId: data.userId // Pass userId for QR code generation
   });
 }

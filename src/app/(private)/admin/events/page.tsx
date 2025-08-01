@@ -22,29 +22,29 @@ export default function EventsDashboard() {
   const { currentAdmin } = useAdminStore();
   const { data: eventsData, isLoading, error, refetch } = useEventsQuery();
 
-
-
   const handleDeleteEvent = async (eventId: string, eventName: string) => {
     try {
       const response = await fetch(`/api/events?eventId=${eventId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to delete event');
+        throw new Error(error.error || "Failed to delete event");
       }
 
       toast.success(`Event "${eventName}" deleted successfully!`);
       refetch();
     } catch (error) {
-      console.error('Error deleting event:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to delete event');
+      console.error("Error deleting event:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete event"
+      );
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
+    <div className="max-w-[76rem] mx-auto p-4">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

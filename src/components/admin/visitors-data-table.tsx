@@ -159,6 +159,10 @@ export function VisitorsDataTable({
       attendeeType: false,
     });
   const [rowSelection, setRowSelection] = React.useState({});
+  
+  // External modal state management to prevent auto-closing during realtime updates
+  const [selectedVisitor, setSelectedVisitor] = React.useState<VisitorData | null>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -592,10 +596,15 @@ export function VisitorsDataTable({
               <DropdownMenuSeparator />
 
               {/* View Details */}
-              <VisitorRegistrationDialog
-                visitor={visitor}
-                getStatusBadge={getStatusBadge}
-              />
+              <DropdownMenuItem
+                onClick={() => {
+                  setSelectedVisitor(visitor);
+                  setIsModalOpen(true);
+                }}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View details
+              </DropdownMenuItem>
 
               {/* Delete - Only for SUPERADMIN */}
               {currentAdminStatus === "SUPERADMIN" && (
@@ -861,6 +870,22 @@ export function VisitorsDataTable({
           </div>
         </div>
       </div>
+      
+      {/* Global Modal - Outside table render cycle */}
+      {selectedVisitor && (
+        <VisitorRegistrationDialog
+          key={`global-visitor-dialog-${selectedVisitor.id}`}
+          visitor={selectedVisitor}
+          getStatusBadge={getStatusBadge}
+          isOpen={isModalOpen}
+          onOpenChange={(open) => {
+            setIsModalOpen(open);
+            if (!open) {
+              setSelectedVisitor(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

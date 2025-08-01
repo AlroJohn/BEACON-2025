@@ -199,12 +199,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check if user already has an exhibitor registration
-    const existingUser = await prisma.users.findFirst({
+    // Check if user already has an exhibitor registration using user_type
+    const existingExhibitorUser = await prisma.users.findFirst({
       where: {
         user_accounts: {
           some: {
-            email: email
+            email: email,
+            user_type: 'EXHIBITOR' // Check if already registered as exhibitor
           }
         }
       },
@@ -215,41 +216,29 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    let user;
-    let userAccount;
-    let user_details;
+    // If user already has exhibitor registration, prevent duplicate
+    if (existingExhibitorUser && existingExhibitorUser.ExhibitorRegistrations.length > 0) {
+      return NextResponse.json(
+        { error: 'This email is already registered as an exhibitor' },
+        { status: 400 }
+      );
+    }
 
-    if (existingUser) {
-      user = existingUser;
-      userAccount = existingUser.user_accounts[0];
-      user_details = existingUser.user_details[0];
-
-      // Check if user already has an exhibitor registration
-      if (existingUser.ExhibitorRegistrations.length > 0) {
-        return NextResponse.json(
-          { error: 'User already has an exhibitor registration' },
-          { status: 400 }
-        );
-      }
-
-      // Update existing user data if needed
-      if (userAccount) {
-        await prisma.user_accounts.update({
-          where: { id: userAccount.id },
-          data: {
+    // Always create new user, accounts, and details for exhibitor registration
+    const user = await prisma.users.create({
+      data: {
+        user_accounts: {
+          create: {
             email,
             mobileNumber,
             mailingAddress,
             landline,
-            exhibitor: true
+            status: 'ACTIVE',
+            user_type: 'EXHIBITOR'
           }
-        });
-      }
-
-      if (user_details) {
-        await prisma.user_details.update({
-          where: { id: user_details.id },
-          data: {
+        },
+        user_details: {
+          create: {
             firstName,
             lastName,
             middleName,
@@ -262,47 +251,16 @@ export async function POST(request: NextRequest) {
             position,
             faceScannedUrl: null // Will be updated after image upload
           }
-        });
-      }
-    } else {
-      // Create new user with accounts and details
-      user = await prisma.users.create({
-        data: {
-          user_accounts: {
-            create: {
-              email,
-              mobileNumber,
-              mailingAddress,
-              landline,
-              status: 'ACTIVE',
-              exhibitor: true
-            }
-          },
-          user_details: {
-            create: {
-              firstName,
-              lastName,
-              middleName,
-              suffix,
-              preferredName,
-              gender,
-              genderOthers,
-              ageBracket,
-              nationality,
-              position,
-              faceScannedUrl: null // Will be updated after image upload
-            }
-          }
-        },
-        include: {
-          user_accounts: true,
-          user_details: true
         }
-      });
+      },
+      include: {
+        user_accounts: true,
+        user_details: true
+      }
+    });
 
-      userAccount = user.user_accounts[0];
-      user_details = user.user_details[0];
-    }
+    const userAccount = user.user_accounts[0];
+    const user_details = user.user_details[0];
 
     // Step 1: Create exhibitor registration with null/empty file URLs
     console.log("Exhibitor API: Creating exhibitor registration with null file URLs");
@@ -425,6 +383,7 @@ export async function POST(request: NextRequest) {
       const emailData: ExhibitorRegistrationEmailData = {
         userEmail: email,
         userName: `${firstName} ${lastName}`,
+        userId: user.id, // Add userId for QR code generation
         exhibitorId: exhibitor.id,
         companyName: exhibitorData.companyName,
         participationTypes: exhibitorData.participationTypes,

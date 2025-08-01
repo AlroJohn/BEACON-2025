@@ -16,74 +16,70 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Check if email exists in user_accounts for the specific registration type
-    const existingUsers = await prisma.user_accounts.findMany({
-      where: {
-        email: email
-      }
-    });
-
-    if (existingUsers.length === 0) {
-      return NextResponse.json({
-        exists: false,
-        message: "Email is available"
-      });
-    }
-
-    // If registration type is specified, check specific boolean flag across all users with this email
+    // If registration type is specified, check for specific user_type
     if (registrationType) {
-      let alreadyRegistered = false;
-      let registrationTypeName = '';
-
-      // Check if any user with this email already has the specific registration type
-      for (const existingUser of existingUsers) {
-        switch (registrationType) {
-          case 'conference':
-            if (existingUser.conference) alreadyRegistered = true;
-            registrationTypeName = 'conference';
-            break;
-          case 'visitor':
-            if (existingUser.visitor) alreadyRegistered = true;
-            registrationTypeName = 'visitor';
-            break;
-          case 'exhibitor':
-            if (existingUser.exhibitor) alreadyRegistered = true;
-            registrationTypeName = 'exhibitor';
-            break;
-          case 'sponsor':
-            if (existingUser.sponsor) alreadyRegistered = true;
-            registrationTypeName = 'sponsor';
-            break;
-          default:
-            // If invalid type, fall back to general email exists check
-            return NextResponse.json({
-              exists: true,
-              message: "Email already exists"
-            });
-        }
-
-        if (alreadyRegistered) break; // Exit loop if already registered
+      // Map registration type to UserType enum
+      let userType: string;
+      switch (registrationType) {
+        case 'conference':
+          userType = 'CONFERENCE';
+          break;
+        case 'visitor':
+          userType = 'VISITOR';
+          break;
+        case 'exhibitor':
+          userType = 'EXHIBITOR';
+          break;
+        case 'sponsor':
+          userType = 'SPONSOR';
+          break;
+        default:
+          return NextResponse.json({
+            exists: false,
+            message: "Invalid registration type"
+          }, { status: 400 });
       }
 
-      if (alreadyRegistered) {
+      // Check if email already exists for this specific registration type
+      const existingUserForType = await prisma.user_accounts.findFirst({
+        where: {
+          email: email,
+          user_type: userType as any
+        }
+      });
+
+      if (existingUserForType) {
         return NextResponse.json({
           exists: true,
-          message: `This email is already registered for ${registrationTypeName} registration`,
-          registrationType: registrationTypeName
+          message: `This email is already registered for ${registrationType} registration`,
+          registrationType: registrationType
         });
       } else {
+        // Check if email exists for other registration types
+        const existingUserAnyType = await prisma.user_accounts.findFirst({
+          where: {
+            email: email
+          }
+        });
+
         return NextResponse.json({
           exists: false,
           message: "Email is available for this registration type",
-          existingUser: true // Email exists but not for this registration type
+          existingUser: !!existingUserAnyType // Email exists but not for this registration type
         });
       }
     }
 
     // If no registration type specified, check if email exists at all
+    const existingUser = await prisma.user_accounts.findFirst({
+      where: {
+        email: email
+      }
+    });
+
     return NextResponse.json({
-      exists: true,
-      message: "Email already exists"
+      exists: !!existingUser,
+      message: existingUser ? "Email already exists" : "Email is available"
     });
 
   } catch (error) {

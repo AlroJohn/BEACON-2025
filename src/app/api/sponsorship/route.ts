@@ -160,12 +160,13 @@ export async function POST(request: NextRequest) {
       ...sponsorData
     } = validatedData;
 
-    // Check if user already exists with this email
-    const existingUser = await prisma.users.findFirst({
+    // Check if user already has a sponsor registration using user_type
+    const existingSponsorUser = await prisma.users.findFirst({
       where: {
         user_accounts: {
           some: {
-            email: email
+            email: email,
+            user_type: 'SPONSOR' // Check if already registered as sponsor
           }
         }
       },
@@ -176,43 +177,33 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    let user;
-    let userAccount;
-    let user_details;
+    // If user already has sponsor registration, prevent duplicate
+    if (existingSponsorUser && existingSponsorUser.sponsor_registrations.length > 0) {
+      return NextResponse.json({
+        success: false,
+        error: "This email is already registered as a sponsor",
+        message: "A sponsor registration already exists for this email address"
+      } as SponsorRegistrationResponse, { status: 409 });
+    }
 
-    if (existingUser) {
-      user = existingUser;
-      userAccount = existingUser.user_accounts[0];
-      user_details = existingUser.user_details[0];
-
-      // Check if user already has a sponsor registration
-      if (existingUser.sponsor_registrations.length > 0) {
-        return NextResponse.json({
-          success: false,
-          error: "User already has a sponsor registration",
-          message: "A sponsor registration already exists for this email address"
-        } as SponsorRegistrationResponse, { status: 409 });
-      }
-
-      // Update existing user data if needed
-      if (userAccount) {
-        await prisma.user_accounts.update({
-          where: { id: userAccount.id },
-          data: {
+    // Always create new user, accounts, and details for sponsor registration
+    const user = await prisma.users.create({
+      data: {
+        created_at: new Date(),
+        updated_at: new Date(),
+        user_accounts: {
+          create: {
             email,
             mobileNumber,
             mailingAddress,
             landline,
-            sponsor: true,
+            user_type: 'SPONSOR',
+            created_at: new Date(),
             updated_at: new Date(),
           }
-        });
-      }
-
-      if (user_details) {
-        await prisma.user_details.update({
-          where: { id: user_details.id },
-          data: {
+        },
+        user_details: {
+          create: {
             firstName,
             lastName,
             middleName,
@@ -225,51 +216,16 @@ export async function POST(request: NextRequest) {
             position,
             faceScannedUrl: null, // Will be updated after image upload
           }
-        });
-      }
-    } else {
-      // Create new user with accounts and details
-      user = await prisma.users.create({
-        data: {
-          created_at: new Date(),
-          updated_at: new Date(),
-          user_accounts: {
-            create: {
-              email,
-              mobileNumber,
-              mailingAddress,
-              landline,
-              sponsor: true,
-              created_at: new Date(),
-              updated_at: new Date(),
-            }
-          },
-          user_details: {
-            create: {
-              firstName,
-              lastName,
-              middleName,
-              suffix,
-              preferredName,
-              gender,
-              genderOthers,
-              ageBracket,
-              nationality,
-              position,
-              faceScannedUrl: null, // Will be updated after image upload
-
-            }
-          }
-        },
-        include: {
-          user_accounts: true,
-          user_details: true
         }
-      });
+      },
+      include: {
+        user_accounts: true,
+        user_details: true
+      }
+    });
 
-      userAccount = user.user_accounts[0];
-      user_details = user.user_details[0];
-    }
+    const userAccount = user.user_accounts[0];
+    const user_details = user.user_details[0];
 
     // Step 1: Create sponsor registration with null file URLs
     console.log("Sponsor API: Creating sponsor registration with null file URLs");
@@ -369,6 +325,7 @@ export async function POST(request: NextRequest) {
       const emailData: SponsorRegistrationEmailData = {
         userEmail: email,
         userName: `${firstName} ${lastName}`,
+        userId: user.id, // Add userId for QR code generation
         sponsorId: sponsor.id,
         companyName: sponsorData.companyName,
         sponsorshipCategories: sponsorData.sponsorshipCategories,

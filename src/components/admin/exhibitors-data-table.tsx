@@ -176,7 +176,8 @@ export function ExhibitorsDataTable({
       additionalComments: false,
     });
   const [rowSelection, setRowSelection] = React.useState({});
-  const [selectedExhibitor, setSelectedExhibitor] = React.useState<ExhibitorData | null>(null);
+  const [selectedExhibitor, setSelectedExhibitor] =
+    React.useState<ExhibitorData | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
 
   const handleViewDetails = (exhibitor: ExhibitorData) => {
@@ -336,7 +337,9 @@ export function ExhibitorsDataTable({
         );
       },
       cell: ({ row }) => (
-        <div className="text-sm max-w-[180px] truncate">{row.original.contactInfo.email}</div>
+        <div className="text-sm max-w-[180px] truncate">
+          {row.original.contactInfo.email}
+        </div>
       ),
     },
     {
@@ -514,8 +517,9 @@ export function ExhibitorsDataTable({
                             {exhibitor.personalInfo.firstName}{" "}
                             {exhibitor.personalInfo.lastName}
                           </strong>{" "}
-                          from <strong>{exhibitor.companyInfo.companyName}</strong>
-                          ? This action cannot be undone and will remove all
+                          from{" "}
+                          <strong>{exhibitor.companyInfo.companyName}</strong>?
+                          This action cannot be undone and will remove all
                           associated data.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
@@ -571,7 +575,7 @@ export function ExhibitorsDataTable({
   });
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full">
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter exhibitors..."

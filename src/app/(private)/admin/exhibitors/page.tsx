@@ -119,28 +119,23 @@ export default function ExhibitorsDashboard() {
   const totalCount = exhibitorsData?.count || 0;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-6 px-4">
-        {/* Exhibitors Data Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Exhibitor Registrations</CardTitle>
-            <CardDescription>
-              View and manage all exhibitor registrations for BEACON 2025
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ExhibitorsDataTable
-              data={exhibitors}
-              onDeleteExhibitor={handleDeleteExhibitor}
-              isDeleting={deleteExhibitor.isPending}
-              currentAdminStatus={
-                currentAdmin?.status as "SUPERADMIN" | "ADMIN"
-              }
-            />
-          </CardContent>
-        </Card>
-      </div>
+    <div className="max-w-[76rem]  mx-auto p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Exhibitor Registrations</CardTitle>
+          <CardDescription>
+            View and manage all exhibitor registrations for BEACON 2025
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ExhibitorsDataTable
+            data={exhibitors}
+            onDeleteExhibitor={handleDeleteExhibitor}
+            isDeleting={deleteExhibitor.isPending}
+            currentAdminStatus={currentAdmin?.status as "SUPERADMIN" | "ADMIN"}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

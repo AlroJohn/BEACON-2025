@@ -13,24 +13,39 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Calendar } from "lucide-react";
 import { useAdminStore } from "@/stores/adminStore";
 import { VisitorEventsDataTable } from "@/components/admin/visitor-events-data-table";
-import { useVisitorEventsQuery, useDeleteVisitorEventMutation } from "@/hooks/tanstasck-query/useVisitorEventsQuery";
+import {
+  useVisitorEventsQuery,
+  useDeleteVisitorEventMutation,
+} from "@/hooks/tanstasck-query/useVisitorEventsQuery";
 import { useVisitorEventsStore } from "@/stores/visitorEventsStore";
 import { toast } from "sonner";
 
 export default function VisitorEventsDashboard() {
   const { currentAdmin } = useAdminStore();
-  const { data: visitorEventsData, isLoading, error, refetch } = useVisitorEventsQuery();
+  const {
+    data: visitorEventsData,
+    isLoading,
+    error,
+    refetch,
+  } = useVisitorEventsQuery();
   const deleteVisitorEventMutation = useDeleteVisitorEventMutation();
   const { setVisitorEvents, removeVisitorEvent } = useVisitorEventsStore();
 
-  const handleDeleteVisitorEvent = async (eventId: string, eventName: string) => {
+  const handleDeleteVisitorEvent = async (
+    eventId: string,
+    eventName: string
+  ) => {
     try {
       await deleteVisitorEventMutation.mutateAsync(eventId);
       removeVisitorEvent(eventId);
       toast.success(`Visitor event "${eventName}" deleted successfully!`);
     } catch (error) {
-      console.error('Error deleting visitor event:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to delete visitor event');
+      console.error("Error deleting visitor event:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete visitor event"
+      );
     }
   };
 
@@ -42,7 +57,7 @@ export default function VisitorEventsDashboard() {
   }, [visitorEventsData, setVisitorEvents]);
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
+    <div className="max-w-[76rem] mx-auto p-4">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

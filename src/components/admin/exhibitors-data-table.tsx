@@ -66,6 +66,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { ExhibitorDetailsModal } from "./exhibitor-details-modal";
 
 // Types
 export interface ExhibitorData {
@@ -175,6 +176,18 @@ export function ExhibitorsDataTable({
       additionalComments: false,
     });
   const [rowSelection, setRowSelection] = React.useState({});
+  const [selectedExhibitor, setSelectedExhibitor] = React.useState<ExhibitorData | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
+
+  const handleViewDetails = (exhibitor: ExhibitorData) => {
+    setSelectedExhibitor(exhibitor);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedExhibitor(null);
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -472,8 +485,8 @@ export function ExhibitorsDataTable({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
-              {/* View Details - TODO: Create ExhibitorDetailsDialog */}
-              <DropdownMenuItem>
+              {/* View Details */}
+              <DropdownMenuItem onClick={() => handleViewDetails(exhibitor)}>
                 <Eye className="mr-2 h-4 w-4" />
                 View details
               </DropdownMenuItem>
@@ -669,6 +682,13 @@ export function ExhibitorsDataTable({
           </Button>
         </div>
       </div>
+
+      {/* Exhibitor Details Modal */}
+      <ExhibitorDetailsModal
+        exhibitor={selectedExhibitor}
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+      />
     </div>
   );
 }

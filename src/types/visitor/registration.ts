@@ -76,85 +76,85 @@ export const registrationSchema = baseVisitorSchema
 export type RegistrationFormData = z.infer<typeof baseVisitorSchema>
 
 // Clean defaults (no prefilled visitor data) and JSON-ready attendingDays
-// export const defaultRegistrationValues: Partial<RegistrationFormData> = {
-//   firstName: "Alro",
-//   lastName: "John",
-//   middleName: "Smith",
-//   suffix: "Jr.",
-//   preferredName: "Al",
-
-//   attendeeType: AttendeeType.STUDENT_ACADEMIC,
-//   ageBracket: AgeBracket.AGE_18_24,
-//   mailingAddress: '',
-//   // Don't set enum defaults - let user choose
-//   gender: Gender.MALE,
-
-//   genderOthers: "",
-//   nationality: "Filipino",
-//   email: "alro.john@example.com",
-//   mobileNumber: "09123456789",
-//   landline: "0287654321",
-//   jobTitle: "Software Engineer",
-//   companyName: "Tech Solutions Inc.",
-//   industry: Industry.GOVERNMENT,
-//   industryOthers: "Information Technology",
-//   companyAddress: "123 Tech Street",
-//   companyWebsite: "https://techsolutions.com",
-//   businessEmail: "business@techsolutions.com",
-//   attendingDays: {},
-//   eventParts: [],
-//   interestAreas: ["MARITIME_NAVAL_TECH", "SHIPBUILDING_REPAIR"],
-//   receiveUpdates: false,
-//   inviteToFutureEvents: false,
-//   specialAssistance: "Test",
-//   emergencyContactPerson: "Test",
-//   emergencyContactNumber: "09815133675",
-//   dataPrivacyConsent: false,
-//   hearAboutEvent: HearAboutEvent.FACEBOOK_SOCIAL_MEDIA,
-//   hearAboutOthers: "",
-// };
-
 export const defaultRegistrationValues: Partial<RegistrationFormData> = {
-  firstName: "",
-  lastName: "",
-  middleName: "",
-  suffix: "",
-  preferredName: "",
+  firstName: "Alro",
+  lastName: "John",
+  middleName: "Smith",
+  suffix: "Jr.",
+  preferredName: "Al",
 
-  // enums: leave undefined so user must choose
-  attendeeType: undefined,
-  ageBracket: undefined,
-  gender: undefined,
+  attendeeType: AttendeeType.STUDENT_ACADEMIC,
+  ageBracket: AgeBracket.AGE_18_24,
+  mailingAddress: '',
+  // Don't set enum defaults - let user choose
+  gender: Gender.MALE,
 
   genderOthers: "",
-  nationality: "",
-  email: "",
-  mobileNumber: "",
-  landline: "",
-  jobTitle: "",
-  companyName: "",
-  industry: undefined,          // enum
-  industryOthers: "",
-  companyAddress: "",
-  companyWebsite: "",
-  businessEmail: "",
-
-  attendingDays: {},            // keep empty object if your UI expects a shape
+  nationality: "Filipino",
+  email: "alro.john@example.com",
+  mobileNumber: "09123456789",
+  landline: "0287654321",
+  jobTitle: "Software Engineer",
+  companyName: "Tech Solutions Inc.",
+  industry: Industry.GOVERNMENT,
+  industryOthers: "Information Technology",
+  companyAddress: "123 Tech Street",
+  companyWebsite: "https://techsolutions.com",
+  businessEmail: "business@techsolutions.com",
+  attendingDays: {},
   eventParts: [],
-  interestAreas: [],
-
-  // booleans: unchecked by default
+  interestAreas: ["MARITIME_NAVAL_TECH", "SHIPBUILDING_REPAIR"],
   receiveUpdates: false,
   inviteToFutureEvents: false,
+  specialAssistance: "Test",
+  emergencyContactPerson: "Test",
+  emergencyContactNumber: "09815133675",
   dataPrivacyConsent: false,
-
-  specialAssistance: "",
-  emergencyContactPerson: "",
-  emergencyContactNumber: "",
-
-  hearAboutEvent: undefined,    // enum
+  hearAboutEvent: HearAboutEvent.FACEBOOK_SOCIAL_MEDIA,
   hearAboutOthers: "",
 };
+
+// export const defaultRegistrationValues: Partial<RegistrationFormData> = {
+//   firstName: "",
+//   lastName: "",
+//   middleName: "",
+//   suffix: "",
+//   preferredName: "",
+
+//   // enums: leave undefined so user must choose
+//   attendeeType: undefined,
+//   ageBracket: undefined,
+//   gender: undefined,
+
+//   genderOthers: "",
+//   nationality: "",
+//   email: "",
+//   mobileNumber: "",
+//   landline: "",
+//   jobTitle: "",
+//   companyName: "",
+//   industry: undefined,          // enum
+//   industryOthers: "",
+//   companyAddress: "",
+//   companyWebsite: "",
+//   businessEmail: "",
+
+//   attendingDays: {},            // keep empty object if your UI expects a shape
+//   eventParts: [],
+//   interestAreas: [],
+
+//   // booleans: unchecked by default
+//   receiveUpdates: false,
+//   inviteToFutureEvents: false,
+//   dataPrivacyConsent: false,
+
+//   specialAssistance: "",
+//   emergencyContactPerson: "",
+//   emergencyContactNumber: "",
+
+//   hearAboutEvent: undefined,    // enum
+//   hearAboutOthers: "",
+// };
 
 
 

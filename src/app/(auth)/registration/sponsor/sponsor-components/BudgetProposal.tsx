@@ -1,6 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -63,8 +64,8 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <div className="grid md:grid-cols-2 grid-cols-1">
+      <div className="space-y-6">
+        <div className="grid md:grid-cols-2 grid-cols-1 items-start gap-4 ">
           {/* Budget Range */}
           <FormField
             control={form.control}
@@ -72,10 +73,6 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
             render={({ field }) => (
               <FormItem className="col-span-1">
                 <FormLabel>1. Sponsorship Budget Range *</FormLabel>
-                <p className="text-sm text-muted-foreground mb-3">
-                  What is your estimated budget range for this sponsorship
-                  opportunity?
-                </p>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full overflow-hidden">
@@ -91,11 +88,14 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
                   </SelectContent>
                 </Select>
                 <FormMessage />
+                <FormDescription className="text-accent-foreground">
+                  What is your estimated budget range for this sponsorship
+                  opportunity?
+                </FormDescription>
               </FormItem>
             )}
           />
-        </div>
-        <div className="grid md:grid-cols-2 grid-cols-1">
+
           {/* Customized Proposal */}
           <FormField
             control={form.control}
@@ -103,9 +103,6 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>2. Customized Sponsorship Proposal *</FormLabel>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Would you like to receive a customized sponsorship proposal?
-                </p>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full overflow-hidden">
@@ -121,6 +118,9 @@ export function BudgetProposal({ form }: BudgetProposalProps) {
                   </SelectContent>
                 </Select>
                 <FormMessage />
+                <FormDescription className="text-accent-foreground">
+                  Would you like to receive a customized sponsorship proposal?
+                </FormDescription>
               </FormItem>
             )}
           />

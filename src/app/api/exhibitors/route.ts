@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { baseExhibitorSchema } from '@/types/exhibitor/registration';
 import { exhibitorOnlySchema, nullIfEmpty, toNullableSet } from '@/types/exhibitor/helper';
+import { sendExhibitorRegistrationEmail, ExhibitorRegistrationEmailData } from '@/lib/email';
 
 const prisma = new PrismaClient();
 
@@ -418,6 +419,30 @@ export async function POST(request: NextRequest) {
 
     console.log("Exhibitor API: File upload process completed");
     console.log("Final URLs - Face:", faceImageUrl, "Logo:", logoImageUrl, "Letter:", letterOfIntentUrl);
+
+    // Send confirmation email
+    try {
+      const emailData: ExhibitorRegistrationEmailData = {
+        userEmail: email,
+        userName: `${firstName} ${lastName}`,
+        exhibitorId: exhibitor.id,
+        companyName: companyName,
+        participationTypes: participationTypes,
+        boothSize: boothSize || "Not specified",
+        confirmIntent: confirmIntent,
+      };
+
+      const emailSent = await sendExhibitorRegistrationEmail(emailData);
+      
+      if (emailSent) {
+        console.log("Exhibitor registration confirmation email sent successfully");
+      } else {
+        console.log("Failed to send exhibitor registration confirmation email");
+      }
+    } catch (emailError) {
+      console.error("Error sending exhibitor registration email:", emailError);
+      // Don't fail the registration if email fails
+    }
 
     return NextResponse.json({
       success: true,

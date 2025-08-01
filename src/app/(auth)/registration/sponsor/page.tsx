@@ -770,7 +770,7 @@ export default function SponsorRegistrationPage() {
                 // Optionally redirect to a thank you page or home
                 window.location.href = "https://www.thebeaconexpo.com/";
               }}
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full dark:text-accent-foreground bg-green-600 hover:bg-green-700"
             >
               Continue to Homepage
             </AlertDialogAction>

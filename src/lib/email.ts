@@ -519,3 +519,369 @@ export async function sendPaymentStatusEmail(data: PaymentStatusEmailData): Prom
     from: 'noreply@thebeaconexpo.com'
   });
 }
+
+// Sponsor registration email data
+export interface SponsorRegistrationEmailData {
+  userEmail: string;
+  userName: string;
+  sponsorId: string;
+  companyName: string;
+  sponsorshipCategories: string[];
+  budgetRange: string;
+  proposalStatus: string;
+}
+
+// Generate sponsor registration confirmation email HTML
+export function generateSponsorRegistrationEmail(data: SponsorRegistrationEmailData): string {
+  const {
+    userName,
+    sponsorId,
+    companyName,
+    sponsorshipCategories,
+    budgetRange,
+    proposalStatus,
+  } = data;
+
+  const formatBudgetRange = (range: string) => {
+    const labels: Record<string, string> = {
+      RANGE_50K_100K: "₱50,000 - ₱100,000",
+      RANGE_100K_250K: "₱100,000 - ₱250,000", 
+      RANGE_250K_500K: "₱250,000 - ₱500,000",
+      RANGE_500K_1M: "₱500,000 - ₱1,000,000",
+      RANGE_1M_ABOVE: "₱1,000,000 and Above",
+      TO_BE_DISCUSSED: "To be discussed",
+    };
+    return labels[range] || range;
+  };
+
+  const formatProposalStatus = (status: string) => {
+    const labels: Record<string, string> = {
+      YES: "Yes",
+      NO: "No", 
+      SCHEDULE_MEETING: "Schedule Meeting",
+    };
+    return labels[status] || status;
+  };
+
+  const categoriesHTML = sponsorshipCategories.map(category => `
+    <li style="margin-bottom: 4px; color: #4b5563;">• ${category}</li>
+  `).join('');
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>BEACON 2025 Sponsor Registration Confirmation</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
+          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Maritime Conference & Exhibition</p>
+        </div>
+
+        <!-- Success Message -->
+        <div style="padding: 30px; text-align: center; background-color: #fef3c7; border-bottom: 1px solid #e5e7eb;">
+          <div style="width: 60px; height: 60px; background-color: #f59e0b; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 24px;">🤝</span>
+          </div>
+          <h2 style="color: #92400e; margin: 0 0 8px 0; font-size: 24px;">Sponsor Registration Submitted!</h2>
+          <p style="color: #78350f; margin: 0; font-size: 16px;">Your sponsorship interest has been received and is under review</p>
+        </div>
+
+        <!-- Registration Details -->
+        <div style="padding: 30px;">
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Sponsorship Details</h3>
+            
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Registration ID:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${sponsorId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Contact Person:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${userName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Company:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${companyName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Status:</td>
+                  <td style="padding: 8px 0; text-align: right;">
+                    <span style="background-color: #f59e0b; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">PENDING REVIEW</span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Sponsorship Interest -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Your Sponsorship Interest</h3>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+              <div style="margin-bottom: 16px;">
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Sponsorship Categories:</h4>
+                <ul style="margin: 0; padding-left: 0; list-style: none;">
+                  ${categoriesHTML}
+                </ul>
+              </div>
+              <div style="margin-bottom: 16px;">
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Budget Range:</h4>
+                <p style="margin: 0; color: #1e40af; font-weight: bold;">${formatBudgetRange(budgetRange)}</p>
+              </div>
+              <div>
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Customized Proposal:</h4>
+                <p style="margin: 0; color: #4b5563;">${formatProposalStatus(proposalStatus)}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Information -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">What Happens Next?</h3>
+            <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+              <p style="margin: 0 0 12px 0; color: #92400e; font-weight: 500;">
+                <strong>⏳ Your Application is Under Review</strong>
+              </p>
+              <p style="margin: 0; color: #78350f; line-height: 1.5;">
+                Our BEACON 2025 Sponsorship Team will review your application and reach out within 2-3 business days to discuss your ideal package, branding integration, and activation plans.
+              </p>
+            </div>
+          </div>
+
+          <!-- Next Steps -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Next Steps</h3>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+              <ul style="margin: 0; padding-left: 20px; color: #4b5563; line-height: 1.6;">
+                <li style="margin-bottom: 8px;">📞 Our sponsorship team will contact you within 2-3 business days</li>
+                <li style="margin-bottom: 8px;">📋 We'll discuss your specific sponsorship goals and requirements</li>
+                <li style="margin-bottom: 8px;">💼 A customized sponsorship proposal will be prepared for your review</li>
+                <li style="margin-bottom: 8px;">🤝 We'll coordinate branding opportunities and activation details</li>
+                <li style="margin-bottom: 8px;">📧 All communication will be sent to this email address</li>
+                <li>🎯 Together we'll create maximum impact for your brand at BEACON 2025</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+            <h4 style="color: #1f2937; margin: 0 0 12px 0;">Questions About Sponsorship?</h4>
+            <p style="margin: 0; color: #6b7280; line-height: 1.5;">
+              For immediate sponsorship inquiries, please contact us:<br>
+              <strong>Email:</strong> <a href="mailto:mlbeacon2023@gmail.com" style="color: #2563eb;">mlbeacon2023@gmail.com</a><br>
+              <strong>Phone:</strong> +63 (02) 123-4567<br>
+              <strong>Registration ID:</strong> ${sponsorId}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #1f2937; padding: 20px; text-align: center;">
+          <p style="color: #9ca3af; margin: 0; font-size: 14px;">
+            © 2025 BEACON Maritime Conference & Exhibition. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+// Send sponsor registration confirmation email
+export async function sendSponsorRegistrationEmail(data: SponsorRegistrationEmailData): Promise<boolean> {
+  const emailHTML = generateSponsorRegistrationEmail(data);
+
+  const subject = `BEACON 2025 Sponsor Registration - Under Review | ${data.companyName}`;
+
+  return await sendEmail({
+    to: data.userEmail,
+    subject,
+    html: emailHTML,
+    from: 'noreply@thebeaconexpo.com'
+  });
+}
+
+// Exhibitor registration email data
+export interface ExhibitorRegistrationEmailData {
+  userEmail: string;
+  userName: string;
+  exhibitorId: string;
+  companyName: string;
+  participationTypes: string[];
+  boothSize: string;
+  confirmIntent: string;
+}
+
+// Generate exhibitor registration confirmation email HTML
+export function generateExhibitorRegistrationEmail(data: ExhibitorRegistrationEmailData): string {
+  const {
+    userName,
+    exhibitorId,
+    companyName,
+    participationTypes,
+    boothSize,
+    confirmIntent,
+  } = data;
+
+  const formatConfirmIntent = (intent: string) => {
+    const labels: Record<string, string> = {
+      YES_RESERVE: "Yes, I want to reserve a booth",
+      TENTATIVE: "Tentative - need more information",
+      NO_EXPLORING: "No, just exploring options",
+    };
+    return labels[intent] || intent;
+  };
+
+  const participationHTML = participationTypes.map(type => `
+    <li style="margin-bottom: 4px; color: #4b5563;">• ${type}</li>
+  `).join('');
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>BEACON 2025 Exhibitor Registration Confirmation</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
+          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Maritime Conference & Exhibition</p>
+        </div>
+
+        <!-- Success Message -->
+        <div style="padding: 30px; text-align: center; background-color: #fef3c7; border-bottom: 1px solid #e5e7eb;">
+          <div style="width: 60px; height: 60px; background-color: #f59e0b; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 24px;">🏢</span>
+          </div>
+          <h2 style="color: #92400e; margin: 0 0 8px 0; font-size: 24px;">Exhibitor Registration Submitted!</h2>
+          <p style="color: #78350f; margin: 0; font-size: 16px;">Your exhibition application has been received and is under review</p>
+        </div>
+
+        <!-- Registration Details -->
+        <div style="padding: 30px;">
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Exhibition Details</h3>
+            
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Registration ID:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${exhibitorId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Contact Person:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${userName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Company:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${companyName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Status:</td>
+                  <td style="padding: 8px 0; text-align: right;">
+                    <span style="background-color: #f59e0b; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">PENDING REVIEW</span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Exhibition Interest -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Your Exhibition Requirements</h3>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+              <div style="margin-bottom: 16px;">
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Participation Types:</h4>
+                <ul style="margin: 0; padding-left: 0; list-style: none;">
+                  ${participationHTML}
+                </ul>
+              </div>
+              <div style="margin-bottom: 16px;">
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Preferred Booth Size:</h4>
+                <p style="margin: 0; color: #1e40af; font-weight: bold;">${boothSize}</p>
+              </div>
+              <div>
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Confirmation Intent:</h4>
+                <p style="margin: 0; color: #4b5563;">${formatConfirmIntent(confirmIntent)}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Information -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">What Happens Next?</h3>
+            <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+              <p style="margin: 0 0 12px 0; color: #92400e; font-weight: 500;">
+                <strong>⏳ Your Application is Under Review</strong>
+              </p>
+              <p style="margin: 0; color: #78350f; line-height: 1.5;">
+                Our BEACON 2025 Exhibition Team will review your application and contact you within 2-3 business days to discuss booth availability, pricing, and logistics coordination.
+              </p>
+            </div>
+          </div>
+
+          <!-- Next Steps -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Next Steps</h3>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+              <ul style="margin: 0; padding-left: 20px; color: #4b5563; line-height: 1.6;">
+                <li style="margin-bottom: 8px;">📞 Our exhibition team will contact you within 2-3 business days</li>
+                <li style="margin-bottom: 8px;">🏢 We'll discuss booth availability and optimal positioning</li>
+                <li style="margin-bottom: 8px;">💰 Pricing details and package options will be provided</li>
+                <li style="margin-bottom: 8px;">📋 Exhibition guidelines and setup requirements will be shared</li>
+                <li style="margin-bottom: 8px;">🚚 Logistics coordination for equipment and materials</li>
+                <li>🎯 Marketing opportunities and promotional support options</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+            <h4 style="color: #1f2937; margin: 0 0 12px 0;">Questions About Exhibiting?</h4>
+            <p style="margin: 0; color: #6b7280; line-height: 1.5;">
+              For immediate exhibition inquiries, please contact us:<br>
+              <strong>Email:</strong> <a href="mailto:mlbeacon2023@gmail.com" style="color: #2563eb;">mlbeacon2023@gmail.com</a><br>
+              <strong>Phone:</strong> +63 (02) 123-4567<br>
+              <strong>Registration ID:</strong> ${exhibitorId}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #1f2937; padding: 20px; text-align: center;">
+          <p style="color: #9ca3af; margin: 0; font-size: 14px;">
+            © 2025 BEACON Maritime Conference & Exhibition. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+// Send exhibitor registration confirmation email
+export async function sendExhibitorRegistrationEmail(data: ExhibitorRegistrationEmailData): Promise<boolean> {
+  const emailHTML = generateExhibitorRegistrationEmail(data);
+
+  const subject = `BEACON 2025 Exhibitor Registration - Under Review | ${data.companyName}`;
+
+  return await sendEmail({
+    to: data.userEmail,
+    subject,
+    html: emailHTML,
+    from: 'noreply@thebeaconexpo.com'
+  });
+}

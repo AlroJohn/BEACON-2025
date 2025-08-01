@@ -122,7 +122,7 @@ export default function ConferenceRegistrationSinglePage() {
 
   const email = form.watch("email");
   const isMaritimeLeagueMember = form.watch("isMaritimeLeagueMember");
-  const { data: emailCheck } = useEmailValidation(email);
+  const { data: emailCheck } = useEmailValidation(email, "conference");
 
   // Watch additional form fields that can cause dynamic height changes
   const gender = form.watch("gender");

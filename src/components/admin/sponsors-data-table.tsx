@@ -67,6 +67,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { SponsorDetailsModal } from "./sponsor-details-modal";
 
 // Types
 export interface SponsorData {
@@ -167,6 +168,18 @@ export function SponsorsDataTable({
       additionalComments: false,
     });
   const [rowSelection, setRowSelection] = React.useState({});
+  const [selectedSponsor, setSelectedSponsor] = React.useState<SponsorData | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
+
+  const handleViewDetails = (sponsor: SponsorData) => {
+    setSelectedSponsor(sponsor);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedSponsor(null);
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -478,8 +491,8 @@ export function SponsorsDataTable({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
-              {/* View Details - TODO: Create SponsorDetailsDialog */}
-              <DropdownMenuItem>
+              {/* View Details */}
+              <DropdownMenuItem onClick={() => handleViewDetails(sponsor)}>
                 <Eye className="mr-2 h-4 w-4" />
                 View details
               </DropdownMenuItem>
@@ -676,6 +689,13 @@ export function SponsorsDataTable({
           </Button>
         </div>
       </div>
+
+      {/* Sponsor Details Modal */}
+      <SponsorDetailsModal
+        sponsor={selectedSponsor}
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+      />
     </div>
   );
 }

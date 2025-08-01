@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 import { ZodError } from "zod";
 import { SponsorRegistrationFormData, SponsorRegistrationResponse, sponsorRegistrationSchema } from "@/types/sponsors/registration";
+import { sendSponsorRegistrationEmail, SponsorRegistrationEmailData } from "@/lib/email";
 
 const prisma = new PrismaClient();
 
@@ -362,6 +363,30 @@ export async function POST(request: NextRequest) {
 
     console.log("Sponsor API: File upload process completed");
     console.log("Final URLs - Face:", faceImageUrl, "Logo:", logoImageUrl);
+
+    // Send confirmation email
+    try {
+      const emailData: SponsorRegistrationEmailData = {
+        userEmail: email,
+        userName: `${firstName} ${lastName}`,
+        sponsorId: sponsor.id,
+        companyName: companyName,
+        sponsorshipCategories: sponsorshipCategories,
+        budgetRange: budgetRange,
+        proposalStatus: customizedProposal,
+      };
+
+      const emailSent = await sendSponsorRegistrationEmail(emailData);
+      
+      if (emailSent) {
+        console.log("Sponsor registration confirmation email sent successfully");
+      } else {
+        console.log("Failed to send sponsor registration confirmation email");
+      }
+    } catch (emailError) {
+      console.error("Error sending sponsor registration email:", emailError);
+      // Don't fail the registration if email fails
+    }
 
     // Return success response
     return NextResponse.json({

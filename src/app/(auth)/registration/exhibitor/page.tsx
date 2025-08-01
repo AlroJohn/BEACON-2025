@@ -82,7 +82,7 @@ export default function ExhibitorRegistrationPage() {
   const industrySector = form.watch("industrySector");
   const participationTypes = form.watch("participationTypes");
   const goals = form.watch("goals");
-  const { data: emailCheck } = useEmailValidation(email);
+  const { data: emailCheck } = useEmailValidation(email, "exhibitor");
 
   // Function to calculate number of vertical lines based on content container height
   const calculateLineCount = useCallback(
@@ -737,7 +737,7 @@ export default function ExhibitorRegistrationPage() {
                 // Optionally redirect to a thank you page or home
                 window.location.href = "https://www.thebeaconexpo.com/";
               }}
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full dark:text-accent-foreground bg-green-600 hover:bg-green-700"
             >
               Continue to Homepage
             </AlertDialogAction>

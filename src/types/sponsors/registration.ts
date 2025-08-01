@@ -160,113 +160,113 @@ export type SponsorRegistrationFormData = z.infer<
 /* ---------------------------------------------
    Default values for sponsor registration form
 ----------------------------------------------*/
-export const defaultSponsorRegistrationValues: Partial<SponsorRegistrationFormData> =
-{
-    // Form-only
-    faceScannedUrl: "",
-
-    // user_details
-    firstName: "",
-    lastName: "",
-    middleName: null,
-    suffix: null,
-    preferredName: null,
-    position: "",
-    gender: Gender.MALE,
-    genderOthers: null,
-    ageBracket: AgeBracket.AGE_25_34,
-    nationality: "",
-
-    // user_accounts
-    email: "",
-    mobileNumber: "",
-    mailingAddress: null,
-    landline: null,
-
-    // Company & Details
-    companyName: "",
-    businessRegistrationName: null,
-    industrySector: IndustrySector.MARITIME_EQUIPMENT_TECHNOLOGY,
-    industrySectorOthers: null,
-    companyAddress: "",
-    companyWebsite: "",
-    companyProfile: "",
-
-    // Sponsorship Interest
-    sponsorshipCategories: [],
-    targetAudience: [],
-    targetAudienceOthers: null,
-
-    // Activation Preferences
-    activationPreferences: "",
-    activationOthers: null,
-    launchProduct: null,
-
-    // Budget & Next Steps
-    budgetRange: SponsorshipBudgetRange.TO_BE_DISCUSSED,
-    customizedProposal: ProposalOption.SCHEDULE_MEETING,
-    uploadLogoUrl: null,
-    additionalComments: null,
-};
-
-
-// export const defaultSponsorRegistrationValues: Partial<SponsorRegistrationFormData> = {
+// export const defaultSponsorRegistrationValues: Partial<SponsorRegistrationFormData> =
+// {
 //     // Form-only
 //     faceScannedUrl: "",
 
 //     // user_details
-//     firstName: "Juan",
-//     lastName: "Dela Cruz",
-//     middleName: "Santos",
+//     firstName: "",
+//     lastName: "",
+//     middleName: null,
 //     suffix: null,
-//     preferredName: "JD",
-//     position: "Marketing Manager",
+//     preferredName: null,
+//     position: "",
 //     gender: Gender.MALE,
 //     genderOthers: null,
 //     ageBracket: AgeBracket.AGE_25_34,
-//     nationality: "Filipino",
+//     nationality: "",
 
 //     // user_accounts
-//     email: "juan.delacruz@example.com",
-//     mobileNumber: "09171234567",
-//     mailingAddress: "Unit 10, Bay City, Pasay, Metro Manila",
-//     landline: "02 8655 1234",
+//     email: "",
+//     mobileNumber: "",
+//     mailingAddress: null,
+//     landline: null,
 
 //     // Company & Details
-//     companyName: "Blue Horizon Marine Technologies, Inc.",
-//     businessRegistrationName: "Blue Horizon Tech Corp.",
+//     companyName: "",
+//     businessRegistrationName: null,
 //     industrySector: IndustrySector.MARITIME_EQUIPMENT_TECHNOLOGY,
 //     industrySectorOthers: null,
-//     companyAddress:
-//         "12F, One E-Com Center, Ocean Drive, Mall of Asia Complex, Pasay City, 1300 Philippines",
-//     companyWebsite: "https://bluehorizon.ph",
-//     companyProfile:
-//         "We design and supply marine sensors, communications, and automation solutions for the maritime and blue economy sectors.",
+//     companyAddress: "",
+//     companyWebsite: "",
+//     companyProfile: "",
 
 //     // Sponsorship Interest
-//     sponsorshipCategories: [
-//         SponsorshipCategory.MAJOR_PARTNER,
-//         SponsorshipCategory.CONFERENCE_SPONSOR,
-//     ],
-//     targetAudience: [
-//         SponsorshipAudience.GOVERNMENT,
-//         SponsorshipAudience.SHIPPING_MARITIME,
-//         SponsorshipAudience.MARINE_INNOVATION_TECH,
-//     ],
+//     sponsorshipCategories: [],
+//     targetAudience: [],
 //     targetAudienceOthers: null,
 
 //     // Activation Preferences
-//     activationPreferences: "Logo Visibility on Stage / Program / Banners",
+//     activationPreferences: "",
 //     activationOthers: null,
-//     launchProduct: YesNoMaybe.MAYBE,
+//     launchProduct: null,
 
 //     // Budget & Next Steps
-//     budgetRange: SponsorshipBudgetRange.RANGE_250K_500K,
+//     budgetRange: SponsorshipBudgetRange.TO_BE_DISCUSSED,
 //     customizedProposal: ProposalOption.SCHEDULE_MEETING,
-//     uploadLogoUrl: "",
-//     additionalComments:
-//         "Open to bundled visibility for conference and in-water show; prefer Q4 activation.",
+//     uploadLogoUrl: null,
+//     additionalComments: null,
 // };
+
+
+export const defaultSponsorRegistrationValues: Partial<SponsorRegistrationFormData> = {
+    // Form-only
+    faceScannedUrl: "",
+
+    // user_details
+    firstName: "Juan",
+    lastName: "Dela Cruz",
+    middleName: "Santos",
+    suffix: null,
+    preferredName: "JD",
+    position: "Marketing Manager",
+    gender: Gender.MALE,
+    genderOthers: null,
+    ageBracket: AgeBracket.AGE_25_34,
+    nationality: "Filipino",
+
+    // user_accounts
+    email: "alromercado08@gmail.com",
+    mobileNumber: "09171234567",
+    mailingAddress: "Unit 10, Bay City, Pasay, Metro Manila",
+    landline: "02 8655 1234",
+
+    // Company & Details
+    companyName: "Blue Horizon Marine Technologies, Inc.",
+    businessRegistrationName: "Blue Horizon Tech Corp.",
+    industrySector: IndustrySector.MARITIME_EQUIPMENT_TECHNOLOGY,
+    industrySectorOthers: null,
+    companyAddress:
+        "12F, One E-Com Center, Ocean Drive, Mall of Asia Complex, Pasay City, 1300 Philippines",
+    companyWebsite: "https://bluehorizon.ph",
+    companyProfile:
+        "We design and supply marine sensors, communications, and automation solutions for the maritime and blue economy sectors.",
+
+    // Sponsorship Interest
+    sponsorshipCategories: [
+        SponsorshipCategory.MAJOR_PARTNER,
+        SponsorshipCategory.CONFERENCE_SPONSOR,
+    ],
+    targetAudience: [
+        SponsorshipAudience.GOVERNMENT,
+        SponsorshipAudience.SHIPPING_MARITIME,
+        SponsorshipAudience.MARINE_INNOVATION_TECH,
+    ],
+    targetAudienceOthers: null,
+
+    // Activation Preferences
+    activationPreferences: "Logo Visibility on Stage / Program / Banners",
+    activationOthers: null,
+    launchProduct: YesNoMaybe.MAYBE,
+
+    // Budget & Next Steps
+    budgetRange: SponsorshipBudgetRange.RANGE_250K_500K,
+    customizedProposal: ProposalOption.SCHEDULE_MEETING,
+    uploadLogoUrl: "",
+    additionalComments:
+        "Open to bundled visibility for conference and in-water show; prefer Q4 activation.",
+};
 
 
 /* ---------------------------------------------

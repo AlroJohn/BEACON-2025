@@ -545,7 +545,7 @@ export function generateSponsorRegistrationEmail(data: SponsorRegistrationEmailD
   const formatBudgetRange = (range: string) => {
     const labels: Record<string, string> = {
       RANGE_50K_100K: "₱50,000 - ₱100,000",
-      RANGE_100K_250K: "₱100,000 - ₱250,000", 
+      RANGE_100K_250K: "₱100,000 - ₱250,000",
       RANGE_250K_500K: "₱250,000 - ₱500,000",
       RANGE_500K_1M: "₱500,000 - ₱1,000,000",
       RANGE_1M_ABOVE: "₱1,000,000 and Above",
@@ -557,7 +557,7 @@ export function generateSponsorRegistrationEmail(data: SponsorRegistrationEmailD
   const formatProposalStatus = (status: string) => {
     const labels: Record<string, string> = {
       YES: "Yes",
-      NO: "No", 
+      NO: "No",
       SCHEDULE_MEETING: "Schedule Meeting",
     };
     return labels[status] || status;

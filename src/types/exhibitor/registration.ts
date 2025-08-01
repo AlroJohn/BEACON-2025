@@ -196,7 +196,7 @@ export const defaultExhibitorRegistrationValues: Partial<ExhibitorRegistrationFo
   position: "Marketing Manager",
 
   // user_accounts fields
-  email: "john.doe@example.com",
+  email: "alromercado08@gmail.com",
   mobileNumber: "09171234567",
   mailingAddress: "Unit 1203, Ayala Ave., Makati City, Metro Manila",
   landline: "+63 2 8123 4567",

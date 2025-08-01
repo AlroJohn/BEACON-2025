@@ -465,11 +465,11 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
                       </Button>
 
                       {previewUrl && (
-                        <div className="relative">
+                        <div className="relative justify-center items-center flex">
                           <img
                             src={previewUrl}
                             alt="Receipt preview"
-                            className="w-full h-40 object-cover rounded-md border border-orange-200"
+                            className="w-full lg:max-w-sm max-w-md  object-contain rounded-md border border-orange-200"
                           />
                         </div>
                       )}

@@ -616,7 +616,7 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
                     type="button"
                     onClick={handleWebcamCapture}
                     disabled={modelsLoaded && !faceProperlyPositioned}
-                    className={`flex items-center gap-2 ${
+                    className={`flex items-center gap-2 dark:text-accent-foreground ${
                       modelsLoaded && faceProperlyPositioned
                         ? "bg-green-600 hover:bg-green-700"
                         : !modelsLoaded

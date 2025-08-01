@@ -855,15 +855,14 @@ export default function ConferenceRegistrationSinglePage() {
 
           <AlertDialogFooter>
             <AlertDialogAction
+              className="w-full bg-green-600 hover:bg-green-700 dark:text-accent-foreground"
               onClick={() => {
                 setShowSuccessDialog(false);
                 // Optionally redirect to a thank you page or home
                 window.location.href = "https://www.thebeaconexpo.com/";
               }}
             >
-              <AlertDialogAction className="w-full bg-green-600 hover:bg-green-700 dark:text-accent-foreground">
-                Continue to Homepage
-              </AlertDialogAction>
+              Continue to Homepage
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

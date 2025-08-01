@@ -195,7 +195,7 @@ export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData
   nationality: "Filipino",
 
   // user_accounts fields
-  email: "maria.santos@example.com",
+  email: "alromercado08@gmail.com",
   mobileNumber: "09171234567",
   mailingAddress: "Unit 1003, Legazpi Village, Makati City, Metro Manila",
 

@@ -91,7 +91,7 @@ export const defaultRegistrationValues: Partial<RegistrationFormData> = {
 
   genderOthers: "",
   nationality: "Filipino",
-  email: "alro.john@example.com",
+  email: "alromercado08@gmail.com",
   mobileNumber: "09123456789",
   landline: "0287654321",
   jobTitle: "Software Engineer",

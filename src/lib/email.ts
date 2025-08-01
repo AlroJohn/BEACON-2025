@@ -67,9 +67,27 @@ export async function sendEmail({ to, subject, html, from, userId }: EmailData):
 
     const msg: any = {
       to,
-      from: 'noreply@thebeaconexpo.com',
+      from: {
+        email: 'noreply@thebeaconexpo.com',
+        name: 'BEACON 2025 Conference Team'
+      },
       subject,
       html,
+      // Add deliverability improvements
+      replyTo: 'mlbeacon2023@gmail.com',
+      trackingSettings: {
+        clickTracking: {
+          enable: false
+        },
+        openTracking: {
+          enable: false
+        }
+      },
+      mailSettings: {
+        sandboxMode: {
+          enable: false
+        }
+      }
     };
 
     // Generate and attach QR code if userId is provided
@@ -162,7 +180,18 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>BEACON 2025 Registration Confirmation</title>
+      <meta name="format-detection" content="telephone=no">
+      <meta name="x-apple-disable-message-reformatting">
+      <title>BEACON 2025 Conference Registration</title>
+      <!--[if mso]>
+      <noscript>
+        <xml>
+          <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+          </o:OfficeDocumentSettings>
+        </xml>
+      </noscript>
+      <![endif]-->
     </head>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
       <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
@@ -317,7 +346,7 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
 export async function sendConferenceRegistrationEmail(data: ConferenceRegistrationEmailData): Promise<boolean> {
   const emailHTML = generateConferenceRegistrationEmail(data);
 
-  const subject = `BEACON 2025 Registration Confirmation - ${data.paymentStatus === 'FREE' ? 'FREE Registration' : data.requiresPayment ? 'Payment Under Review' : 'Registration Complete'}`;
+  const subject = `Your BEACON 2025 Conference Registration ${data.paymentStatus === 'FREE' ? '(Confirmed)' : data.requiresPayment ? '(Payment Review)' : '(Completed)'}`;
 
   return await sendEmail({
     to: data.userEmail,
@@ -585,12 +614,12 @@ export async function sendPaymentStatusEmail(data: PaymentStatusEmailData): Prom
   const emailHTML = generatePaymentStatusEmail(data);
 
   const statusTitles = {
-    CONFIRMED: 'Payment Confirmed ✅',
-    FAILED: 'Payment Issue ❌',
-    REFUNDED: 'Payment Refunded 💰'
+    CONFIRMED: 'Payment Confirmed',
+    FAILED: 'Payment Issue Requires Attention',
+    REFUNDED: 'Payment Refunded'
   };
 
-  const subject = `BEACON 2025 - ${statusTitles[data.newStatus]} - Registration ${data.conferenceId}`;
+  const subject = `BEACON 2025 Conference: ${statusTitles[data.newStatus]}`;
 
   return await sendEmail({
     to: data.userEmail,

@@ -142,3 +142,48 @@ export const useDeleteExhibitor = () => {
     },
   });
 };
+
+// Update exhibitor status function
+const updateExhibitorStatus = async (
+  exhibitorId: string, 
+  status: 'ACTIVE' | 'INACTIVE', 
+  notes: string | undefined,
+  token: string
+): Promise<{ success: boolean; message: string }> => {
+  const response = await fetch(`/api/admin/exhibitors/${exhibitorId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ status, notes }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to update exhibitor status');
+  }
+
+  return result;
+};
+
+export const useUpdateExhibitorStatus = () => {
+  const { sessionToken } = useAdminStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ exhibitorId, status, notes }: { 
+      exhibitorId: string; 
+      status: 'ACTIVE' | 'INACTIVE'; 
+      notes?: string 
+    }) => updateExhibitorStatus(exhibitorId, status, notes, sessionToken!),
+    onSuccess: () => {
+      // Refetch the exhibitors list after successful update
+      queryClient.invalidateQueries({ queryKey: ['admin-exhibitors'] });
+    },
+    onError: (error) => {
+      console.error('Update exhibitor status error:', error);
+    },
+  });
+};

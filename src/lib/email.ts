@@ -180,18 +180,7 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="format-detection" content="telephone=no">
-      <meta name="x-apple-disable-message-reformatting">
-      <title>BEACON 2025 Conference Registration</title>
-      <!--[if mso]>
-      <noscript>
-        <xml>
-          <o:OfficeDocumentSettings>
-            <o:PixelsPerInch>96</o:PixelsPerInch>
-          </o:OfficeDocumentSettings>
-        </xml>
-      </noscript>
-      <![endif]-->
+      <title>BEACON 2025 Conference Registration Confirmation</title>
     </head>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
       <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
@@ -203,36 +192,28 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
         </div>
 
         <!-- Success Message -->
-       <div style="
-  padding:30px;
-  text-align:center;
-  background-color:#f0fdf4;
-  border-bottom:1px solid #e5e7eb;
-">
-  <!-- circle -->
-  <div style="
-    width:60px;
-    height:60px;
-    background-color:#10b981;
-    border-radius:50%;
-    margin:0 auto 16px;    
-    text-align:center;      
-    line-height:60px;       
-  ">
-    <span style="color:#ffffff;font-size:24px;display:inline-block;">✓</span>
-  </div>
-
-  <h2 style="color:#059669;margin:0 0 8px;font-size:24px;">Registration Successful!</h2>
-  <p  style="color:#065f46;margin:0;font-size:16px;">
-    Thank you for registering for BEACON 2025
-  </p>
-</div>
+        <div style="padding: 30px; text-align: center; background-color: #fef3c7; border-bottom: 1px solid #e5e7eb;">
+          <!-- circle -->
+          <div style="
+            width:60px;
+            height:60px;
+            background-color: #f59e0b;
+            border-radius:50%;
+            margin:0 auto 16px;    
+            text-align:center;      
+            line-height:60px;       
+          ">
+            <span style="color:#ffffff;font-size:24px;display:inline-block;">🎓</span>
+          </div>
+          <h2 style="color: #92400e; margin: 0 0 8px 0; font-size: 24px;">Conference Registration Submitted!</h2>
+          <p style="color: #78350f; margin: 0; font-size: 16px;">Your conference registration has been received and is under review</p>
+        </div>
 
 
         <!-- Registration Details -->
         <div style="padding: 30px;">
           <div style="margin-bottom: 30px;">
-            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Registration Details</h3>
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Conference Details</h3>
             
             <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
               <table style="width: 100%; border-collapse: collapse;">
@@ -305,27 +286,42 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
             `}
           </div>
 
+          <!-- Status Information -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">What Happens Next?</h3>
+            <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+              <p style="margin: 0 0 12px 0; color: #92400e; font-weight: 500;">
+                <strong>⏳ Your Application is Under Review</strong>
+              </p>
+              <p style="margin: 0; color: #78350f; line-height: 1.5;">
+                Our BEACON 2025 Conference Team will review your registration and reach out within 2-3 business days to confirm your participation and provide event details.
+              </p>
+            </div>
+          </div>
+
           <!-- Next Steps -->
           <div style="margin-bottom: 30px;">
-            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">What's Next?</h3>
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Next Steps</h3>
             <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
               <ul style="margin: 0; padding-left: 20px; color: #4b5563; line-height: 1.6;">
-                <li style="margin-bottom: 8px;">📧 You will receive updates about the event via email</li>
-                <li style="margin-bottom: 8px;">📋 Event schedules and venue details will be sent closer to the date</li>
-                ${requiresPayment ? '<li style="margin-bottom: 8px;">💳 Your payment will be verified within 24-48 hours</li>' : ''}
-                <li style="margin-bottom: 8px;">📞 Our team may contact you for additional information if needed</li>
-                <li>🎫 Digital certificates will be available after attending the events</li>
+                <li style="margin-bottom: 8px;">📞 Our conference team will contact you within 2-3 business days</li>
+                <li style="margin-bottom: 8px;">🎓 Conference schedule and session details will be provided</li>
+                ${requiresPayment ? '<li style="margin-bottom: 8px;">💳 Payment confirmation will be processed within 24-48 hours</li>' : ''}
+                <li style="margin-bottom: 8px;">📧 All conference updates will be sent to this email address</li>
+                <li style="margin-bottom: 8px;">📋 Event guidelines and venue information will be shared</li>
+                <li>🎯 Networking opportunities and additional activities will be announced</li>
               </ul>
             </div>
           </div>
 
           <!-- Contact Information -->
           <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
-            <h4 style="color: #1f2937; margin: 0 0 12px 0;">Need Help?</h4>
+            <h4 style="color: #1f2937; margin: 0 0 12px 0;">Questions About the Conference?</h4>
             <p style="margin: 0; color: #6b7280; line-height: 1.5;">
-              If you have any questions about your registration, please contact us:<br>
-              <strong>Email:</strong> mlbeacon2023@gmail.com<br>
-              <strong>Phone:</strong> +63 (02) 123-4567
+              For immediate conference inquiries, please contact us:<br>
+              <strong>Email:</strong> <a href="mailto:mlbeacon2023@gmail.com" style="color: #2563eb;">mlbeacon2023@gmail.com</a><br>
+              <strong>Phone:</strong> +63 (02) 123-4567<br>
+              <strong>Registration ID:</strong> ${conferenceId}
             </p>
           </div>
         </div>
@@ -346,7 +342,7 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
 export async function sendConferenceRegistrationEmail(data: ConferenceRegistrationEmailData): Promise<boolean> {
   const emailHTML = generateConferenceRegistrationEmail(data);
 
-  const subject = `Your BEACON 2025 Conference Registration ${data.paymentStatus === 'FREE' ? '(Confirmed)' : data.requiresPayment ? '(Payment Review)' : '(Completed)'}`;
+  const subject = `BEACON 2025 Conference Registration - Under Review`;
 
   return await sendEmail({
     to: data.userEmail,
@@ -827,7 +823,7 @@ export async function sendSponsorRegistrationEmail(data: SponsorRegistrationEmai
     subject,
     html: emailHTML,
     from: 'noreply@thebeaconexpo.com',
-    userId: data.userId // Pass userId for QR code generation
+    // No QR code for initial registration - only after admin confirmation
   });
 }
 
@@ -1221,6 +1217,438 @@ export async function sendExhibitorRegistrationEmail(data: ExhibitorRegistration
     subject,
     html: emailHTML,
     from: 'noreply@thebeaconexpo.com',
-    userId: data.userId // Pass userId for QR code generation
+    // No QR code for initial registration - only after admin confirmation
+  });
+}
+
+// Sponsor confirmation email data
+export interface SponsorConfirmationEmailData {
+  userEmail: string;
+  userName: string;
+  userId: string;
+  sponsorId: string;
+  companyName: string;
+  sponsorshipCategories: string[];
+  budgetRange: string;
+  status: 'CONFIRMED' | 'REJECTED';
+  notes?: string;
+}
+
+// Generate sponsor confirmation email HTML
+export function generateSponsorConfirmationEmail(data: SponsorConfirmationEmailData): string {
+  const {
+    userName,
+    sponsorId,
+    companyName,
+    sponsorshipCategories,
+    budgetRange,
+    status,
+    notes,
+  } = data;
+
+  const formatBudgetRange = (range: string) => {
+    const labels: Record<string, string> = {
+      RANGE_50K_100K: "₱50,000 - ₱100,000",
+      RANGE_100K_250K: "₱100,000 - ₱250,000",
+      RANGE_250K_500K: "₱250,000 - ₱500,000",
+      RANGE_500K_1M: "₱500,000 - ₱1,000,000",
+      RANGE_1M_ABOVE: "₱1,000,000 and Above",
+      TO_BE_DISCUSSED: "To be discussed",
+    };
+    return labels[range] || range;
+  };
+
+  const categoriesHTML = sponsorshipCategories.map(category => `
+    <li style="margin-bottom: 4px; color: #4b5563;">• ${category}</li>
+  `).join('');
+
+  const isConfirmed = status === 'CONFIRMED';
+  
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>BEACON 2025 Sponsor Application ${isConfirmed ? 'Approved' : 'Update'}</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
+          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Sponsorship Application Update</p>
+        </div>
+
+        <!-- Status Message -->
+        <div style="padding: 30px; text-align: center; background-color: ${isConfirmed ? '#f0fdf4' : '#fef2f2'}; border-bottom: 1px solid #e5e7eb;">
+          <!-- circle -->
+          <div style="
+            width:60px;
+            height:60px;
+            background-color: ${isConfirmed ? '#10b981' : '#ef4444'};
+            border-radius:50%;
+            margin:0 auto 16px;    
+            text-align:center;      
+            line-height:60px;       
+          ">
+            <span style="color:#ffffff;font-size:24px;display:inline-block;">${isConfirmed ? '✅' : '❌'}</span>
+          </div>
+          <h2 style="color: ${isConfirmed ? '#059669' : '#dc2626'}; margin: 0 0 8px 0; font-size: 24px;">
+            Sponsorship Application ${isConfirmed ? 'Approved!' : 'Update Required'}
+          </h2>
+          <p style="color: ${isConfirmed ? '#065f46' : '#991b1b'}; margin: 0; font-size: 16px;">
+            ${isConfirmed 
+              ? 'Congratulations! Your sponsorship application has been approved'
+              : 'Your sponsorship application requires attention'
+            }
+          </p>
+        </div>
+
+        <!-- Application Details -->
+        <div style="padding: 30px;">
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Sponsorship Details</h3>
+            
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Registration ID:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${sponsorId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Contact Person:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${userName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Company:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${companyName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Status:</td>
+                  <td style="padding: 8px 0; text-align: right;">
+                    <span style="background-color: ${isConfirmed ? '#10b981' : '#ef4444'}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                      ${isConfirmed ? 'APPROVED' : 'REQUIRES ATTENTION'}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Sponsorship Information -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Your Sponsorship Package</h3>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+              <div style="margin-bottom: 16px;">
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Sponsorship Categories:</h4>
+                <ul style="margin: 0; padding-left: 0; list-style: none;">
+                  ${categoriesHTML}
+                </ul>
+              </div>
+              <div>
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Budget Range:</h4>
+                <p style="margin: 0; color: #1e40af; font-weight: bold;">${formatBudgetRange(budgetRange)}</p>
+              </div>
+            </div>
+          </div>
+
+          ${notes ? `
+          <!-- Admin Notes -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Additional Information</h3>
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border-left: 4px solid #6b7280;">
+              <p style="margin: 0; color: #4b5563; line-height: 1.5;">${notes}</p>
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Next Steps -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Next Steps</h3>
+            <div style="background-color: ${isConfirmed ? '#f0fdf4' : '#fef2f2'}; padding: 20px; border-radius: 8px; border-left: 4px solid ${isConfirmed ? '#10b981' : '#ef4444'};">
+              ${isConfirmed ? `
+                <p style="margin: 0 0 12px 0; color: #059669; font-weight: 500;">
+                  <strong>🎉 Welcome to BEACON 2025 as an Official Sponsor!</strong>
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #065f46; line-height: 1.6;">
+                  <li style="margin-bottom: 8px;">📞 Our partnership team will contact you within 24 hours</li>
+                  <li style="margin-bottom: 8px;">📋 Detailed sponsorship agreement will be provided</li>
+                  <li style="margin-bottom: 8px;">🎨 Branding guidelines and asset requirements will be shared</li>
+                  <li style="margin-bottom: 8px;">📅 Event timeline and key activation dates will be confirmed</li>
+                  <li style="margin-bottom: 8px;">💼 Dedicated account manager will be assigned</li>
+                  <li>🏆 Event access credentials and VIP benefits will be arranged</li>
+                </ul>
+              ` : `
+                <p style="margin: 0 0 12px 0; color: #dc2626; font-weight: 500;">
+                  <strong>📝 Action Required</strong>
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #991b1b; line-height: 1.6;">
+                  <li style="margin-bottom: 8px;">📞 Our team will contact you to discuss the requirements</li>
+                  <li style="margin-bottom: 8px;">📋 Additional documentation may be needed</li>
+                  <li style="margin-bottom: 8px;">💰 Budget or package adjustments may be required</li>
+                  <li>🤝 We're committed to finding a suitable sponsorship solution</li>
+                </ul>
+              `}
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+            <h4 style="color: #1f2937; margin: 0 0 12px 0;">Questions About Your Sponsorship?</h4>
+            <p style="margin: 0; color: #6b7280; line-height: 1.5;">
+              For immediate sponsorship inquiries, please contact us:<br>
+              <strong>Email:</strong> <a href="mailto:mlbeacon2023@gmail.com" style="color: #2563eb;">mlbeacon2023@gmail.com</a><br>
+              <strong>Phone:</strong> +63 (02) 123-4567<br>
+              <strong>Registration ID:</strong> ${sponsorId}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #1f2937; padding: 20px; text-align: center;">
+          <p style="color: #9ca3af; margin: 0; font-size: 14px;">
+            © 2025 BEACON Conference & Exhibition. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+// Send sponsor confirmation email
+export async function sendSponsorConfirmationEmail(data: SponsorConfirmationEmailData): Promise<boolean> {
+  const emailHTML = generateSponsorConfirmationEmail(data);
+
+  const subject = `BEACON 2025 Sponsorship Application ${data.status === 'CONFIRMED' ? 'Approved' : 'Update Required'}`;
+
+  return await sendEmail({
+    to: data.userEmail,
+    subject,
+    html: emailHTML,
+    from: 'noreply@thebeaconexpo.com',
+    // Include QR code only when status is CONFIRMED
+    userId: data.status === 'CONFIRMED' ? data.userId : undefined
+  });
+}
+
+// Exhibitor confirmation email data
+export interface ExhibitorConfirmationEmailData {
+  userEmail: string;
+  userName: string;
+  userId: string;
+  exhibitorId: string;
+  companyName: string;
+  participationTypes: string[];
+  boothSize: string;
+  confirmIntent: string;
+  status: 'CONFIRMED' | 'REJECTED';
+  notes?: string;
+}
+
+// Generate exhibitor confirmation email HTML
+export function generateExhibitorConfirmationEmail(data: ExhibitorConfirmationEmailData): string {
+  const {
+    userName,
+    exhibitorId,
+    companyName,
+    participationTypes,
+    boothSize,
+    confirmIntent,
+    status,
+    notes,
+  } = data;
+
+  const formatConfirmIntent = (intent: string) => {
+    const labels: Record<string, string> = {
+      YES_RESERVE: "Yes, I want to reserve a booth",
+      TENTATIVE: "Tentative - need more information",
+      NO_EXPLORING: "No, just exploring options",
+    };
+    return labels[intent] || intent;
+  };
+
+  const participationHTML = participationTypes
+    .map(type => {
+      const label = type.replace(/_/g, ' '); // convert "product_presentation" → "product presentation"
+      return `<li style="margin-bottom: 4px; color: #4b5563;">• ${label}</li>`;
+    })
+    .join('');
+
+  const isConfirmed = status === 'CONFIRMED';
+  
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>BEACON 2025 Exhibitor Application ${isConfirmed ? 'Approved' : 'Update'}</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
+          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Exhibition Application Update</p>
+        </div>
+
+        <!-- Status Message -->
+        <div style="padding: 30px; text-align: center; background-color: ${isConfirmed ? '#f0fdf4' : '#fef2f2'}; border-bottom: 1px solid #e5e7eb;">
+          <!-- circle -->
+          <div style="
+            width:60px;
+            height:60px;
+            background-color: ${isConfirmed ? '#10b981' : '#ef4444'};
+            border-radius:50%;
+            margin:0 auto 16px;    
+            text-align:center;      
+            line-height:60px;       
+          ">
+            <span style="color:#ffffff;font-size:24px;display:inline-block;">${isConfirmed ? '✅' : '❌'}</span>
+          </div>
+          <h2 style="color: ${isConfirmed ? '#059669' : '#dc2626'}; margin: 0 0 8px 0; font-size: 24px;">
+            Exhibition Application ${isConfirmed ? 'Approved!' : 'Update Required'}
+          </h2>
+          <p style="color: ${isConfirmed ? '#065f46' : '#991b1b'}; margin: 0; font-size: 16px;">
+            ${isConfirmed 
+              ? 'Congratulations! Your exhibition application has been approved'
+              : 'Your exhibition application requires attention'
+            }
+          </p>
+        </div>
+
+        <!-- Application Details -->
+        <div style="padding: 30px;">
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Exhibition Details</h3>
+            
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Registration ID:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${exhibitorId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Contact Person:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${userName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Company:</td>
+                  <td style="padding: 8px 0; font-weight: bold; text-align: right;">${companyName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280; font-weight: 500;">Status:</td>
+                  <td style="padding: 8px 0; text-align: right;">
+                    <span style="background-color: ${isConfirmed ? '#10b981' : '#ef4444'}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                      ${isConfirmed ? 'APPROVED' : 'REQUIRES ATTENTION'}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Exhibition Information -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Your Exhibition Package</h3>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+              <div style="margin-bottom: 16px;">
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Participation Types:</h4>
+                <ul style="margin: 0; padding-left: 0; list-style: none;">
+                  ${participationHTML}
+                </ul>
+              </div>
+              <div style="margin-bottom: 16px;">
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Preferred Booth Size:</h4>
+                <p style="margin: 0; color: #1e40af; font-weight: bold;">${boothSize}</p>
+              </div>
+              <div>
+                <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 16px;">Confirmation Intent:</h4>
+                <p style="margin: 0; color: #4b5563;">${formatConfirmIntent(confirmIntent)}</p>
+              </div>
+            </div>
+          </div>
+
+          ${notes ? `
+          <!-- Admin Notes -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Additional Information</h3>
+            <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border-left: 4px solid #6b7280;">
+              <p style="margin: 0; color: #4b5563; line-height: 1.5;">${notes}</p>
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Next Steps -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Next Steps</h3>
+            <div style="background-color: ${isConfirmed ? '#f0fdf4' : '#fef2f2'}; padding: 20px; border-radius: 8px; border-left: 4px solid ${isConfirmed ? '#10b981' : '#ef4444'};">
+              ${isConfirmed ? `
+                <p style="margin: 0 0 12px 0; color: #059669; font-weight: 500;">
+                  <strong>🎉 Welcome to BEACON 2025 as an Official Exhibitor!</strong>
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #065f46; line-height: 1.6;">
+                  <li style="margin-bottom: 8px;">📞 Our exhibition team will contact you within 24 hours</li>
+                  <li style="margin-bottom: 8px;">🏢 Booth location and setup details will be confirmed</li>
+                  <li style="margin-bottom: 8px;">📋 Exhibition manual and guidelines will be provided</li>
+                  <li style="margin-bottom: 8px;">🚚 Logistics coordination for equipment and setup</li>
+                  <li style="margin-bottom: 8px;">🎨 Marketing and promotional support options</li>
+                  <li>🏆 Event access credentials and exhibitor benefits will be arranged</li>
+                </ul>
+              ` : `
+                <p style="margin: 0 0 12px 0; color: #dc2626; font-weight: 500;">
+                  <strong>📝 Action Required</strong>
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #991b1b; line-height: 1.6;">
+                  <li style="margin-bottom: 8px;">📞 Our team will contact you to discuss the requirements</li>
+                  <li style="margin-bottom: 8px;">📋 Additional documentation may be needed</li>
+                  <li style="margin-bottom: 8px;">🏢 Booth size or location adjustments may be required</li>
+                  <li>🤝 We're committed to finding a suitable exhibition solution</li>
+                </ul>
+              `}
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+            <h4 style="color: #1f2937; margin: 0 0 12px 0;">Questions About Your Exhibition?</h4>
+            <p style="margin: 0; color: #6b7280; line-height: 1.5;">
+              For immediate exhibition inquiries, please contact us:<br>
+              <strong>Email:</strong> <a href="mailto:mlbeacon2023@gmail.com" style="color: #2563eb;">mlbeacon2023@gmail.com</a><br>
+              <strong>Phone:</strong> +63 (02) 123-4567<br>
+              <strong>Registration ID:</strong> ${exhibitorId}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #1f2937; padding: 20px; text-align: center;">
+          <p style="color: #9ca3af; margin: 0; font-size: 14px;">
+            © 2025 BEACON Conference & Exhibition. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+// Send exhibitor confirmation email
+export async function sendExhibitorConfirmationEmail(data: ExhibitorConfirmationEmailData): Promise<boolean> {
+  const emailHTML = generateExhibitorConfirmationEmail(data);
+
+  const subject = `BEACON 2025 Exhibition Application ${data.status === 'CONFIRMED' ? 'Approved' : 'Update Required'}`;
+
+  return await sendEmail({
+    to: data.userEmail,
+    subject,
+    html: emailHTML,
+    from: 'noreply@thebeaconexpo.com',
+    // Include QR code only when status is CONFIRMED
+    userId: data.status === 'CONFIRMED' ? data.userId : undefined
   });
 }

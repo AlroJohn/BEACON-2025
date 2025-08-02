@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import {
   Building2,
   Mail,
@@ -27,6 +28,9 @@ import {
 } from "lucide-react";
 import { ExhibitorData } from "./exhibitors-data-table";
 import ImageModal from "@/components/reuseable/ImageModal";
+import StatusUpdateModal from "@/components/reuseable/StatusUpdateModal";
+import { useUpdateExhibitorStatus } from "@/hooks/tanstasck-query/useAdminExhibitors";
+import { toast } from "sonner";
 
 interface ExhibitorDetailsModalProps {
   exhibitor: ExhibitorData | null;
@@ -39,7 +43,42 @@ export function ExhibitorDetailsModal({
   isOpen,
   onClose,
 }: ExhibitorDetailsModalProps) {
+  const [isStatusModalOpen, setIsStatusModalOpen] = React.useState(false);
+  const updateExhibitorStatus = useUpdateExhibitorStatus();
+
   if (!exhibitor) return null;
+
+  const handleStatusUpdate = (newStatus: 'ACTIVE' | 'INACTIVE', notes?: string) => {
+    updateExhibitorStatus.mutate(
+      {
+        exhibitorId: exhibitor.id,
+        status: newStatus,
+        notes,
+      },
+      {
+        onSuccess: () => {
+          setIsStatusModalOpen(false);
+          toast.success(`Exhibitor status updated to ${newStatus}`);
+        },
+        onError: (error) => {
+          toast.error("Failed to update exhibitor status");
+          console.error('Status update error:', error);
+        },
+      }
+    );
+  };
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "INACTIVE":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "PENDING":
+      default:
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -187,13 +226,32 @@ export function ExhibitorDetailsModal({
                   </p>
                 </div>
                 <div>
-                  <span className="font-medium">Status:</span>
+                  <span className="font-medium">Contact Status:</span>
                   <Badge
                     variant="outline"
                     className="mt-1 dark:text-accent-foreground"
                   >
                     {exhibitor.contactInfo.status}
                   </Badge>
+                </div>
+                <div>
+                  <span className="font-medium">Application Status:</span>
+                  <div className="mt-1 flex items-center gap-2">
+                    <Badge
+                      className={getStatusBadgeColor(exhibitor.contactInfo.status)}
+                    >
+                      {exhibitor.contactInfo.status}
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsStatusModalOpen(true)}
+                      disabled={updateExhibitorStatus.isPending}
+                      className="h-6 text-xs"
+                    >
+                      Update Status
+                    </Button>
+                  </div>
                 </div>
                 <div className="col-span-2">
                   <span className="font-medium">Mailing Address:</span>
@@ -490,6 +548,16 @@ export function ExhibitorDetailsModal({
           </div>
         </ScrollArea>
       </DialogContent>
+
+      <StatusUpdateModal
+        isOpen={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        onConfirm={handleStatusUpdate}
+        currentStatus={exhibitor.contactInfo.status}
+        userName={`${exhibitor.personalInfo.firstName} ${exhibitor.personalInfo.lastName}`}
+        entityType="exhibitor"
+        isLoading={updateExhibitorStatus.isPending}
+      />
     </Dialog>
   );
 }

@@ -136,3 +136,48 @@ export const useDeleteSponsor = () => {
     },
   });
 };
+
+// Update sponsor status function
+const updateSponsorStatus = async (
+  sponsorId: string, 
+  status: 'ACTIVE' | 'INACTIVE', 
+  notes: string | undefined,
+  token: string
+): Promise<{ success: boolean; message: string }> => {
+  const response = await fetch(`/api/admin/sponsors/${sponsorId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ status, notes }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to update sponsor status');
+  }
+
+  return result;
+};
+
+export const useUpdateSponsorStatus = () => {
+  const { sessionToken } = useAdminStore();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sponsorId, status, notes }: { 
+      sponsorId: string; 
+      status: 'ACTIVE' | 'INACTIVE'; 
+      notes?: string 
+    }) => updateSponsorStatus(sponsorId, status, notes, sessionToken!),
+    onSuccess: () => {
+      // Refetch the sponsors list after successful update
+      queryClient.invalidateQueries({ queryKey: ['admin-sponsors'] });
+    },
+    onError: (error) => {
+      console.error('Update sponsor status error:', error);
+    },
+  });
+};

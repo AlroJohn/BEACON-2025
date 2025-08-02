@@ -36,8 +36,6 @@ interface VisitorRegistrationDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-
-
 const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
   visitor,
   getStatusBadge,
@@ -47,12 +45,12 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
   if (!visitor) return null;
 
   const fullName = `${visitor.personalInfo.firstName} ${visitor.personalInfo.lastName}`;
-  
+
   // Use external state if provided, otherwise internal state
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const onOpenChange = externalOnOpenChange || setInternalIsOpen;
-  
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -80,7 +78,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
       {/* Only render trigger if using internal state (for backward compatibility) */}
       {externalIsOpen === undefined && (
         <DialogTrigger asChild>
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onSelect={(e) => {
               e.preventDefault();
               onOpenChange(true);
@@ -145,7 +143,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                         altText={`Face capture for ${fullName}`}
                         triggerText="View face capture"
                         triggerVariant="link"
-                        className="p-0 h-auto text-blue-300 hover:underline"
+                        className="p-0 h-auto dark:text-blue-300 text-blue-600 hover:underline"
                       />
                     </div>
                   </div>
@@ -209,7 +207,9 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                   </div>
                   <div>
                     <span className="font-medium">Company Name:</span>
-                    <p className="mt-1">{visitor.professionalInfo.companyName}</p>
+                    <p className="mt-1">
+                      {visitor.professionalInfo.companyName}
+                    </p>
                   </div>
                 </div>
                 <div>
@@ -218,7 +218,9 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                 </div>
                 <div>
                   <span className="font-medium">Business Email:</span>
-                  <p className="mt-1">{visitor.professionalInfo.businessEmail || "Not provided"}</p>
+                  <p className="mt-1">
+                    {visitor.professionalInfo.businessEmail || "Not provided"}
+                  </p>
                 </div>
                 <div>
                   <span className="font-medium">Company Address:</span>
@@ -235,7 +237,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                         href={visitor.professionalInfo.companyWebsite}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline flex items-center gap-1"
+                        className="dark:text-blue-300 text-blue-600 hover:underline flex items-center gap-1"
                       >
                         <Globe className="h-3 w-3" />
                         {visitor.professionalInfo.companyWebsite}
@@ -265,7 +267,9 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-muted-foreground">None specified</span>
+                      <span className="text-muted-foreground">
+                        None specified
+                      </span>
                     )}
                   </div>
                 </div>
@@ -279,7 +283,9 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-muted-foreground">None specified</span>
+                      <span className="text-muted-foreground">
+                        None specified
+                      </span>
                     )}
                   </div>
                 </div>
@@ -293,11 +299,16 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     {visitor.eventInfo.interestAreas.length > 0 ? (
                       visitor.eventInfo.interestAreas.map((interest, index) => (
                         <Badge key={index} variant="secondary">
-                          {interest.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
+                          {interest
+                            .replace(/_/g, " ")
+                            .toLowerCase()
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
                         </Badge>
                       ))
                     ) : (
-                      <span className="text-muted-foreground">None specified</span>
+                      <span className="text-muted-foreground">
+                        None specified
+                      </span>
                     )}
                   </div>
                 </div>
@@ -315,15 +326,23 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Emergency Contact Person:</span>
-                  <p className="mt-1">{visitor.emergencyInfo.emergencyContactPerson || "Not provided"}</p>
+                  <p className="mt-1">
+                    {visitor.emergencyInfo.emergencyContactPerson ||
+                      "Not provided"}
+                  </p>
                 </div>
                 <div>
                   <span className="font-medium">Emergency Contact Number:</span>
-                  <p className="mt-1">{visitor.emergencyInfo.emergencyContactNumber || "Not provided"}</p>
+                  <p className="mt-1">
+                    {visitor.emergencyInfo.emergencyContactNumber ||
+                      "Not provided"}
+                  </p>
                 </div>
                 <div className="col-span-2">
                   <span className="font-medium">Special Assistance:</span>
-                  <p className="mt-1">{visitor.emergencyInfo.specialAssistance || "None required"}</p>
+                  <p className="mt-1">
+                    {visitor.emergencyInfo.specialAssistance || "None required"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -339,16 +358,26 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
               <div className="space-y-4 text-sm">
                 <div>
                   <span className="font-medium">Data Privacy Consent:</span>
-                  <Badge 
-                    variant={visitor.consentInfo.dataPrivacyConsent ? "default" : "destructive"} 
+                  <Badge
+                    variant={
+                      visitor.consentInfo.dataPrivacyConsent
+                        ? "default"
+                        : "destructive"
+                    }
                     className="mt-1 ml-2"
                   >
-                    {visitor.consentInfo.dataPrivacyConsent ? "Given" : "Not Given"}
+                    {visitor.consentInfo.dataPrivacyConsent
+                      ? "Given"
+                      : "Not Given"}
                   </Badge>
                 </div>
                 <div>
-                  <span className="font-medium">How did you hear about this event?</span>
-                  <p className="mt-1 text-muted-foreground">{hearAboutDisplay}</p>
+                  <span className="font-medium">
+                    How did you hear about this event?
+                  </span>
+                  <p className="mt-1 text-muted-foreground">
+                    {hearAboutDisplay}
+                  </p>
                 </div>
               </div>
             </div>

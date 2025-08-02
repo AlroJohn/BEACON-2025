@@ -153,7 +153,7 @@ export function ExhibitorDetailsModal({
                         altText={`Face capture for ${exhibitor.personalInfo.firstName} ${exhibitor.personalInfo.lastName}`}
                         triggerText="View face capture"
                         triggerVariant="link"
-                        className="p-0 h-auto text-blue-600 hover:underline"
+                        className="p-0 h-auto dark:text-blue-300 text-blue-600 hover:underline"
                       />
                     </div>
                   </div>
@@ -246,7 +246,7 @@ export function ExhibitorDetailsModal({
                           href={exhibitor.companyInfo.companyWebsite}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline flex items-center gap-1"
+                          className="dark:text-blue-300 text-blue-600 hover:underline flex items-center gap-1"
                         >
                           <Globe className="h-3 w-3" />
                           {exhibitor.companyInfo.companyWebsite}
@@ -371,7 +371,7 @@ export function ExhibitorDetailsModal({
                         altText={`Logo for ${exhibitor.companyInfo.companyName}`}
                         triggerText="View uploaded logo"
                         triggerVariant="link"
-                        className="p-0 h-auto text-blue-600 hover:underline"
+                        className="p-0 h-auto dark:text-blue-300 text-blue-600 hover:underline"
                       />
                     </div>
                   </div>
@@ -452,7 +452,7 @@ export function ExhibitorDetailsModal({
                         altText={`Letter of Intent from ${exhibitor.companyInfo.companyName}`}
                         triggerText="View letter of intent"
                         triggerVariant="link"
-                        className="p-0 h-auto text-blue-600 hover:underline"
+                        className="p-0 h-auto dark:text-blue-300 text-blue-600 hover:underline"
                       />
                     </div>
                   </div>

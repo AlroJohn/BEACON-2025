@@ -212,7 +212,7 @@ const ConferenceRegistrationDialog: React.FC<
                         altText={`Face capture for ${fullName}`}
                         triggerText="View face capture"
                         triggerVariant="link"
-                        className="p-0 h-auto text-blue-300 hover:underline"
+                        className="p-0 h-auto dark:text-blue-300 text-blue-600 hover:underline"
                       />
                     </div>
                   </div>

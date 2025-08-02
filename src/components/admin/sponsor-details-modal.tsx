@@ -145,6 +145,25 @@ export function SponsorDetailsModal({
                   <span className="font-medium">Nationality:</span>
                   <p className="mt-1">{sponsor.personalInfo.nationality}</p>
                 </div>
+                <div>
+                  {" "}
+                  {sponsor.personalInfo.faceScannedUrl && (
+                    <div className="col-span-2">
+                      <span className="font-medium">Face Capture:</span>
+                      <div className="mt-1">
+                        <ImageModal
+                          imageUrl={sponsor.personalInfo.faceScannedUrl}
+                          title={`Face Capture - ${sponsor.personalInfo.firstName} ${sponsor.personalInfo.lastName}`}
+                          description="User face capture for identity verification"
+                          altText={`Face capture for ${sponsor.personalInfo.firstName} ${sponsor.personalInfo.lastName}`}
+                          triggerText="View face capture"
+                          triggerVariant="link"
+                          className="p-0 h-auto dark:text-blue-300 text-blue-600 hover:underline"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -408,22 +427,6 @@ export function SponsorDetailsModal({
                   <span className="font-medium">Last Updated:</span>
                   <p className="mt-1">{formatDate(sponsor.updatedAt)}</p>
                 </div>
-                {sponsor.personalInfo.faceScannedUrl && (
-                  <div className="col-span-2">
-                    <span className="font-medium">Face Capture:</span>
-                    <div className="mt-1">
-                      <ImageModal
-                        imageUrl={sponsor.personalInfo.faceScannedUrl}
-                        title={`Face Capture - ${sponsor.personalInfo.firstName} ${sponsor.personalInfo.lastName}`}
-                        description="User face capture for identity verification"
-                        altText={`Face capture for ${sponsor.personalInfo.firstName} ${sponsor.personalInfo.lastName}`}
-                        triggerText="View face capture"
-                        triggerVariant="link"
-                        className="p-0 h-auto text-blue-300 hover:underline"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>

@@ -70,7 +70,9 @@ export function FaceCaptureWithUpload({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [capturedImage, setCapturedImage] = useState<string | null>(capturedImageUrl || null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(
+    capturedImageUrl || null
+  );
   const [error, setError] = useState<string | null>(null);
   const [isModelLoading, setIsModelLoading] = useState(false);
   const [modelLoadProgress, setModelLoadProgress] = useState(0);
@@ -95,19 +97,29 @@ export function FaceCaptureWithUpload({
         setModelLoadProgress(0);
 
         const modelBaseUrl = "/models";
-        
+
         // Load models progressively
         await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(modelBaseUrl).then(() => setModelLoadProgress(25)),
-          faceapi.nets.faceLandmark68Net.loadFromUri(modelBaseUrl).then(() => setModelLoadProgress(50)),
-          faceapi.nets.faceRecognitionNet.loadFromUri(modelBaseUrl).then(() => setModelLoadProgress(75)),
-          faceapi.nets.faceExpressionNet.loadFromUri(modelBaseUrl).then(() => setModelLoadProgress(100)),
+          faceapi.nets.tinyFaceDetector
+            .loadFromUri(modelBaseUrl)
+            .then(() => setModelLoadProgress(25)),
+          faceapi.nets.faceLandmark68Net
+            .loadFromUri(modelBaseUrl)
+            .then(() => setModelLoadProgress(50)),
+          faceapi.nets.faceRecognitionNet
+            .loadFromUri(modelBaseUrl)
+            .then(() => setModelLoadProgress(75)),
+          faceapi.nets.faceExpressionNet
+            .loadFromUri(modelBaseUrl)
+            .then(() => setModelLoadProgress(100)),
         ]);
 
         console.log("Face detection models loaded successfully");
       } catch (err) {
         console.error("Error loading face detection models:", err);
-        setError("Failed to load face detection models. Face verification may not work optimally.");
+        setError(
+          "Failed to load face detection models. Face verification may not work optimally."
+        );
       } finally {
         setIsModelLoading(false);
       }
@@ -131,7 +143,10 @@ export function FaceCaptureWithUpload({
         .withFaceLandmarks()
         .withFaceExpressions();
 
-      const displaySize = { width: video.videoWidth, height: video.videoHeight };
+      const displaySize = {
+        width: video.videoWidth,
+        height: video.videoHeight,
+      };
       faceapi.matchDimensions(canvas, displaySize);
 
       canvas.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
@@ -195,26 +210,32 @@ export function FaceCaptureWithUpload({
   }, [isDialogOpen, isModelLoading, detectFace]);
 
   // Upload image to Supabase
-  const uploadImageToSupabase = async (base64Image: string): Promise<string> => {
+  const uploadImageToSupabase = async (
+    base64Image: string
+  ): Promise<string> => {
     try {
       // Remove data:image/jpeg;base64, prefix
-      const base64Data = base64Image.replace(/^data:image\\/[a-z]+;base64,/, '');
-      
+      const base64Data = base64Image.replace(/^data:image\/[a-z]+;base64,/, "");
+
       // Convert base64 to buffer
-      const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-      
-      // Generate unique file name
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const fileId = userId || uuidv4();
-      const fileName = `${fileId}/face-scan-${timestamp}.jpg`;
-      
+      const imageBuffer = Uint8Array.from(atob(base64Data), (c) =>
+        c.charCodeAt(0)
+      );
+
+      // Generate unique file name with sanitized userId
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const sanitizedUserId = userId
+        ? userId.replace(/[^a-zA-Z0-9-_]/g, "-")
+        : uuidv4();
+      const fileName = `${sanitizedUserId}/face-scan-${timestamp}.jpg`;
+
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
-        .from('user-profile')
+        .from("user-profile")
         .upload(fileName, imageBuffer, {
-          contentType: 'image/jpeg',
-          cacheControl: '3600',
-          upsert: true
+          contentType: "image/jpeg",
+          cacheControl: "3600",
+          upsert: true,
         });
 
       if (error) {
@@ -223,12 +244,12 @@ export function FaceCaptureWithUpload({
 
       // Get public URL
       const { data: publicData } = supabase.storage
-        .from('user-profile')
+        .from("user-profile")
         .getPublicUrl(fileName);
 
       return publicData.publicUrl;
     } catch (error) {
-      console.error('Image upload error:', error);
+      console.error("Image upload error:", error);
       throw error;
     }
   };
@@ -245,8 +266,6 @@ export function FaceCaptureWithUpload({
       const imageSrc = webcamRef.current.getScreenshot({
         width: 640,
         height: 480,
-        screenshotFormat: "image/jpeg",
-        screenshotQuality: 0.9,
       });
 
       if (!imageSrc) {
@@ -262,10 +281,17 @@ export function FaceCaptureWithUpload({
       onCapture(uploadedUrl);
       setIsDialogOpen(false);
 
-      console.log("Face image captured and uploaded successfully:", uploadedUrl);
+      console.log(
+        "Face image captured and uploaded successfully:",
+        uploadedUrl
+      );
     } catch (err) {
       console.error("Face capture error:", err);
-      setError(err instanceof Error ? err.message : "Failed to capture and upload image");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to capture and upload image"
+      );
     } finally {
       setIsCapturing(false);
       setIsUploading(false);
@@ -357,7 +383,8 @@ export function FaceCaptureWithUpload({
               <span>Face Verification</span>
             </DialogTitle>
             <DialogDescription>
-              Position your face within the frame for identity verification. We'll upload your photo securely.
+              Position your face within the frame for identity verification.
+              We'll upload your photo securely.
             </DialogDescription>
           </DialogHeader>
 
@@ -379,12 +406,13 @@ export function FaceCaptureWithUpload({
                 <Webcam
                   ref={webcamRef}
                   audio={false}
-                  screenshotFormat="image/jpeg"
                   videoConstraints={getWebcamConstraints().video}
                   onUserMedia={() => console.log("Camera started")}
                   onUserMediaError={(err) => {
                     console.error("Camera error:", err);
-                    setError("Unable to access camera. Please check permissions.");
+                    setError(
+                      "Unable to access camera. Please check permissions."
+                    );
                   }}
                   className="w-full rounded-lg"
                 />
@@ -392,7 +420,7 @@ export function FaceCaptureWithUpload({
                   ref={canvasRef}
                   className="absolute top-0 left-0 w-full h-full pointer-events-none"
                 />
-                
+
                 {/* Face Detection Overlay */}
                 <div className="absolute top-2 left-2 right-2 flex justify-between">
                   <Badge
@@ -401,7 +429,7 @@ export function FaceCaptureWithUpload({
                   >
                     {faceDetected ? "Face Detected" : "No Face"}
                   </Badge>
-                  
+
                   {faceDetected && (
                     <Badge
                       variant={isValidFace ? "default" : "secondary"}
@@ -447,11 +475,13 @@ export function FaceCaptureWithUpload({
                 <X className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
-              
+
               <Button
                 type="button"
                 onClick={capturePhoto}
-                disabled={!isValidFace || isCapturing || isUploading || isModelLoading}
+                disabled={
+                  !isValidFace || isCapturing || isUploading || isModelLoading
+                }
                 className="flex items-center space-x-2"
               >
                 {isCapturing || isUploading ? (

@@ -345,6 +345,22 @@ export async function POST(request: NextRequest) {
     console.log("requiresPayment:", requiresPayment);
     console.log("paymentMode:", conferenceData.paymentMode);
 
+    // Validate receipt file for non-TML members who need to pay
+    if (requiresPayment && !receiptFile) {
+      return NextResponse.json({
+        success: false,
+        error: 'Payment receipt upload is required for non-TML members',
+      }, { status: 400 });
+    }
+
+    // Validate reference number for non-TML members who need to pay
+    if (requiresPayment && (!conferenceData.referenceNumber || conferenceData.referenceNumber.trim().length === 0)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Reference number is required for payment verification',
+      }, { status: 400 });
+    }
+
 
     // Create conference registration (only conference-specific fields)
     const conference = await prisma.conference.create({
@@ -450,15 +466,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle face image upload if provided
+    // Handle face image URL if provided
     let faceImageUrl: string | null = null;
     if (faceScannedUrl) {
-      console.log("Conference API: Uploading face image to Supabase");
-      try {
-        faceImageUrl = await uploadImageToSupabase(faceScannedUrl, user.id);
+      // Check if it's a base64 string or already an uploaded URL
+      if (faceScannedUrl.startsWith('data:image/')) {
+        // It's base64 data - upload it
+        console.log("Conference API: Uploading face image to Supabase");
+        try {
+          faceImageUrl = await uploadImageToSupabase(faceScannedUrl, user.id);
+          console.log("Conference API: Face image uploaded successfully");
+        } catch (imageError) {
+          console.error("Conference API: Face image upload failed:", imageError);
+          // Log the error but don't fail the registration
+        }
+      } else if (faceScannedUrl.startsWith('http')) {
+        // It's already an uploaded URL - use it directly
+        faceImageUrl = faceScannedUrl;
+        console.log("Conference API: Using pre-uploaded face image URL");
+      }
 
-        // Update user_details with the face image URL
-        // Use the user_details variable we already have from user creation/retrieval
+      // Update user_details with the face image URL
+      if (faceImageUrl) {
         const user_detailsId = user_details?.id;
 
         if (user_detailsId) {
@@ -468,15 +497,10 @@ export async function POST(request: NextRequest) {
               faceScannedUrl: faceImageUrl,
             },
           });
+          console.log("Conference API: Face image URL updated in database successfully");
         } else {
           console.error("Conference API: user_details ID not found for user:", user.id);
         }
-
-        console.log("Conference API: Face image uploaded and URL updated successfully");
-      } catch (imageError) {
-        console.error("Conference API: Face image upload failed:", imageError);
-        // Log the error but don't fail the registration
-        // The user registration is already completed
       }
     }
 

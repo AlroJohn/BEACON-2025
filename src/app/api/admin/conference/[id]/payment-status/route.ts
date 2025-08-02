@@ -126,11 +126,9 @@ export async function PATCH(
           referenceNumber: conference.ConferencePayment?.referenceNumber || undefined,
           notes: validatedData.notes || undefined,
           selectedEvents: conference.summaryOfPayments.map(payment => ({
-            id: payment.event.id,
-            name: payment.event.eventName,
-            dates: payment.event.eventDates,
-            price: Number(payment.event.eventPrice),
-            status: payment.event.eventStatus,
+            eventName: payment.event.eventName,
+            eventDates: payment.event.eventDates.map((date: any) => new Date(date)),
+            eventPrice: Number(payment.event.eventPrice),
           })),
           // Add userId for QR code generation when payment is CONFIRMED
           userId: validatedData.paymentStatus === 'CONFIRMED' ? conference.user?.id : undefined,

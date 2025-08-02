@@ -6,10 +6,10 @@ const prisma = new PrismaClient();
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const sponsorId = params.id;
+    const { id: sponsorId } = await params;
     const body = await request.json();
     const { status, notes } = body;
 
@@ -42,7 +42,7 @@ export async function PATCH(
     }
 
     // Update the user account status
-    await prisma.user_accounts.update({
+    await prisma.user_accounts.updateMany({
       where: { userId: sponsorRegistration.userId },
       data: { status: status as 'ACTIVE' | 'INACTIVE' },
     });

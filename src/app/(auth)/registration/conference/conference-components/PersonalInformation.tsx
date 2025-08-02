@@ -22,15 +22,15 @@ import {
 } from "@/types/conference/registration";
 import { PersonalInformationProps } from "@/types/conference/components";
 
-// Reuse visitor face capture components
-import { FaceCapture } from "../../visitor/components/FaceCapture";
+// Use conference-specific face capture with direct upload
+import { FaceCaptureWithUpload } from "../components/FaceCaptureWithUpload";
 
 export default function PersonalInformation({
   form,
 }: PersonalInformationProps) {
-  const handleFaceCapture = (imageDataUrl: string) => {
-    // Store the captured image in the form
-    form.setValue("faceScannedUrl", imageDataUrl);
+  const handleFaceCapture = (imageUrl: string) => {
+    // Store the uploaded image URL in the form
+    form.setValue("faceScannedUrl", imageUrl);
   };
 
   return (
@@ -254,10 +254,11 @@ export default function PersonalInformation({
                 purposes.
               </p>
 
-              {/* Use the advanced FaceCapture component */}
-              <FaceCapture
+              {/* Use the advanced FaceCaptureWithUpload component */}
+              <FaceCaptureWithUpload
                 onCapture={handleFaceCapture}
-                capturedImage={form.watch("faceScannedUrl")}
+                capturedImageUrl={form.watch("faceScannedUrl")}
+                userId={form.watch("email")} // Use email as temporary userId
               />
             </div>
           </CardContent>

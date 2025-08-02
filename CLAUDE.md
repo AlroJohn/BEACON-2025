@@ -274,3 +274,9 @@ api/
 3. Start Supabase local development: `npx supabase start` (optional)
 4. Push database schema: `npx prisma db push`
 5. Start development server: `npm run dev`
+```
+
+## Development Guidelines
+
+### Routing Best Practices
+- Always use the nextjs 15 params when in [id]

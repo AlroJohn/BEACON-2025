@@ -122,25 +122,8 @@ export const conferenceRegistrationSchema = baseConferenceSchema
     message: "Custom payment amount must be a valid positive number",
     path: ["customPaymentAmount"],
   })
-  .refine((data) => {
-    // Receipt image is required for non-TML members who need to pay
-    const isNonTMLMember = data.isMaritimeLeagueMember === MaritimeLeagueMembership.NO;
-    const hasPaymentAmount = data.totalPaymentAmount && data.totalPaymentAmount > 0;
-    const requiresPayment = isNonTMLMember && hasPaymentAmount;
-    
-    if (requiresPayment) {
-      // Check if receiptImageUrl is falsy, null, undefined, or empty
-      if (!data.receiptImageUrl || 
-          data.receiptImageUrl === null || 
-          data.receiptImageUrl === undefined) {
-        return false;
-      }
-    }
-    return true;
-  }, {
-    message: "Payment receipt upload is required for non-TML members",
-    path: ["receiptImageUrl"],
-  })
+  // Note: Receipt file validation is handled separately in the API route
+  // since receipt files are processed as FormData after initial validation
   .refine((data) => {
     // Reference number is required for non-TML members who need to pay
     const isNonTMLMember = data.isMaritimeLeagueMember === MaritimeLeagueMembership.NO;
@@ -289,7 +272,7 @@ export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData
 // Conference Interest Areas options for UI with detailed sub-interests
 export const conferenceInterestAreasOptions = [
   { 
-    value: ConferenceInterestArea.SHIPBUILDING_SHIP_REPAIR, 
+    value: ConferenceInterestArea.SHIPPING_PORT_TRANSPORT, 
     label: "Shipping, Port, and Maritime Transport",
     subInterests: [
       "Domestic & international shipping lines",
@@ -302,7 +285,7 @@ export const conferenceInterestAreasOptions = [
     ]
   },
   { 
-    value: ConferenceInterestArea.BOATBUILDING_YACHT_BUILDING, 
+    value: ConferenceInterestArea.SHIPBUILDING_SHIP_REPAIR, 
     label: "Shipbuilding, Boatbuilding & Ship Repair",
     subInterests: [
       "Philippine shipyards & repair facilities",
@@ -312,7 +295,7 @@ export const conferenceInterestAreasOptions = [
     ]
   },
   { 
-    value: ConferenceInterestArea.BLUE_ECONOMY, 
+    value: ConferenceInterestArea.FISHERIES_AQUACULTURE, 
     label: "Fisheries & Aquaculture",
     subInterests: [
       "Municipal and commercial fishing",
@@ -342,7 +325,7 @@ export const conferenceInterestAreasOptions = [
     ]
   },
   { 
-    value: ConferenceInterestArea.INNOVATION_SUSTAINABILITY, 
+    value: ConferenceInterestArea.RENEWABLE_OCEAN_ENERGY, 
     label: "Renewable Ocean Energy",
     subInterests: [
       "Offshore wind energy in Northern Luzon & Palawan",
@@ -352,7 +335,7 @@ export const conferenceInterestAreasOptions = [
     ]
   },
   { 
-    value: ConferenceInterestArea.BLUE_ECONOMY, 
+    value: ConferenceInterestArea.MARINE_ENVIRONMENTAL_PROTECTION, 
     label: "Marine Environmental Protection & Blue Sustainability",
     subInterests: [
       "Coral reef and mangrove rehabilitation (DENR, NGOs, LGUs)",
@@ -362,7 +345,7 @@ export const conferenceInterestAreasOptions = [
     ]
   },
   { 
-    value: ConferenceInterestArea.BLUE_ECONOMY, 
+    value: ConferenceInterestArea.BLUE_FINANCE_INVESTMENT, 
     label: "Blue Finance & Investment",
     subInterests: [
       "Green and blue investment funds",
@@ -382,7 +365,7 @@ export const conferenceInterestAreasOptions = [
     ]
   },
   { 
-    value: ConferenceInterestArea.WOMEN_YOUTH_IN_MARITIME, 
+    value: ConferenceInterestArea.EDUCATION_RESEARCH_CAPACITY, 
     label: "Education, Research & Capacity Building",
     subInterests: [
       "Maritime schools and training centers (MARINA-accredited)",
@@ -392,7 +375,7 @@ export const conferenceInterestAreasOptions = [
     ]
   },
   { 
-    value: ConferenceInterestArea.BLUE_ECONOMY, 
+    value: ConferenceInterestArea.OCEAN_GOVERNANCE_POLICY, 
     label: "Ocean Governance & Policy Development",
     subInterests: [
       "Implementation of the Philippine Maritime Industry Development Plan (MIDP)",

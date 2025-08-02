@@ -117,6 +117,7 @@ export async function GET(request: NextRequest) {
         companyAddress: conference.companyAddress,
         companyWebsite: conference.companyWebsite,
         interestAreas: conference.interestAreas,
+        detailedInterests: conference.detailedInterests || {},
         otherInterests: conference.otherInterests,
         receiveEventInvites: conference.receiveEventInvites,
         emailCertificate: conference.emailCertificate,

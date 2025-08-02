@@ -108,6 +108,7 @@ export interface ConferenceData {
     companyAddress: string;
     companyWebsite: string;
     interestAreas: string[];
+    detailedInterests: Record<string, string[]>;
     otherInterests: string;
     receiveEventInvites: string;
     emailCertificate: string;
@@ -196,6 +197,7 @@ const transformConferenceData = (
       companyAddress: conference.conferenceInfo.companyAddress,
       companyWebsite: conference.conferenceInfo.companyWebsite,
       interestAreas: conference.conferenceInfo.interestAreas,
+      detailedInterests: conference.conferenceInfo.detailedInterests,
       otherInterests: conference.conferenceInfo.otherInterests,
       receiveEventInvites: conference.conferenceInfo.receiveEventInvites,
       emailCertificate: conference.conferenceInfo.emailCertificate,
@@ -276,6 +278,11 @@ export function ConferenceDataTable({
         "TML Member Code": conference.conferenceInfo.tmlMemberCode || "",
         "Interest Areas": Array.isArray(conference.conferenceInfo.interestAreas)
           ? conference.conferenceInfo.interestAreas.join(", ")
+          : "",
+        "Detailed Interests": conference.conferenceInfo.detailedInterests && Object.keys(conference.conferenceInfo.detailedInterests).length > 0
+          ? Object.entries(conference.conferenceInfo.detailedInterests)
+              .map(([category, subInterests]) => `${category}: ${(subInterests as string[]).join(", ")}`)
+              .join(" | ")
           : "",
         "Other Interests": conference.conferenceInfo.otherInterests || "",
         "Receive Event Invites": conference.conferenceInfo.receiveEventInvites

@@ -4,10 +4,10 @@ import { z } from 'zod';
 
 const prisma = new PrismaClient();
 
-// Validation schema for event updates
+// Validation schema for event updates - Updated for eventDates array
 const eventUpdateSchema = z.object({
   eventName: z.string().min(1, 'Event name is required').optional(),
-  eventDate: z.string().pipe(z.coerce.date()).optional(),
+  eventDates: z.array(z.string().pipe(z.coerce.date())).min(1, 'At least one event date is required').optional(),
   eventPrice: z.number().min(0, 'Event price must be non-negative').optional(),
   eventStatus: z.enum(['CONFERENCE', 'SHOW', 'WORKSHOP', 'SEMINAR', 'EXHIBITION']).optional(),
   isActive: z.boolean().optional(),
@@ -30,9 +30,7 @@ export async function GET(
             conference: {
               select: {
                 id: true,
-
                 isMaritimeLeagueMember: true,
-
               }
             }
           }
@@ -95,9 +93,7 @@ export async function PUT(
             conference: {
               select: {
                 id: true,
-
                 isMaritimeLeagueMember: true,
-
               }
             }
           }

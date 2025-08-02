@@ -51,6 +51,12 @@ const registerForConference = async (data: ConferenceRegistrationFormData): Prom
     } else if (Array.isArray(value)) {
       // Handle arrays (selectedEventIds, interestAreas)
       formData.append(key, JSON.stringify(value));
+    } else if (key === 'attendingDays' && typeof value === 'object' && value !== null) {
+      // Handle attendingDays object - needs to be JSON stringified
+      formData.append(key, JSON.stringify(value));
+    } else if (key === 'detailedInterests' && typeof value === 'object' && value !== null) {
+      // Handle detailedInterests object - needs to be JSON stringified
+      formData.append(key, JSON.stringify(value));
     } else if (value !== null && value !== undefined) {
       // Handle other values
       formData.append(key, String(value));

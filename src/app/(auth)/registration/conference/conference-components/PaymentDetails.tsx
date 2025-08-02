@@ -75,14 +75,15 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
     }
 
     const maxFileSize = 15 * 1024 * 1024; // 15MB
-    // Validate file size (max 5MB)
-    if (file.size > maxFileSize * 1024 * 1024) {
+    // Validate file size (max 15MB)
+    if (file.size > maxFileSize) {
       toast.error("Image size must be less than 15MB");
       return;
     }
 
-    // Store file in form
+    // Store file in form and clear any validation errors
     form.setValue("receiptImageUrl", file);
+    form.clearErrors("receiptImageUrl");
 
     // Create preview
     const reader = new FileReader();
@@ -106,6 +107,48 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
     updateFormData({ customPaymentAmount });
     calculateTotalAmount();
   }, [customPaymentAmount, updateFormData, calculateTotalAmount]);
+
+  // Watch for payment requirement changes and validate receipt and reference number
+  const isMaritimeLeagueMember = form.watch("isMaritimeLeagueMember");
+  const receiptImageUrl = form.watch("receiptImageUrl");
+  const referenceNumber = form.watch("referenceNumber");
+
+  useEffect(() => {
+    const needsPayment = isMaritimeLeagueMember === "NO" && totalAmount > 0;
+
+    // Validate receipt
+    if (needsPayment && !receiptImageUrl) {
+      form.setError("receiptImageUrl", {
+        type: "manual",
+        message: "Payment receipt is required for registration",
+      });
+    } else if (receiptImageUrl && form.formState.errors.receiptImageUrl) {
+      form.clearErrors("receiptImageUrl");
+    }
+
+    // Validate reference number
+    if (
+      needsPayment &&
+      (!referenceNumber || referenceNumber.trim().length === 0)
+    ) {
+      form.setError("referenceNumber", {
+        type: "manual",
+        message: "Reference number is required for payment verification",
+      });
+    } else if (
+      referenceNumber &&
+      referenceNumber.trim().length > 0 &&
+      form.formState.errors.referenceNumber
+    ) {
+      form.clearErrors("referenceNumber");
+    }
+  }, [
+    isMaritimeLeagueMember,
+    totalAmount,
+    receiptImageUrl,
+    referenceNumber,
+    form,
+  ]);
 
   // If no payment required (TML member), show confirmation
   if (!requiresPayment) {
@@ -163,6 +206,132 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
 
   return (
     <div className="space-y-6">
+      {/* Pricing Summary */}
+      {selectedEvents.length > 0 && (
+        <Card className="border-blue-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Pricing Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {(() => {
+                const attendingDays = form.watch("attendingDays") || {};
+                let conferenceTotal = 0;
+                let otherEventsTotal = 0;
+                let conferenceDaysCount = 0;
+                const breakdown: Array<{
+                  name: string;
+                  days: number;
+                  pricePerDay: number;
+                  total: number;
+                  isConference: boolean;
+                }> = [];
+
+                selectedEvents.forEach((event) => {
+                  const selectedDates = attendingDays[event.name] || [];
+                  const daysSelected = Array.isArray(selectedDates)
+                    ? selectedDates.length
+                    : 0;
+
+                  if (daysSelected > 0) {
+                    const eventTotal = daysSelected * event.price;
+                    // Assuming we can determine if it's a conference event from the store or form
+                    const isConference = true; // This should be determined based on event data
+
+                    breakdown.push({
+                      name: event.name,
+                      days: daysSelected,
+                      pricePerDay: event.price,
+                      total: eventTotal,
+                      isConference,
+                    });
+
+                    if (isConference) {
+                      conferenceTotal += eventTotal;
+                      conferenceDaysCount += daysSelected;
+                    } else {
+                      otherEventsTotal += eventTotal;
+                    }
+                  }
+                });
+
+                const hasDiscount = conferenceDaysCount >= 3;
+                const discount = hasDiscount ? 1500 : 0;
+                const finalTotal =
+                  conferenceTotal + otherEventsTotal - discount;
+
+                return (
+                  <>
+                    {breakdown.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center py-1"
+                      >
+                        <div className="flex-1">
+                          <span className="font-medium">{item.name}</span>
+                          {item.isConference && (
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              CONFERENCE
+                            </Badge>
+                          )}
+                          <div className="text-gray-600 text-xs">
+                            {item.days} day{item.days > 1 ? "s" : ""} ×{" "}
+                            {formatPrice(item.pricePerDay)}
+                          </div>
+                        </div>
+                        <div className="font-medium">
+                          {formatPrice(item.total)}
+                        </div>
+                      </div>
+                    ))}
+
+                    {breakdown.length > 0 && (
+                      <>
+                        <div className="border-t pt-2 mt-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Subtotal:</span>
+                            <span>
+                              {formatPrice(conferenceTotal + otherEventsTotal)}
+                            </span>
+                          </div>
+
+                          {hasDiscount && (
+                            <div className="flex justify-between text-sm text-green-600">
+                              <span>
+                                Conference Discount ({conferenceDaysCount}{" "}
+                                days):
+                              </span>
+                              <span>-{formatPrice(discount)}</span>
+                            </div>
+                          )}
+
+                          <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t">
+                            <span>Total Amount Due:</span>
+                            <span className="text-blue-600">
+                              {formatPrice(finalTotal)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {hasDiscount && (
+                          <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                            <Info className="h-3 w-3" />
+                            You saved ₱1,500 for selecting 3+ conference days!
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Payment Method Selection */}
 
       <FormField
@@ -401,18 +570,49 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
       </Card>
 
       {/* Receipt Upload Section */}
-      <Card className="border-orange-200 bg-orange-50 dark:bg-c1/30 dark:border-c1">
+      <Card
+        className={`border-orange-200 bg-orange-50 dark:bg-c1/30 dark:border-c1 ${
+          form.formState.errors.receiptImageUrl
+            ? "border-red-300 bg-red-50"
+            : ""
+        }`}
+      >
         <CardHeader className="pb-3">
-          <CardTitle className="text-base text-orange-800 dark:text-white flex items-center gap-2">
+          <CardTitle
+            className={`text-base flex items-center gap-2 ${
+              form.formState.errors.receiptImageUrl
+                ? "text-red-800 dark:text-red-400"
+                : "text-orange-800 dark:text-white"
+            }`}
+          >
             <Upload className="h-4 w-4" />
-            Upload Payment Receipt *
+            Upload Payment Receipt *{" "}
+            {form.formState.errors.receiptImageUrl && "(Required)"}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Alert className="border-orange-300 bg-orange-100">
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
+            <Alert
+              className={`${
+                form.formState.errors.receiptImageUrl
+                  ? "border-red-300 bg-red-100"
+                  : "border-orange-300 bg-orange-100"
+              }`}
+            >
+              <AlertTriangle
+                className={`h-4 w-4 ${
+                  form.formState.errors.receiptImageUrl
+                    ? "text-red-600"
+                    : "text-orange-600"
+                }`}
+              />
+              <AlertDescription
+                className={`${
+                  form.formState.errors.receiptImageUrl
+                    ? "text-red-800"
+                    : "text-orange-800"
+                }`}
+              >
                 <strong>Required:</strong> Please upload your payment receipt
                 for verification. Without a valid receipt, your registration
                 cannot be processed.
@@ -439,7 +639,11 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
                         type="button"
                         variant="outline"
                         onClick={() => fileInputRef.current?.click()}
-                        className="w-full h-32 border-dashed border-orange-300 hover:border-orange-400"
+                        className={`w-full h-32 border-dashed hover:border-orange-400 ${
+                          form.formState.errors.receiptImageUrl
+                            ? "border-red-300 hover:border-red-400"
+                            : "border-orange-300"
+                        }`}
                       >
                         {previewUrl ? (
                           <div className="flex flex-col items-center gap-2">
@@ -485,13 +689,26 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
               name="referenceNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Reference Number *</FormLabel>
+                  <FormLabel
+                    className={
+                      form.formState.errors.referenceNumber
+                        ? "text-red-700"
+                        : ""
+                    }
+                  >
+                    Reference Number *{" "}
+                    {form.formState.errors.referenceNumber && "(Required)"}
+                  </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       value={field.value || ""}
                       placeholder="Enter transaction reference number"
-                      className="border-orange-200 focus:border-orange-400"
+                      className={`focus:border-orange-400 ${
+                        form.formState.errors.referenceNumber
+                          ? "border-red-300 focus:border-red-400 bg-red-50"
+                          : "border-orange-200"
+                      }`}
                     />
                   </FormControl>
                   <FormMessage />

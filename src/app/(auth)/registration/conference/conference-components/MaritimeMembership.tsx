@@ -164,7 +164,7 @@ export default function MaritimeMembership({ form }: MaritimeMembershipProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel className="flex items-center gap-2">
-                  2. If yes, please enter your TML member code:
+                  2. If yes, please enter your TML member code: <span className="text-red-500">*</span>
                   {showLoading && (
                     <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                   )}
@@ -195,8 +195,9 @@ export default function MaritimeMembership({ form }: MaritimeMembershipProps) {
                 />
               </FormControl>
               <FormDescription>
-                Enter your unique TML member code to verify your membership and
-                access exclusive benefits.
+                <strong>Required:</strong> Enter your unique TML member code to verify your membership.
+                Your code will be validated against our database to ensure it exists and is not already in use.
+                Only validated codes allow free registration.
               </FormDescription>
               {showError && errorMessage && (
                 <div className="text-sm text-red-600 mt-2 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-md">

@@ -47,7 +47,7 @@ export interface ConferenceRegistrationEmailData {
   isMaritimeLeagueMember: boolean;
   selectedEvents: Array<{
     eventName: string;
-    eventDate: Date;
+    eventDates: Date[];
     eventPrice: number;
     eventStatus: string;
   }>;
@@ -55,6 +55,7 @@ export interface ConferenceRegistrationEmailData {
   paymentStatus: 'PENDING' | 'CONFIRMED' | 'FREE';
   requiresPayment: boolean;
   tmlMemberCode?: string;
+  attendingDays?: Record<string, string[]>;
 }
 
 // Send email function
@@ -165,7 +166,12 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
         <strong>${event.eventName}</strong>
         <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">
-          ${formatDate(event.eventDate)} • ${event.eventStatus}
+          ${event.eventDates && event.eventDates.length > 0
+      ? event.eventDates.length === 1
+        ? formatDate(event.eventDates[0])
+        : event.eventDates.map((date: Date) => formatDate(date)).join(', ')
+      : 'No dates scheduled'
+    } • ${event.eventStatus}
         </div>
       </td>
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: bold;">
@@ -365,7 +371,7 @@ export interface PaymentStatusEmailData {
   notes?: string;
   selectedEvents: Array<{
     eventName: string;
-    eventDate: Date;
+    eventDates: Date[];
     eventPrice: number;
   }>;
   userId?: string; // Add userId for QR code generation when payment is CONFIRMED
@@ -451,7 +457,12 @@ export function generatePaymentStatusEmail(data: PaymentStatusEmailData): string
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
         <strong>${event.eventName}</strong>
         <div style="color: #6b7280; font-size: 14px; margin-top: 4px;">
-          ${formatDate(event.eventDate)}
+          ${event.eventDates && event.eventDates.length > 0
+      ? event.eventDates.length === 1
+        ? formatDate(event.eventDates[0])
+        : event.eventDates.map((date: Date) => formatDate(date)).join(', ')
+      : 'No dates scheduled'
+    }
         </div>
       </td>
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: bold;">
@@ -1263,7 +1274,7 @@ export function generateSponsorConfirmationEmail(data: SponsorConfirmationEmailD
   `).join('');
 
   const isConfirmed = status === 'CONFIRMED';
-  
+
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -1299,10 +1310,10 @@ export function generateSponsorConfirmationEmail(data: SponsorConfirmationEmailD
             Sponsorship Application ${isConfirmed ? 'Approved!' : 'Update Required'}
           </h2>
           <p style="color: ${isConfirmed ? '#065f46' : '#991b1b'}; margin: 0; font-size: 16px;">
-            ${isConfirmed 
-              ? 'Congratulations! Your sponsorship application has been approved'
-              : 'Your sponsorship application requires attention'
-            }
+            ${isConfirmed
+      ? 'Congratulations! Your sponsorship application has been approved'
+      : 'Your sponsorship application requires attention'
+    }
           </p>
         </div>
 
@@ -1478,7 +1489,7 @@ export function generateExhibitorConfirmationEmail(data: ExhibitorConfirmationEm
     .join('');
 
   const isConfirmed = status === 'CONFIRMED';
-  
+
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -1514,10 +1525,10 @@ export function generateExhibitorConfirmationEmail(data: ExhibitorConfirmationEm
             Exhibition Application ${isConfirmed ? 'Approved!' : 'Update Required'}
           </h2>
           <p style="color: ${isConfirmed ? '#065f46' : '#991b1b'}; margin: 0; font-size: 16px;">
-            ${isConfirmed 
-              ? 'Congratulations! Your exhibition application has been approved'
-              : 'Your exhibition application requires attention'
-            }
+            ${isConfirmed
+      ? 'Congratulations! Your exhibition application has been approved'
+      : 'Your exhibition application requires attention'
+    }
           </p>
         </div>
 

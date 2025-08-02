@@ -365,8 +365,10 @@ model Conference {
 
   // Section 4: Areas of Interest
   interestAreas       ConferenceInterestArea[]
+  detailedInterests   Json                     @default("{}")
   otherInterests      String?
   receiveEventInvites Boolean                  @default(false)
+  attendingDays       Json
 
   // Section 6: Consent & Confirmation
   emailCertificate Boolean @default(false)
@@ -489,6 +491,7 @@ model ConferencePayment {
   notes           String?
   paymentMode     PaymentMode   @default(BANK_DEPOSIT_TRANSFER)
   paymentStatus   PaymentStatus @default(PENDING)
+  attendingDays   Json          @default("{}")
 
   // Relations - ONLY linked to Conference
   conference Conference @relation(fields: [conferenceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -499,11 +502,12 @@ model ConferencePayment {
 model SummaryOfPayments {
   id           String          @id @default(uuid())
   eventName    String
-  eventDate    DateTime
+  eventDates   DateTime[]
   eventPrice   Decimal
   eventStatus  EventStatusEnum
   conferenceId String
   eventId      String
+  attendingDays Json           @default("{}")
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
 
@@ -521,7 +525,7 @@ model Events {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   eventName      String
-  eventDate      DateTime
+  eventDates      DateTime[]
   eventPrice     Decimal
   eventStatus    EventStatusEnum
   isActive       Boolean         @default(true)

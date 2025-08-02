@@ -24,13 +24,13 @@ export type AgeBracket = 'UNDER_18' | 'AGE_18_24' | 'AGE_25_34' | 'AGE_35_44' | 
 // Event types
 export type EventStatusEnum = 'CONFERENCE' | 'SHOW' | 'WORKSHOP' | 'SEMINAR' | 'EXHIBITION';
 
-// Events Model Type (for Conference payments)
+// Events Model Type (for Conference payments) - Updated to match VisitorEvents pattern
 export interface Event {
   id: string;
   createdAt: Date;
   updatedAt: Date;
   eventName: string;
-  eventDate: Date;
+  eventDates: Date[];
   eventPrice: number;
   eventStatus: EventStatusEnum;
   isActive: boolean;
@@ -57,8 +57,13 @@ export interface VisitorEvent {
 // Summary of Payments Model Type
 export interface SummaryOfPayments {
   id: string;
+  eventName: string;
+  eventDates: Date[];
+  eventPrice: number;
+  eventStatus: EventStatusEnum;
   conferenceId: string;
   eventId: string;
+  attendingDays: Record<string, string[]>;
   createdAt: Date;
   updatedAt: Date;
   conference?: ConferenceRegistration;
@@ -140,32 +145,12 @@ export interface ConferencePayment {
 
   // Payment Details
   totalAmount: number;
+  referenceNumber?: string;
+  receiptImageUrl?: string;
+  notes?: string;
   paymentMode: PaymentMode;
   paymentStatus: PaymentStatus;
-  customPaymentAmount?: string;
-  transactionId?: string;
-  proofOfPaymentUrl?: string;
-  paymentDate?: Date;
-
-  // PayMongo Integration Fields
-  paymongoPaymentId?: string;
-  paymongoCheckoutId?: string;
-  paymongoIntentId?: string;
-  paymongoWebhookId?: string;
-  paymongoPaymentMethod?: string;
-  paymongoReferenceId?: string;
-
-  // Payment Confirmation
-  isPaid: boolean;
-  paymentConfirmedAt?: Date;
-  paymentConfirmedBy?: string;
-
-  // Payment Breakdown
-  conferenceAmount?: number;
-  blueRunwayAmount?: number;
-
-  // Notes
-  notes?: string;
+  attendingDays: Record<string, string[]>;
 
   // Relations
   conference?: ConferenceRegistration;

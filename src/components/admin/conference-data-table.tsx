@@ -99,19 +99,20 @@ export interface ConferenceData {
     status: string;
   };
   conferenceInfo: {
+    [x: string]: { [s: string]: unknown } | ArrayLike<unknown>;
     isMaritimeLeagueMember: string;
-    tmlMemberCode: string | null;
-    jobTitle: string | null;
-    companyName: string | null;
-    industry: string | null;
-    companyAddress: string | null;
-    companyWebsite: string | null;
+    tmlMemberCode: string;
+    jobTitle: string;
+    companyName: string;
+    industry: string;
+    companyAddress: string;
+    companyWebsite: string;
     interestAreas: string[];
-    otherInterests: string | null;
-    receiveEventInvites: boolean;
-    emailCertificate: boolean;
-    photoVideoConsent: boolean;
-    dataUsageConsent: boolean;
+    otherInterests: string;
+    receiveEventInvites: string;
+    emailCertificate: string;
+    photoVideoConsent: string;
+    dataUsageConsent: string;
   };
   paymentInfo: {
     totalAmount: number | null;

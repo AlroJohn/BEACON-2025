@@ -26,6 +26,7 @@ export const baseConferenceSchema = z.object({
   // Conference model fields
   isMaritimeLeagueMember: z.nativeEnum(MaritimeLeagueMembership),
   tmlMemberCode: z.string().optional().nullable(),
+  attendingDays: z.record(z.string(), z.array(z.string())).default({}),
 
   // Section 4: Professional Information
   jobTitle: z.string().optional().nullable(),
@@ -36,6 +37,7 @@ export const baseConferenceSchema = z.object({
 
   // Section 5: Areas of Interest (matches Prisma schema)
   interestAreas: z.array(z.nativeEnum(ConferenceInterestArea)).min(1, "Select at least one interest area"),
+  detailedInterests: z.record(z.string(), z.array(z.string())).default({}),
   otherInterests: z.string().optional().nullable(),
   receiveEventInvites: z.boolean().default(false),
 
@@ -44,7 +46,7 @@ export const baseConferenceSchema = z.object({
   customPaymentAmount: z.string().optional().nullable(),
   paymentMode: z.enum(['BANK_DEPOSIT_TRANSFER', 'GCASH', 'FREE']).optional().nullable(),
   hasConferenceDiscount: z.boolean().optional().nullable(),
-  receiptImageUrl: z.any().optional().nullable(), // Will be File object, validated separately
+  receiptImageUrl: z.union([z.instanceof(File), z.string(), z.null(), z.undefined()]).optional().nullable(),
   referenceNumber: z.string().optional().nullable(),
 
   // Section 7: Consent & Confirmation
@@ -66,13 +68,37 @@ export const conferenceRegistrationSchema = baseConferenceSchema
     path: ["selectedEventIds"],
   })
   .refine((data) => {
-    // If maritime league member is YES, TML member code is required
-    if (data.isMaritimeLeagueMember === MaritimeLeagueMembership.YES) {
-      return data.tmlMemberCode && data.tmlMemberCode.trim().length > 0;
+    // Basic validation that attending days is provided if events are selected
+    if (data.selectedEventIds && data.selectedEventIds.length > 0) {
+      const attendingDays = data.attendingDays || {};
+      const hasAnySelectedDates = Object.values(attendingDays).some(dates => 
+        Array.isArray(dates) && dates.length > 0
+      );
+      
+      if (!hasAnySelectedDates) {
+        return false;
+      }
     }
     return true;
   }, {
-    message: "TML Member Code is required for existing members",
+    message: "Please select at least one date for your selected events",
+    path: ["attendingDays"],
+  })
+  .refine((data) => {
+    // If maritime league member is YES, TML member code is required and must be valid format
+    if (data.isMaritimeLeagueMember === MaritimeLeagueMembership.YES) {
+      if (!data.tmlMemberCode || data.tmlMemberCode.trim().length === 0) {
+        return false;
+      }
+      
+      // Additional format validation - TML codes should be at least 3 chars
+      if (data.tmlMemberCode.trim().length < 3) {
+        return false;
+      }
+    }
+    return true;
+  }, {
+    message: "Valid TML Member Code is required for existing members. Please enter your valid code or select 'No' if you're not a member.",
     path: ["tmlMemberCode"],
   })
   .refine((data) => {
@@ -97,6 +123,42 @@ export const conferenceRegistrationSchema = baseConferenceSchema
     path: ["customPaymentAmount"],
   })
   .refine((data) => {
+    // Receipt image is required for non-TML members who need to pay
+    const isNonTMLMember = data.isMaritimeLeagueMember === MaritimeLeagueMembership.NO;
+    const hasPaymentAmount = data.totalPaymentAmount && data.totalPaymentAmount > 0;
+    const requiresPayment = isNonTMLMember && hasPaymentAmount;
+    
+    if (requiresPayment) {
+      // Check if receiptImageUrl is falsy, null, undefined, or empty
+      if (!data.receiptImageUrl || 
+          data.receiptImageUrl === null || 
+          data.receiptImageUrl === undefined) {
+        return false;
+      }
+    }
+    return true;
+  }, {
+    message: "Payment receipt upload is required for non-TML members",
+    path: ["receiptImageUrl"],
+  })
+  .refine((data) => {
+    // Reference number is required for non-TML members who need to pay
+    const isNonTMLMember = data.isMaritimeLeagueMember === MaritimeLeagueMembership.NO;
+    const hasPaymentAmount = data.totalPaymentAmount && data.totalPaymentAmount > 0;
+    const requiresPayment = isNonTMLMember && hasPaymentAmount;
+    
+    if (requiresPayment) {
+      if (!data.referenceNumber || 
+          data.referenceNumber.trim().length === 0) {
+        return false;
+      }
+    }
+    return true;
+  }, {
+    message: "Reference number is required for payment verification",
+    path: ["referenceNumber"],
+  })
+  .refine((data) => {
     // If website is provided, validate URL format
     if (data.companyWebsite && data.companyWebsite.trim() !== "") {
       try {
@@ -111,7 +173,7 @@ export const conferenceRegistrationSchema = baseConferenceSchema
     message: "Please provide a valid website URL",
     path: ["companyWebsite"],
   })
-  // Remove receipt validation - handle it like face scan (upload after record creation)
+// Remove receipt validation - handle it like face scan (upload after record creation)
 
 export type ConferenceRegistrationFormData = z.infer<typeof conferenceRegistrationSchema>;
 
@@ -191,6 +253,7 @@ export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData
   // Use YES here so receipt isn’t required by default even with selected events.
   isMaritimeLeagueMember: MaritimeLeagueMembership.NO,
   tmlMemberCode: "TML-2025-0001",
+  attendingDays: {},
 
   // Professional Information
   jobTitle: "Business Development Manager",
@@ -204,6 +267,7 @@ export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData
     ConferenceInterestArea.MARINE_TECHNOLOGY,
     ConferenceInterestArea.INNOVATION_SUSTAINABILITY,
   ],
+  detailedInterests: {},
   otherInterests: null,
   receiveEventInvites: true,
 
@@ -222,18 +286,132 @@ export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData
 };
 
 
-// Conference Interest Areas options for UI
+// Conference Interest Areas options for UI with detailed sub-interests
 export const conferenceInterestAreasOptions = [
-  { value: ConferenceInterestArea.SHIPBUILDING_SHIP_REPAIR, label: "Shipbuilding & Ship Repair" },
-  { value: ConferenceInterestArea.BOATBUILDING_YACHT_BUILDING, label: "Boatbuilding & Yacht Building" },
-  { value: ConferenceInterestArea.MARINE_TECHNOLOGY, label: "Marine Technology" },
-  { value: ConferenceInterestArea.NAVAL_DEFENSE_SECURITY, label: "Naval Defense & Security" },
-  { value: ConferenceInterestArea.MARITIME_TOURISM, label: "Maritime Tourism" },
-  { value: ConferenceInterestArea.INNOVATION_SUSTAINABILITY, label: "Innovation & Sustainability" },
-  { value: ConferenceInterestArea.BLUE_ECONOMY, label: "Blue Economy" },
-  { value: ConferenceInterestArea.LIFESTYLE_FASHION, label: "Lifestyle & Fashion" },
-  { value: ConferenceInterestArea.WOMEN_YOUTH_IN_MARITIME, label: "Women & Youth in Maritime" },
-  { value: ConferenceInterestArea.OTHERS, label: "Others" },
+  { 
+    value: ConferenceInterestArea.SHIPBUILDING_SHIP_REPAIR, 
+    label: "Shipping, Port, and Maritime Transport",
+    subInterests: [
+      "Domestic & international shipping lines",
+      "Port development & logistics",
+      "Inter-island transport & multimodal shipping",
+      "Shipping agency and crewing services",
+      "Ferry operators and terminal management",
+      "Manning & Seafaring",
+      "Maritime Job fair"
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.BOATBUILDING_YACHT_BUILDING, 
+    label: "Shipbuilding, Boatbuilding & Ship Repair",
+    subInterests: [
+      "Philippine shipyards & repair facilities",
+      "Boatbuilding for fisheries, tourism, and patrol",
+      "Naval architecture & marine engineering",
+      "Classification societies and marine survey"
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.BLUE_ECONOMY, 
+    label: "Fisheries & Aquaculture",
+    subInterests: [
+      "Municipal and commercial fishing",
+      "Fish ports and cold chain logistics",
+      "Aquaculture farms",
+      "Marine biotech & sustainable seafood certification"
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.MARITIME_TOURISM, 
+    label: "Coastal & Marine Tourism",
+    subInterests: [
+      "Dive resorts, island hopping, marine parks",
+      "Marina and yacht club development",
+      "Water sports and marine recreation",
+      "Cruise tourism & destination marketing"
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.MARINE_TECHNOLOGY, 
+    label: "Maritime Technology & Digitalization",
+    subInterests: [
+      "Ship navigation systems and marine electronics",
+      "Digital port operations and VTS systems",
+      "Autonomous vessel R&D (in collaboration with maritime schools)",
+      "Smart shipbuilding and logistics software"
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.INNOVATION_SUSTAINABILITY, 
+    label: "Renewable Ocean Energy",
+    subInterests: [
+      "Offshore wind energy in Northern Luzon & Palawan",
+      "Tidal and wave energy prospects",
+      "OTEC (Ocean Thermal Energy Conversion) pilot programs",
+      "Community-based hybrid energy systems in island barangays"
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.BLUE_ECONOMY, 
+    label: "Marine Environmental Protection & Blue Sustainability",
+    subInterests: [
+      "Coral reef and mangrove rehabilitation (DENR, NGOs, LGUs)",
+      "Marine plastic waste solutions (recycling, upcycling)",
+      "Coastal resilience and disaster mitigation",
+      "Ocean conservation programs (PCG, BFAR, private sector)"
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.BLUE_ECONOMY, 
+    label: "Blue Finance & Investment",
+    subInterests: [
+      "Green and blue investment funds",
+      "Maritime PPP infrastructure projects",
+      "Insurance, compliance, and risk assessment",
+      "Investment in tourism ports, drydocks, shipyards, etc."
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.NAVAL_DEFENSE_SECURITY, 
+    label: "Maritime Security & Defense",
+    subInterests: [
+      "Philippine Navy modernization",
+      "Philippine Coast Guard (PCG) missions & rescue capabilities",
+      "Anti-smuggling, piracy, and border surveillance",
+      "Disaster preparedness and rapid response in maritime zones"
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.WOMEN_YOUTH_IN_MARITIME, 
+    label: "Education, Research & Capacity Building",
+    subInterests: [
+      "Maritime schools and training centers (MARINA-accredited)",
+      "Women in Maritime Philippines",
+      "Research institutions (UP MSI, SEAFDEC, PCAMRD)",
+      "Maritime youth leadership & community programs"
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.BLUE_ECONOMY, 
+    label: "Ocean Governance & Policy Development",
+    subInterests: [
+      "Implementation of the Philippine Maritime Industry Development Plan (MIDP)",
+      "Marine spatial planning and blue zoning",
+      "Compliance with international maritime regulations (IMO, UNCLOS)",
+      "National blue economy roadmap"
+    ]
+  },
+  { 
+    value: ConferenceInterestArea.LIFESTYLE_FASHION, 
+    label: "Ocean-Inspired Lifestyle, Art & Fashion",
+    subInterests: [
+      "Recycled marine waste apparel and accessories",
+      "Maritime fashion shows (e.g., BLUE RUNWAY)",
+      "Cultural representation of Philippine maritime heritage",
+      "Advocacy through fashion, design, and media"
+    ]
+  },
+  { value: ConferenceInterestArea.OTHERS, label: "Others", subInterests: [] },
 ] as const;
 
 // Maritime League Membership options for UI

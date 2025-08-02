@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MaritimeLeagueMembership, ConferenceInterestArea, PrismaClient, PaymentMode } from '@prisma/client';
+import { MaritimeLeagueMembership, ConferenceInterestArea, PrismaClient, PaymentMode, Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { createClient } from '@supabase/supabase-js';
 import { sendConferenceRegistrationEmail, ConferenceRegistrationEmailData } from '@/lib/email';
@@ -93,6 +93,12 @@ export async function POST(request: NextRequest) {
       }
       if (jsonData.interestAreas && typeof jsonData.interestAreas === 'string') {
         jsonData.interestAreas = JSON.parse(jsonData.interestAreas);
+      }
+      if (jsonData.attendingDays && typeof jsonData.attendingDays === 'string') {
+        jsonData.attendingDays = JSON.parse(jsonData.attendingDays);
+      }
+      if (jsonData.detailedInterests && typeof jsonData.detailedInterests === 'string') {
+        jsonData.detailedInterests = JSON.parse(jsonData.detailedInterests);
       }
 
       // Convert string booleans to actual booleans
@@ -298,26 +304,36 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      // Calculate total amount from selected events
-      calculatedAmount = selectedEvents.reduce((total, event) => {
-        return total + Number(event.eventPrice);
-      }, 0);
+      // Calculate total amount based on selected dates per event (price per day)
+      const attendingDays = conferenceData.attendingDays || {};
+      
+      // Separate conference events from other events
+      let conferenceTotal = 0;
+      let otherEventsTotal = 0;
+      let conferenceDaysCount = 0;
 
-      // Apply conference discount if all 3 CONFERENCE events are selected
-      const conferenceEvents = selectedEvents.filter(event => event.eventStatus === 'CONFERENCE');
-      if (conferenceEvents.length === 3) {
-        // Check if there are exactly 3 CONFERENCE events available in total
-        const totalConferenceEvents = await prisma.events.count({
-          where: {
-            eventStatus: 'CONFERENCE',
-            isActive: true
-          }
-        });
-
-        if (totalConferenceEvents === 3) {
-          calculatedAmount -= 1500; // Apply 1500 discount for selecting all 3 conference events
+      selectedEvents.forEach(event => {
+        const eventName = event.eventName;
+        const selectedDates = attendingDays[eventName] || [];
+        const pricePerDay = Number(event.eventPrice);
+        const daysSelected = Array.isArray(selectedDates) ? selectedDates.length : 0;
+        
+        if (event.eventStatus === 'CONFERENCE') {
+          // Conference events - eligible for discount
+          conferenceTotal += daysSelected * pricePerDay;
+          conferenceDaysCount += daysSelected;
+        } else {
+          // Other events (SHOW, WORKSHOP, etc.) - no discount
+          otherEventsTotal += daysSelected * pricePerDay;
         }
+      });
+
+      // Apply conference discount if 3 or more CONFERENCE days are selected
+      if (conferenceDaysCount >= 3) {
+        conferenceTotal -= 1500; // ₱1,500 discount for 3+ conference days
       }
+
+      calculatedAmount = conferenceTotal + otherEventsTotal;
     }
 
     // Determine if payment is required (non-maritime league members)
@@ -342,10 +358,12 @@ export async function POST(request: NextRequest) {
         companyAddress: conferenceData.companyAddress,
         companyWebsite: conferenceData.companyWebsite,
         interestAreas: conferenceData.interestAreas,
+        detailedInterests: (conferenceData.detailedInterests ?? {}) as Prisma.InputJsonValue,
         otherInterests: conferenceData.otherInterests,
         receiveEventInvites: conferenceData.receiveEventInvites || false,
         emailCertificate: conferenceData.emailCertificate || false,
         dataUsageConsent: conferenceData.dataUsageConsent,
+        attendingDays: (conferenceData.attendingDays ?? {}) as Prisma.InputJsonValue,
       },
       include: {
         user: {
@@ -368,9 +386,10 @@ export async function POST(request: NextRequest) {
         conferenceId: conference.id,
         eventId: event.id,
         eventName: event.eventName,
-        eventDate: event.eventDate,
+        eventDates: event.eventDates,
         eventPrice: event.eventPrice,
         eventStatus: event.eventStatus,
+        attendingDays: (conferenceData.attendingDays || {}) as Prisma.InputJsonValue,
       }));
 
       await prisma.summaryOfPayments.createMany({
@@ -393,6 +412,7 @@ export async function POST(request: NextRequest) {
           receiptImageUrl: null, // Will be updated after file upload
           referenceNumber: conferenceData.referenceNumber || null,
           notes: 'Payment pending - Receipt upload in progress',
+          attendingDays: (conferenceData.attendingDays || {}) as Prisma.InputJsonValue,
         }
       });
     } else if (conferenceData.isMaritimeLeagueMember === 'YES') {
@@ -406,6 +426,7 @@ export async function POST(request: NextRequest) {
           receiptImageUrl: null, // No receipt needed for free registration
           referenceNumber: null,
           notes: 'Free registration for TML member - Automatically confirmed',
+          attendingDays: (conferenceData.attendingDays ?? {}) as Prisma.InputJsonValue,
         }
       });
     }
@@ -530,7 +551,7 @@ export async function POST(request: NextRequest) {
         isMaritimeLeagueMember: conferenceData.isMaritimeLeagueMember === 'YES',
         selectedEvents: selectedEvents.map(event => ({
           eventName: event.eventName,
-          eventDate: new Date(event.eventDate),
+          eventDates: event.eventDates.map((date: string) => new Date(date)),
           eventPrice: Number(event.eventPrice),
           eventStatus: event.eventStatus,
         })),
@@ -539,6 +560,7 @@ export async function POST(request: NextRequest) {
           (requiresPayment ? 'PENDING' : 'CONFIRMED'),
         requiresPayment,
         tmlMemberCode: conferenceData.tmlMemberCode || undefined,
+        attendingDays: conferenceData.attendingDays || {},
       };
 
       const emailSent = await sendConferenceRegistrationEmail(emailData);

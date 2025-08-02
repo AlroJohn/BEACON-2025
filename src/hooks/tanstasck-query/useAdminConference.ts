@@ -38,6 +38,7 @@ interface ConferenceData {
     companyAddress: string | null;
     companyWebsite: string | null;
     interestAreas: string[];
+    detailedInterests: Record<string, string[]>;
     otherInterests: string | null;
     receiveEventInvites: boolean;
     emailCertificate: boolean;

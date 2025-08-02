@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -47,7 +47,7 @@ import { EventStatusEnum } from "@prisma/client";
 
 const createEventSchema = z.object({
   eventName: z.string().min(1, "Event name is required"),
-  eventDate: z.date(),
+  eventDates: z.array(z.date()).min(1, "At least one event date is required"),
   eventStartTime: z.string().optional(),
   eventEndTime: z.string().optional(),
   eventPrice: z.number().min(0, "Price must be 0 or positive"),
@@ -64,7 +64,7 @@ interface CreateEventDialogProps {
   editingEvent?: {
     id: string;
     eventName: string;
-    eventDate: Date;
+    eventDates: Date[];
     eventStartTime?: Date;
     eventEndTime?: Date;
     eventPrice: number;
@@ -95,7 +95,7 @@ export function CreateEventDialog({
     if (mode === "edit" && editingEvent) {
       return {
         eventName: editingEvent.eventName,
-        eventDate: new Date(editingEvent.eventDate),
+        eventDates: editingEvent.eventDates.map(date => new Date(date)),
         eventStartTime: formatTimeForInput(editingEvent.eventStartTime),
         eventEndTime: formatTimeForInput(editingEvent.eventEndTime),
         eventPrice: editingEvent.eventPrice,
@@ -106,7 +106,7 @@ export function CreateEventDialog({
     }
     return {
       eventName: "",
-      eventDate: new Date(),
+      eventDates: [new Date()],
       eventStartTime: "",
       eventEndTime: "",
       eventPrice: 0,
@@ -120,6 +120,9 @@ export function CreateEventDialog({
     resolver: zodResolver(createEventSchema),
     defaultValues: getInitialValues(),
   });
+
+  // Watch for date changes to update times accordingly
+  const watchedDates = form.watch("eventDates");
 
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && mode === "edit" && editingEvent) {
@@ -139,22 +142,25 @@ export function CreateEventDialog({
       let eventStartTime: Date | undefined;
       let eventEndTime: Date | undefined;
 
-      if (data.eventStartTime && data.eventStartTime.trim() && data.eventDate) {
+      // Use the first date for time calculations (times apply to all dates)
+      const firstDate = data.eventDates[0];
+
+      if (data.eventStartTime && data.eventStartTime.trim() && firstDate) {
         const [hours, minutes] = data.eventStartTime.split(":");
-        eventStartTime = new Date(data.eventDate);
+        eventStartTime = new Date(firstDate);
         eventStartTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       }
 
-      if (data.eventEndTime && data.eventEndTime.trim() && data.eventDate) {
+      if (data.eventEndTime && data.eventEndTime.trim() && firstDate) {
         const [hours, minutes] = data.eventEndTime.split(":");
-        eventEndTime = new Date(data.eventDate);
+        eventEndTime = new Date(firstDate);
         eventEndTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
       }
 
       const eventData = {
         ...(mode === "edit" && editingEvent ? { id: editingEvent.id } : {}),
         eventName: data.eventName,
-        eventDate: data.eventDate.toISOString(),
+        eventDates: data.eventDates.map(date => date.toISOString()),
         eventStartTime: eventStartTime?.toISOString(),
         eventEndTime: eventEndTime?.toISOString(),
         eventPrice: data.eventPrice,
@@ -227,43 +233,78 @@ export function CreateEventDialog({
                 )}
               />
 
-              {/* Event Date */}
+              {/* Event Dates */}
               <FormField
                 control={form.control}
-                name="eventDate"
+                name="eventDates"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Event Date *</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={`w-full pl-3 text-left font-normal ${
-                              !field.value && "text-muted-foreground"
-                            }`}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date < new Date(new Date().setHours(0, 0, 0, 0))
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormLabel>Event Dates *</FormLabel>
+                    <div className="space-y-2">
+                      {field.value?.map((date, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={`flex-1 pl-3 text-left font-normal ${
+                                  !date && "text-muted-foreground"
+                                }`}
+                              >
+                                {date ? (
+                                  format(date, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={date}
+                                onSelect={(selectedDate) => {
+                                  if (selectedDate) {
+                                    const newDates = [...field.value];
+                                    newDates[index] = selectedDate;
+                                    field.onChange(newDates);
+                                  }
+                                }}
+                                disabled={(date) =>
+                                  date < new Date(new Date().setHours(0, 0, 0, 0))
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          {field.value.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              onClick={() => {
+                                const newDates = field.value.filter((_, i) => i !== index);
+                                field.onChange(newDates);
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          const newDates = [...field.value, new Date()];
+                          field.onChange(newDates);
+                        }}
+                        className="w-full"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Another Date
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

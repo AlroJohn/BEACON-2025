@@ -189,8 +189,7 @@ export async function POST(request: NextRequest) {
     // Always create new user, accounts, and details for sponsor registration
     const user = await prisma.users.create({
       data: {
-        created_at: new Date(),
-        updated_at: new Date(),
+
         user_accounts: {
           create: {
             email,
@@ -198,6 +197,7 @@ export async function POST(request: NextRequest) {
             mailingAddress,
             landline,
             user_type: 'SPONSOR',
+            status: 'PENDING',
             created_at: new Date(),
             updated_at: new Date(),
           }
@@ -334,7 +334,7 @@ export async function POST(request: NextRequest) {
       };
 
       const emailSent = await sendSponsorRegistrationEmail(emailData);
-      
+
       if (emailSent) {
         console.log("Sponsor registration confirmation email sent successfully");
       } else {

@@ -235,9 +235,10 @@ export function ConferenceDataTable({
     });
   const [rowSelection, setRowSelection] = React.useState({});
   const [isExporting, setIsExporting] = React.useState(false);
-  
+
   // Global modal state - independent of table re-renders
-  const [selectedConference, setSelectedConference] = React.useState<ConferenceData | null>(null);
+  const [selectedConference, setSelectedConference] =
+    React.useState<ConferenceData | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const exportToExcel = async () => {
@@ -401,7 +402,7 @@ export function ConferenceDataTable({
     };
 
     return (
-      <Badge className={statusConfig.variant}>
+      <Badge className={`${statusConfig.variant} dark:text-accent-foreground`}>
         {statusConfig.icon}
         {paymentStatus}
       </Badge>
@@ -1201,7 +1202,7 @@ export function ConferenceDataTable({
           </div>
         </div>
       </div>
-      
+
       {/* Global Modal - Outside table render cycle */}
       {selectedConference && (
         <ConferenceRegistrationDialog

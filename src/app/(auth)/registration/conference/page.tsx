@@ -504,7 +504,7 @@ export default function ConferenceRegistrationSinglePage() {
             <div className="mb-4 shrink-0">
               <DraftManager />
             </div>
-            <div className="flex-1 overflow-y-auto pb-32">
+            <div className="flex-1 overflow-y-auto">
               <Form {...form}>
                 <div className="relative lg:p-2">
                   {(state.isSubmitting || isPending) && (
@@ -779,7 +779,7 @@ export default function ConferenceRegistrationSinglePage() {
                       </div>
                     </div>
 
-                    <div className="space-y-4 pb-8">
+                    <div className="space-y-4">
                       <Button
                         type="submit"
                         className="w-full cursor-pointer"

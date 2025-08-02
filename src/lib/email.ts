@@ -69,7 +69,7 @@ export async function sendEmail({ to, subject, html, from, userId }: EmailData):
       to,
       from: {
         email: 'noreply@thebeaconexpo.com',
-        name: 'BEACON 2025 Conference Team'
+        name: 'BEACON 2025 Team'
       },
       subject,
       html,
@@ -199,7 +199,7 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center;">
           <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
-          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Maritime Conference & Exhibition</p>
+          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Conference Registration</p>
         </div>
 
         <!-- Success Message -->
@@ -333,7 +333,7 @@ export function generateConferenceRegistrationEmail(data: ConferenceRegistration
         <!-- Footer -->
         <div style="background-color: #1f2937; padding: 20px; text-align: center;">
           <p style="color: #9ca3af; margin: 0; font-size: 14px;">
-            © 2025 BEACON Maritime Conference & Exhibition. All rights reserved.
+            © 2025 BEACON Conference & Exhibition. All rights reserved.
           </p>
         </div>
       </div>
@@ -482,7 +482,7 @@ export function generatePaymentStatusEmail(data: PaymentStatusEmailData): string
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center;">
           <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
-          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Maritime Conference & Exhibition</p>
+          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Payment Status Update</p>
         </div>
 
         <!-- Status Message -->
@@ -600,7 +600,7 @@ export function generatePaymentStatusEmail(data: PaymentStatusEmailData): string
         <!-- Footer -->
         <div style="background-color: #1f2937; padding: 20px; text-align: center;">
           <p style="color: #9ca3af; margin: 0; font-size: 14px;">
-            © 2025 BEACON Maritime Conference & Exhibition. All rights reserved.
+            © 2025 BEACON Conference & Exhibition. All rights reserved.
           </p>
         </div>
       </div>
@@ -693,12 +693,11 @@ export function generateSponsorRegistrationEmail(data: SponsorRegistrationEmailD
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center;">
           <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
-          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Maritime Conference & Exhibition</p>
+          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Sponsor Registration</p>
         </div>
 
         <!-- Success Message -->
         <div style="padding: 30px; text-align: center; background-color: #fef3c7; border-bottom: 1px solid #e5e7eb;">
-       
            <!-- circle -->
           <div style="
             width:60px;
@@ -808,7 +807,7 @@ export function generateSponsorRegistrationEmail(data: SponsorRegistrationEmailD
         <!-- Footer -->
         <div style="background-color: #1f2937; padding: 20px; text-align: center;">
           <p style="color: #9ca3af; margin: 0; font-size: 14px;">
-            © 2025 BEACON Maritime Conference & Exhibition. All rights reserved.
+            © 2025 BEACON Conference & Exhibition. All rights reserved.
           </p>
         </div>
       </div>
@@ -821,7 +820,7 @@ export function generateSponsorRegistrationEmail(data: SponsorRegistrationEmailD
 export async function sendSponsorRegistrationEmail(data: SponsorRegistrationEmailData): Promise<boolean> {
   const emailHTML = generateSponsorRegistrationEmail(data);
 
-  const subject = `BEACON 2025 Sponsor Registration - Under Review | ${data.companyName}`;
+  const subject = `BEACON 2025 Sponsor Registration - Under Review`;
 
   return await sendEmail({
     to: data.userEmail,
@@ -885,12 +884,12 @@ export function generateExhibitorRegistrationEmail(data: ExhibitorRegistrationEm
         <!-- Header -->
         <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center;">
           <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
-          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Maritime Conference & Exhibition</p>
+          <p style="color: #dbeafe; margin: 8px 0 0 0; font-size: 16px;">Exhibitor Registration</p>
         </div>
 
         <!-- Success Message -->
         <div style="padding: 30px; text-align: center; background-color: #fef3c7; border-bottom: 1px solid #e5e7eb;">
-        <!-- circle -->
+          <!-- circle -->
           <div style="
             width:60px;
             height:60px;
@@ -902,9 +901,6 @@ export function generateExhibitorRegistrationEmail(data: ExhibitorRegistrationEm
           ">
             <span style="color:#ffffff;font-size:24px;display:inline-block;">🏢</span>
           </div>
-          <h2 style="color: #92400e; margin: 0 0 8px 0; font-size: 24px;">Sponsor Registration Submitted!</h2>
-          <p style="color: #78350f; margin: 0; font-size: 16px;">Your sponsorship interest has been received and is under review</p>
-        </div>
           <h2 style="color: #92400e; margin: 0 0 8px 0; font-size: 24px;">Exhibitor Registration Submitted!</h2>
           <p style="color: #78350f; margin: 0; font-size: 16px;">Your exhibition application has been received and is under review</p>
         </div>
@@ -1002,7 +998,7 @@ export function generateExhibitorRegistrationEmail(data: ExhibitorRegistrationEm
         <!-- Footer -->
         <div style="background-color: #1f2937; padding: 20px; text-align: center;">
           <p style="color: #9ca3af; margin: 0; font-size: 14px;">
-            © 2025 BEACON Maritime Conference & Exhibition. All rights reserved.
+            © 2025 BEACON Conference & Exhibition. All rights reserved.
           </p>
         </div>
       </div>
@@ -1072,7 +1068,7 @@ function generateVisitorRegistrationEmail(data: VisitorRegistrationEmailData): s
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
       <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
         <!-- Header -->
-        <div style="background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%); padding: 30px 20px; text-align: center;">
+        <div style="background: linear-gradient(135deg, #001f4e 0%, #2f538b 100%); padding: 30px 20px; text-align: center;">
           <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
           <p style="color: #e0e7ff; margin: 8px 0 0 0; font-size: 16px;">Visitor Registration Confirmed</p>
         </div>
@@ -1080,22 +1076,21 @@ function generateVisitorRegistrationEmail(data: VisitorRegistrationEmailData): s
         <!-- Main Content -->
         <div style="padding: 40px 30px;">
           <!-- Success Message -->
-          <div style="text-align: center; margin-bottom: 30px;">
-       
-          <!-- circle -->
-          <div style="
-            width:60px;
-            height:60px;
-            background-color: #dcfce7;
-            border-radius:50%;
-            margin:0 auto 16px;    
-            text-align:center;      
-            line-height:60px;       
-          ">
-            <span style="color:#ffffff;font-size:24px;display:inline-block;">✓</span>
-          </div>
-            <h2 style="color: #1f2937; margin: 0 0 8px 0; font-size: 24px;">Registration Successful!</h2>
-            <p style="color: #6b7280; margin: 0; font-size: 16px;">Welcome to BEACON 2025, ${userName}!</p>
+          <div style="padding: 30px; text-align: center; background-color: #f0fdf4; border-bottom: 1px solid #e5e7eb; margin-bottom: 30px;">
+            <!-- circle -->
+            <div style="
+              width:60px;
+              height:60px;
+              background-color: #10b981;
+              border-radius:50%;
+              margin:0 auto 16px;    
+              text-align:center;      
+              line-height:60px;       
+            ">
+              <span style="color:#ffffff;font-size:24px;display:inline-block;">✓</span>
+            </div>
+            <h2 style="color: #059669; margin: 0 0 8px 0; font-size: 24px;">Registration Successful!</h2>
+            <p style="color: #065f46; margin: 0; font-size: 16px;">Welcome to BEACON 2025, ${userName}!</p>
           </div>
 
           <!-- Registration Summary -->
@@ -1191,7 +1186,7 @@ function generateVisitorRegistrationEmail(data: VisitorRegistrationEmailData): s
         <!-- Footer -->
         <div style="background-color: #1f2937; padding: 20px; text-align: center;">
           <p style="color: #9ca3af; margin: 0; font-size: 14px;">
-            © 2025 BEACON Maritime Conference & Exhibition. All rights reserved.
+            © 2025 BEACON Conference & Exhibition. All rights reserved.
           </p>
         </div>
       </div>
@@ -1204,7 +1199,7 @@ function generateVisitorRegistrationEmail(data: VisitorRegistrationEmailData): s
 export async function sendVisitorRegistrationEmail(data: VisitorRegistrationEmailData): Promise<boolean> {
   const emailHTML = generateVisitorRegistrationEmail(data);
 
-  const subject = `BEACON 2025 Visitor Registration Confirmed - Welcome! | ${data.userName}`;
+  const subject = `BEACON 2025 Visitor Registration Confirmed - Welcome!`;
 
   return await sendEmail({
     to: data.userEmail,
@@ -1219,7 +1214,7 @@ export async function sendVisitorRegistrationEmail(data: VisitorRegistrationEmai
 export async function sendExhibitorRegistrationEmail(data: ExhibitorRegistrationEmailData): Promise<boolean> {
   const emailHTML = generateExhibitorRegistrationEmail(data);
 
-  const subject = `BEACON 2025 Exhibitor Registration - Under Review | ${data.companyName}`;
+  const subject = `BEACON 2025 Exhibitor Registration - Under Review`;
 
   return await sendEmail({
     to: data.userEmail,

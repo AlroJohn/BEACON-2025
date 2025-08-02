@@ -233,8 +233,10 @@ export async function POST(request: NextRequest) {
             mobileNumber,
             mailingAddress,
             landline,
-            status: 'ACTIVE',
-            user_type: 'EXHIBITOR'
+            status: 'PENDING',
+            user_type: 'EXHIBITOR',
+            created_at: new Date(),
+            updated_at: new Date(),
           }
         },
         user_details: {
@@ -392,7 +394,7 @@ export async function POST(request: NextRequest) {
       };
 
       const emailSent = await sendExhibitorRegistrationEmail(emailData);
-      
+
       if (emailSent) {
         console.log("Exhibitor registration confirmation email sent successfully");
       } else {

@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { VisitorData } from "@/components/admin/visitors-data-table";
+import ImageModal from "@/components/reuseable/ImageModal";
 
 interface VisitorRegistrationDialogProps {
   visitor: VisitorData;
@@ -136,16 +137,17 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                 {visitor.personalInfo.faceScannedUrl && (
                   <div className="col-span-2">
                     <span className="font-medium">Face Capture:</span>
-                    <p className="mt-1">
-                      <a
-                        href={visitor.personalInfo.faceScannedUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        View face capture
-                      </a>
-                    </p>
+                    <div className="mt-1">
+                      <ImageModal
+                        imageUrl={visitor.personalInfo.faceScannedUrl}
+                        title={`Face Capture - ${fullName}`}
+                        description="User face capture for identity verification"
+                        altText={`Face capture for ${fullName}`}
+                        triggerText="View face capture"
+                        triggerVariant="link"
+                        className="p-0 h-auto text-blue-300 hover:underline"
+                      />
+                    </div>
                   </div>
                 )}
               </div>

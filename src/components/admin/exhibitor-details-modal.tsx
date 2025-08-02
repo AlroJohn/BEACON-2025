@@ -26,6 +26,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { ExhibitorData } from "./exhibitors-data-table";
+import ImageModal from "@/components/reuseable/ImageModal";
 
 interface ExhibitorDetailsModalProps {
   exhibitor: ExhibitorData | null;
@@ -141,6 +142,22 @@ export function ExhibitorDetailsModal({
                   <span className="font-medium">Nationality:</span>
                   <p className="mt-1">{exhibitor.personalInfo.nationality}</p>
                 </div>
+                {exhibitor.personalInfo.faceScannedUrl && (
+                  <div className="col-span-2">
+                    <span className="font-medium">Face Capture:</span>
+                    <div className="mt-1">
+                      <ImageModal
+                        imageUrl={exhibitor.personalInfo.faceScannedUrl}
+                        title={`Face Capture - ${exhibitor.personalInfo.firstName} ${exhibitor.personalInfo.lastName}`}
+                        description="User face capture for identity verification"
+                        altText={`Face capture for ${exhibitor.personalInfo.firstName} ${exhibitor.personalInfo.lastName}`}
+                        triggerText="View face capture"
+                        triggerVariant="link"
+                        className="p-0 h-auto text-blue-600 hover:underline"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -171,7 +188,10 @@ export function ExhibitorDetailsModal({
                 </div>
                 <div>
                   <span className="font-medium">Status:</span>
-                  <Badge variant="outline" className="mt-1">
+                  <Badge
+                    variant="outline"
+                    className="mt-1 dark:text-accent-foreground"
+                  >
                     {exhibitor.contactInfo.status}
                   </Badge>
                 </div>
@@ -201,7 +221,9 @@ export function ExhibitorDetailsModal({
                 </div>
                 {exhibitor.companyInfo.businessRegistrationName && (
                   <div>
-                    <span className="font-medium">Business Registration Name:</span>
+                    <span className="font-medium">
+                      Business Registration Name:
+                    </span>
                     <p className="mt-1">
                       {exhibitor.companyInfo.businessRegistrationName}
                     </p>
@@ -283,7 +305,9 @@ export function ExhibitorDetailsModal({
                     <span className="font-medium">Launch New Product:</span>
                     <p className="mt-1">
                       {exhibitor.exhibitionInfo.launchNewProduct
-                        ? formatYesNoMaybe(exhibitor.exhibitionInfo.launchNewProduct)
+                        ? formatYesNoMaybe(
+                            exhibitor.exhibitionInfo.launchNewProduct
+                          )
                         : "Not specified"}
                     </p>
                   </div>
@@ -292,7 +316,9 @@ export function ExhibitorDetailsModal({
                   <span className="font-medium">Require Demo Area:</span>
                   <p className="mt-1">
                     {exhibitor.exhibitionInfo.requireDemoArea
-                      ? formatYesNoMaybe(exhibitor.exhibitionInfo.requireDemoArea)
+                      ? formatYesNoMaybe(
+                          exhibitor.exhibitionInfo.requireDemoArea
+                        )
                       : "Not specified"}
                   </p>
                 </div>
@@ -318,7 +344,9 @@ export function ExhibitorDetailsModal({
                   <span className="font-medium">Bring Large Equipment:</span>
                   <p className="mt-1">
                     {exhibitor.logisticsInfo.bringLargeEquipment
-                      ? formatYesNoMaybe(exhibitor.logisticsInfo.bringLargeEquipment)
+                      ? formatYesNoMaybe(
+                          exhibitor.logisticsInfo.bringLargeEquipment
+                        )
                       : "Not specified"}
                   </p>
                 </div>
@@ -326,23 +354,26 @@ export function ExhibitorDetailsModal({
                   <span className="font-medium">Marketing Collaterals:</span>
                   <p className="mt-1">
                     {exhibitor.logisticsInfo.haveMarketingCollaterals
-                      ? formatMarketingCollaterals(exhibitor.logisticsInfo.haveMarketingCollaterals)
+                      ? formatMarketingCollaterals(
+                          exhibitor.logisticsInfo.haveMarketingCollaterals
+                        )
                       : "Not specified"}
                   </p>
                 </div>
                 {exhibitor.logisticsInfo.logoUrl && (
                   <div className="col-span-2">
                     <span className="font-medium">Company Logo:</span>
-                    <p className="mt-1">
-                      <a
-                        href={exhibitor.logisticsInfo.logoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        View uploaded logo
-                      </a>
-                    </p>
+                    <div className="mt-1">
+                      <ImageModal
+                        imageUrl={exhibitor.logisticsInfo.logoUrl}
+                        title={`Company Logo - ${exhibitor.companyInfo.companyName}`}
+                        description="Company logo for exhibition purposes"
+                        altText={`Logo for ${exhibitor.companyInfo.companyName}`}
+                        triggerText="View uploaded logo"
+                        triggerVariant="link"
+                        className="p-0 h-auto text-blue-600 hover:underline"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -398,29 +429,32 @@ export function ExhibitorDetailsModal({
                     variant={
                       exhibitor.confirmationInfo.confirmIntent === "YES_RESERVE"
                         ? "default"
-                        : exhibitor.confirmationInfo.confirmIntent === "TENTATIVE"
+                        : exhibitor.confirmationInfo.confirmIntent ===
+                          "TENTATIVE"
                         ? "secondary"
                         : "outline"
                     }
                     className="mt-1"
                   >
-                    {formatConfirmIntent(exhibitor.confirmationInfo.confirmIntent)}
+                    {formatConfirmIntent(
+                      exhibitor.confirmationInfo.confirmIntent
+                    )}
                   </Badge>
                 </div>
                 {exhibitor.confirmationInfo.letterOfIntentUrl && (
                   <div>
                     <span className="font-medium">Letter of Intent:</span>
-                    <p className="mt-1">
-                      <a
-                        href={exhibitor.confirmationInfo.letterOfIntentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline flex items-center gap-1"
-                      >
-                        <FileText className="h-3 w-3" />
-                        View letter of intent
-                      </a>
-                    </p>
+                    <div className="mt-1">
+                      <ImageModal
+                        imageUrl={exhibitor.confirmationInfo.letterOfIntentUrl}
+                        title={`Letter of Intent - ${exhibitor.companyInfo.companyName}`}
+                        description="Letter of intent for exhibition participation"
+                        altText={`Letter of Intent from ${exhibitor.companyInfo.companyName}`}
+                        triggerText="View letter of intent"
+                        triggerVariant="link"
+                        className="p-0 h-auto text-blue-600 hover:underline"
+                      />
+                    </div>
                   </div>
                 )}
                 {exhibitor.confirmationInfo.additionalComments && (
@@ -451,21 +485,6 @@ export function ExhibitorDetailsModal({
                   <span className="font-medium">Last Updated:</span>
                   <p className="mt-1">{formatDate(exhibitor.updatedAt)}</p>
                 </div>
-                {exhibitor.personalInfo.faceScannedUrl && (
-                  <div className="col-span-2">
-                    <span className="font-medium">Face Capture:</span>
-                    <p className="mt-1">
-                      <a
-                        href={exhibitor.personalInfo.faceScannedUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        View face capture
-                      </a>
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           </div>

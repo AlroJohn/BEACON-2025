@@ -26,6 +26,7 @@ import {
   HandHeart,
 } from "lucide-react";
 import { SponsorData } from "./sponsors-data-table";
+import ImageModal from "@/components/reuseable/ImageModal";
 
 interface SponsorDetailsModalProps {
   sponsor: SponsorData | null;
@@ -174,7 +175,10 @@ export function SponsorDetailsModal({
                 </div>
                 <div>
                   <span className="font-medium">Status:</span>
-                  <Badge variant="outline" className="mt-1">
+                  <Badge
+                    variant="outline"
+                    className="mt-1 dark:text-accent-foreground"
+                  >
                     {sponsor.contactInfo.status}
                   </Badge>
                 </div>
@@ -204,7 +208,9 @@ export function SponsorDetailsModal({
                 </div>
                 {sponsor.companyInfo.businessRegistrationName && (
                   <div>
-                    <span className="font-medium">Business Registration Name:</span>
+                    <span className="font-medium">
+                      Business Registration Name:
+                    </span>
                     <p className="mt-1">
                       {sponsor.companyInfo.businessRegistrationName}
                     </p>
@@ -278,11 +284,13 @@ export function SponsorDetailsModal({
                 <div>
                   <span className="font-medium">Target Audience:</span>
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {sponsor.sponsorshipInfo.targetAudience.map((audience, index) => (
-                      <Badge key={index} variant="outline">
-                        {audience}
-                      </Badge>
-                    ))}
+                    {sponsor.sponsorshipInfo.targetAudience.map(
+                      (audience, index) => (
+                        <Badge key={index} variant="outline">
+                          {audience}
+                        </Badge>
+                      )
+                    )}
                   </div>
                   {sponsor.sponsorshipInfo.targetAudienceOthers && (
                     <p className="mt-2 text-muted-foreground">
@@ -304,7 +312,9 @@ export function SponsorDetailsModal({
               <div className="grid grid-cols-1 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Activation Preferences:</span>
-                  <p className="mt-1">{sponsor.activationInfo.activationPreferences}</p>
+                  <p className="mt-1">
+                    {sponsor.activationInfo.activationPreferences}
+                  </p>
                   {sponsor.activationInfo.activationOthers && (
                     <p className="mt-1 text-muted-foreground">
                       Other: {sponsor.activationInfo.activationOthers}
@@ -349,22 +359,25 @@ export function SponsorDetailsModal({
                     }
                     className="mt-1"
                   >
-                    {formatProposalStatus(sponsor.budgetInfo.customizedProposal)}
+                    {formatProposalStatus(
+                      sponsor.budgetInfo.customizedProposal
+                    )}
                   </Badge>
                 </div>
                 {sponsor.budgetInfo.uploadLogoUrl && (
                   <div className="col-span-2">
                     <span className="font-medium">Logo:</span>
-                    <p className="mt-1">
-                      <a
-                        href={sponsor.budgetInfo.uploadLogoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        View uploaded logo
-                      </a>
-                    </p>
+                    <div className="mt-1">
+                      <ImageModal
+                        imageUrl={sponsor.budgetInfo.uploadLogoUrl}
+                        title={`Company Logo - ${sponsor.companyInfo.companyName}`}
+                        description="Company logo for sponsorship purposes"
+                        altText={`Logo for ${sponsor.companyInfo.companyName}`}
+                        triggerText="View uploaded logo"
+                        triggerVariant="link"
+                        className="p-0 h-auto text-blue-600 hover:underline"
+                      />
+                    </div>
                   </div>
                 )}
                 {sponsor.budgetInfo.additionalComments && (
@@ -398,16 +411,17 @@ export function SponsorDetailsModal({
                 {sponsor.personalInfo.faceScannedUrl && (
                   <div className="col-span-2">
                     <span className="font-medium">Face Capture:</span>
-                    <p className="mt-1">
-                      <a
-                        href={sponsor.personalInfo.faceScannedUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        View face capture
-                      </a>
-                    </p>
+                    <div className="mt-1">
+                      <ImageModal
+                        imageUrl={sponsor.personalInfo.faceScannedUrl}
+                        title={`Face Capture - ${sponsor.personalInfo.firstName} ${sponsor.personalInfo.lastName}`}
+                        description="User face capture for identity verification"
+                        altText={`Face capture for ${sponsor.personalInfo.firstName} ${sponsor.personalInfo.lastName}`}
+                        triggerText="View face capture"
+                        triggerVariant="link"
+                        className="p-0 h-auto text-blue-300 hover:underline"
+                      />
+                    </div>
                   </div>
                 )}
               </div>

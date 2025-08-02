@@ -39,6 +39,9 @@ import Link from "next/link";
 import { ConferenceData } from "@/components/admin/conference-data-table";
 import { useUpdatePaymentStatus } from "@/hooks/tanstasck-query/useAdminConference";
 import { toast } from "sonner";
+import ImageModal from "@/components/reuseable/ImageModal";
+import PaymentStatusEditModal from "@/components/reuseable/PaymentStatusEditModal";
+import { Button } from "@/components/ui/button";
 
 interface ConferenceRegistrationDialogProps {
   conference: ConferenceData;
@@ -48,8 +51,6 @@ interface ConferenceRegistrationDialogProps {
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
-
-
 
 const ConferenceRegistrationDialog: React.FC<
   ConferenceRegistrationDialogProps
@@ -64,7 +65,7 @@ const ConferenceRegistrationDialog: React.FC<
   if (!conference) return null;
 
   const fullName = `${conference.personalInfo.firstName} ${conference.personalInfo.lastName}`;
-  
+
   // Use external state if provided, otherwise internal state
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
@@ -86,8 +87,13 @@ const ConferenceRegistrationDialog: React.FC<
 
   // Calculate total with conference discount logic
   const calculateTotal = () => {
-    const baseTotal = conference.selectedEvents.reduce((sum, event) => sum + event.price, 0);
-    const conferenceEvents = conference.selectedEvents.filter(event => event.status === 'CONFERENCE');
+    const baseTotal = conference.selectedEvents.reduce(
+      (sum, event) => sum + event.price,
+      0
+    );
+    const conferenceEvents = conference.selectedEvents.filter(
+      (event) => event.status === "CONFERENCE"
+    );
     if (conferenceEvents.length === 3) {
       return baseTotal - 1500;
     }
@@ -95,14 +101,53 @@ const ConferenceRegistrationDialog: React.FC<
   };
 
   const updatePaymentStatus = useUpdatePaymentStatus();
-  const [newPaymentStatus, setNewPaymentStatus] = useState(conference.paymentInfo.paymentStatus);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+
+  const handleStatusUpdate = (newStatus: string, notes?: string) => {
+    updatePaymentStatus.mutate(
+      {
+        conferenceId: conference.id,
+        paymentStatus: newStatus as
+          | "PENDING"
+          | "CONFIRMED"
+          | "FAILED"
+          | "REFUNDED",
+        notes:
+          notes ||
+          `Status changed from ${conference.paymentInfo.paymentStatus} to ${newStatus} by admin`,
+      },
+      {
+        onSuccess: () => {
+          setIsStatusModalOpen(false);
+          toast.success("Payment status updated successfully");
+        },
+        onError: () => {
+          toast.error("Failed to update payment status");
+        },
+      }
+    );
+  };
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case "CONFIRMED":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "FAILED":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "REFUNDED":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "PENDING":
+      default:
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       {/* Only render trigger if using internal state */}
       {externalIsOpen === undefined && (
         <DialogTrigger asChild>
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onSelect={(e) => {
               e.preventDefault();
               onOpenChange(true);
@@ -125,10 +170,10 @@ const ConferenceRegistrationDialog: React.FC<
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh] pr-4">
+        <ScrollArea className="max-h-[70vh] p-2">
           <div className="space-y-6">
             {/* Personal Information */}
-            <div className="space-y-3">
+            <div className="space-y-3 pl-1">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <User className="h-4 w-4" />
                 Personal Information
@@ -159,16 +204,17 @@ const ConferenceRegistrationDialog: React.FC<
                 {conference.personalInfo.faceScannedUrl && (
                   <div className="col-span-2">
                     <span className="font-medium">Face Capture:</span>
-                    <p className="mt-1">
-                      <a
-                        href={conference.personalInfo.faceScannedUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        View face capture
-                      </a>
-                    </p>
+                    <div className="mt-1">
+                      <ImageModal
+                        imageUrl={conference.personalInfo.faceScannedUrl}
+                        title={`Face Capture - ${fullName}`}
+                        description="User face capture for identity verification"
+                        altText={`Face capture for ${fullName}`}
+                        triggerText="View face capture"
+                        triggerVariant="link"
+                        className="p-0 h-auto text-blue-300 hover:underline"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -177,7 +223,7 @@ const ConferenceRegistrationDialog: React.FC<
             <Separator />
 
             {/* Contact Information */}
-            <div className="space-y-3">
+            <div className="space-y-3 pl-1">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Phone className="h-4 w-4" />
                 Contact Information
@@ -217,7 +263,7 @@ const ConferenceRegistrationDialog: React.FC<
             <Separator />
 
             {/* Conference Information */}
-            <div className="space-y-3">
+            <div className="space-y-3 pl-1">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Building className="h-4 w-4" />
                 Conference Information
@@ -232,7 +278,9 @@ const ConferenceRegistrationDialog: React.FC<
                 {conference.conferenceInfo.tmlMemberCode && (
                   <div>
                     <span className="font-medium">TML Member Code:</span>
-                    <p className="mt-1">{conference.conferenceInfo.tmlMemberCode}</p>
+                    <p className="mt-1">
+                      {conference.conferenceInfo.tmlMemberCode}
+                    </p>
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4">
@@ -242,7 +290,9 @@ const ConferenceRegistrationDialog: React.FC<
                   </div>
                   <div>
                     <span className="font-medium">Company:</span>
-                    <p className="mt-1">{conference.conferenceInfo.companyName}</p>
+                    <p className="mt-1">
+                      {conference.conferenceInfo.companyName}
+                    </p>
                   </div>
                 </div>
                 <div>
@@ -264,7 +314,7 @@ const ConferenceRegistrationDialog: React.FC<
                         href={conference.conferenceInfo.companyWebsite}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline flex items-center gap-1"
+                        className="text-blue-300 hover:underline flex items-center gap-1"
                       >
                         <Globe className="h-3 w-3" />
                         {conference.conferenceInfo.companyWebsite}
@@ -278,7 +328,7 @@ const ConferenceRegistrationDialog: React.FC<
             <Separator />
 
             {/* Interest Areas */}
-            <div className="space-y-3">
+            <div className="space-y-3 pl-1">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Heart className="h-4 w-4" />
                 Interest Areas
@@ -289,13 +339,17 @@ const ConferenceRegistrationDialog: React.FC<
                   <div className="mt-2 flex flex-wrap gap-1">
                     {conference.conferenceInfo.interestAreas &&
                     conference.conferenceInfo.interestAreas.length > 0 ? (
-                      conference.conferenceInfo.interestAreas.map((interest, index) => (
-                        <Badge key={index} variant="secondary">
-                          {interest}
-                        </Badge>
-                      ))
+                      conference.conferenceInfo.interestAreas.map(
+                        (interest, index) => (
+                          <Badge key={index} variant="secondary">
+                            {interest}
+                          </Badge>
+                        )
+                      )
                     ) : (
-                      <span className="text-muted-foreground">None specified</span>
+                      <span className="text-muted-foreground">
+                        None specified
+                      </span>
                     )}
                   </div>
                 </div>
@@ -313,7 +367,7 @@ const ConferenceRegistrationDialog: React.FC<
             <Separator />
 
             {/* Selected Events */}
-            <div className="space-y-3">
+            <div className="space-y-3 pl-1">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 Selected Events
@@ -322,7 +376,10 @@ const ConferenceRegistrationDialog: React.FC<
                 {conference.selectedEvents.length > 0 ? (
                   <>
                     {conference.selectedEvents.map((event, index) => (
-                      <div key={event.id || index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={event.id || index}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div className="flex-1">
                           <p className="font-medium">{event.name}</p>
                           <Badge variant="outline" className="text-xs mt-1">
@@ -330,14 +387,18 @@ const ConferenceRegistrationDialog: React.FC<
                           </Badge>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold">₱{event.price.toLocaleString()}</p>
+                          <p className="font-bold">
+                            ₱{event.price.toLocaleString()}
+                          </p>
                         </div>
                       </div>
                     ))}
                     <div className="pt-2 border-t">
                       <div className="flex justify-between items-center">
                         <span className="font-medium">Total Amount:</span>
-                        <span className="font-bold text-lg">₱{calculateTotal().toLocaleString()}</span>
+                        <span className="font-bold text-lg">
+                          ₱{calculateTotal().toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   </>
@@ -350,7 +411,7 @@ const ConferenceRegistrationDialog: React.FC<
             <Separator />
 
             {/* Payment Information */}
-            <div className="space-y-3">
+            <div className="space-y-3 pl-1">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 Payment Information
@@ -359,65 +420,69 @@ const ConferenceRegistrationDialog: React.FC<
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <span className="font-medium">Payment Status:</span>
-                    <div className="mt-1">
-                      <Select 
-                        value={newPaymentStatus} 
-                        onValueChange={(value) => {
-                          setNewPaymentStatus(value);
-                          if (value !== conference.paymentInfo.paymentStatus) {
-                            updatePaymentStatus.mutate({
-                              conferenceId: conference.id,
-                              paymentStatus: value as 'PENDING' | 'CONFIRMED' | 'FAILED' | 'REFUNDED',
-                              notes: `Status changed from ${conference.paymentInfo.paymentStatus} to ${value} by admin`,
-                            });
-                          }
-                        }}
-                        disabled={updatePaymentStatus.isPending}
+                    <div className="mt-1 flex items-center gap-2">
+                      <Badge
+                        className={getStatusBadgeColor(
+                          conference.paymentInfo.paymentStatus
+                        )}
                       >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PENDING">PENDING</SelectItem>
-                          <SelectItem value="CONFIRMED">CONFIRMED</SelectItem>
-                          <SelectItem value="FAILED">FAILED</SelectItem>
-                          <SelectItem value="REFUNDED">REFUNDED</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        {conference.paymentInfo.paymentStatus}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsStatusModalOpen(true)}
+                        disabled={updatePaymentStatus.isPending}
+                        className="h-6 text-xs"
+                      >
+                        Update Status
+                      </Button>
                     </div>
                   </div>
                   <div>
                     <span className="font-medium">Total Amount:</span>
-                    <p className="mt-1 font-bold">₱{(conference.paymentInfo.totalAmount || 0).toLocaleString()}</p>
+                    <p className="mt-1 font-bold">
+                      ₱
+                      {(
+                        conference.paymentInfo.totalAmount || 0
+                      ).toLocaleString()}
+                    </p>
                   </div>
                   <div>
                     <span className="font-medium">Payment Mode:</span>
-                    <p className="mt-1">{conference.paymentInfo.paymentMode || "Not specified"}</p>
+                    <p className="mt-1">
+                      {conference.paymentInfo.paymentMode || "Not specified"}
+                    </p>
                   </div>
                   <div>
                     <span className="font-medium">Reference Number:</span>
-                    <p className="mt-1">{conference.paymentInfo.referenceNumber || "Not provided"}</p>
+                    <p className="mt-1">
+                      {conference.paymentInfo.referenceNumber || "Not provided"}
+                    </p>
                   </div>
                 </div>
                 {conference.paymentInfo.receiptImageUrl && (
                   <div>
                     <span className="font-medium">Payment Receipt:</span>
-                    <p className="mt-1">
-                      <a
-                        href={conference.paymentInfo.receiptImageUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        View payment receipt
-                      </a>
-                    </p>
+                    <div className="mt-1">
+                      <ImageModal
+                        imageUrl={conference.paymentInfo.receiptImageUrl}
+                        title={`Payment Receipt - ${fullName}`}
+                        description="Payment receipt for conference registration"
+                        altText={`Payment receipt for ${fullName}`}
+                        triggerText="View payment receipt"
+                        triggerVariant="link"
+                        className="p-0 h-auto text-blue-300 hover:underline"
+                      />
+                    </div>
                   </div>
                 )}
                 {conference.paymentInfo.notes && (
                   <div>
                     <span className="font-medium">Payment Notes:</span>
-                    <p className="mt-1 text-muted-foreground">{conference.paymentInfo.notes}</p>
+                    <p className="mt-1 text-muted-foreground">
+                      {conference.paymentInfo.notes}
+                    </p>
                   </div>
                 )}
               </div>
@@ -426,7 +491,7 @@ const ConferenceRegistrationDialog: React.FC<
             <Separator />
 
             {/* Registration Information */}
-            <div className="space-y-3">
+            <div className="space-y-3 pl-1">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 Registration Information
@@ -445,6 +510,15 @@ const ConferenceRegistrationDialog: React.FC<
           </div>
         </ScrollArea>
       </DialogContent>
+
+      <PaymentStatusEditModal
+        isOpen={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        onConfirm={handleStatusUpdate}
+        currentStatus={conference.paymentInfo.paymentStatus}
+        userName={fullName}
+        isLoading={updatePaymentStatus.isPending}
+      />
     </Dialog>
   );
 };

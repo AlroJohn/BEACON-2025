@@ -69,7 +69,7 @@ export async function sendEmail({ to, subject, html, from, userId }: EmailData):
     const msg: any = {
       to,
       from: {
-        email: 'noreply@thebeaconexpo.com',
+        email: 'thebeacon694@gmail.com',
         name: 'BEACON 2025 Team'
       },
       subject,
@@ -354,7 +354,7 @@ export async function sendConferenceRegistrationEmail(data: ConferenceRegistrati
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com',
+    from: 'thebeacon694@gmail.com',
     userId: data.userId // Pass userId for QR code generation
   });
 }
@@ -632,7 +632,7 @@ export async function sendPaymentStatusEmail(data: PaymentStatusEmailData): Prom
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com',
+    from: 'thebeacon694@gmail.com',
     // Include userId for QR code generation when payment is CONFIRMED
     userId: data.newStatus === 'CONFIRMED' ? data.userId : undefined
   });
@@ -833,7 +833,7 @@ export async function sendSponsorRegistrationEmail(data: SponsorRegistrationEmai
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com',
+    from: 'thebeacon694@gmail.com',
     // No QR code for initial registration - only after admin confirmation
   });
 }
@@ -1212,7 +1212,7 @@ export async function sendVisitorRegistrationEmail(data: VisitorRegistrationEmai
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com',
+    from: 'thebeacon694@gmail.com',
     userId: data.userId // Pass userId for QR code generation
   });
 }
@@ -1227,7 +1227,7 @@ export async function sendExhibitorRegistrationEmail(data: ExhibitorRegistration
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com',
+    from: 'thebeacon694@gmail.com',
     // No QR code for initial registration - only after admin confirmation
   });
 }
@@ -1439,7 +1439,7 @@ export async function sendSponsorConfirmationEmail(data: SponsorConfirmationEmai
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com',
+    from: 'thebeacon694@gmail.com',
     // Include QR code only when status is CONFIRMED
     userId: data.status === 'CONFIRMED' ? data.userId : undefined
   });
@@ -1658,7 +1658,7 @@ export async function sendExhibitorConfirmationEmail(data: ExhibitorConfirmation
     to: data.userEmail,
     subject,
     html: emailHTML,
-    from: 'noreply@thebeaconexpo.com',
+    from: 'thebeacon694@gmail.com',
     // Include QR code only when status is CONFIRMED
     userId: data.status === 'CONFIRMED' ? data.userId : undefined
   });

@@ -836,27 +836,7 @@ const ConferenceRegistrationDialog: React.FC<
                         : "Not Given"}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      Photo/Video Consent:
-                    </span>
-                    <Badge
-                      variant={
-                        conference.conferenceInfo.photoVideoConsent === "YES"
-                          ? "default"
-                          : "destructive"
-                      }
-                      className={
-                        conference.conferenceInfo.photoVideoConsent === "YES"
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                          : ""
-                      }
-                    >
-                      {conference.conferenceInfo.photoVideoConsent === "YES"
-                        ? "Given"
-                        : "Not Given"}
-                    </Badge>
-                  </div>
+
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Receive Event Invites:

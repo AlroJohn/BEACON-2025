@@ -379,7 +379,7 @@ model Conference {
 
   // Section 6: Consent & Confirmation
   emailCertificate Boolean @default(false)
-  dataUsageConsent Boolean // Required field
+  dataUsageConsent Boolean @default(true)
 
   // Relations
   user              Users               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -507,16 +507,16 @@ model ConferencePayment {
 }
 
 model SummaryOfPayments {
-  id           String          @id @default(uuid())
-  eventName    String
-  eventDates   DateTime[]
-  eventPrice   Decimal
-  eventStatus  EventStatusEnum
-  conferenceId String
-  eventId      String
-  attendingDays Json           @default("{}")
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  id            String          @id @default(uuid())
+  eventName     String
+  eventDates    DateTime[]
+  eventPrice    Decimal
+  eventStatus   EventStatusEnum
+  conferenceId  String
+  eventId       String
+  attendingDays Json            @default("{}")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   // Relations
   conference Conference @relation(fields: [conferenceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -532,7 +532,7 @@ model Events {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   eventName      String
-  eventDates      DateTime[]
+  eventDates     DateTime[]
   eventPrice     Decimal
   eventStatus    EventStatusEnum
   isActive       Boolean         @default(true)

@@ -13,7 +13,7 @@ const bulkUploadSchema = z.object({
 });
 
 // Helper function to map CSV columns to our schema fields
-function mapCsvColumns(csvData: any[], columnMapping: Record<string, string[]>): any[] {
+function mapCsvColumns(csvData: any[], columnMapping: Record<string, readonly string[]>): any[] {
   if (!csvData || csvData.length === 0) return [];
 
   const headers = Object.keys(csvData[0]);

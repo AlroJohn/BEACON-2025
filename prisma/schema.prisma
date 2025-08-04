@@ -264,10 +264,11 @@ model Users {
   Visitors      Visitors[]
   Conferences   Conference[]
 
-  CodeDistribution       CodeDistribution[]
-  ExhibitorRegistrations exhibitor_registrations[]
-  sponsorship_interests  sponsorship_interests[]
-  sponsor_registrations  sponsor_registrations[]
+  CodeDistribution          CodeDistribution[]
+  ExhibitorRegistrations    exhibitor_registrations[]
+  sponsorship_interests     sponsorship_interests[]
+  sponsor_registrations     sponsor_registrations[]
+  ExhibitorCodeDistribution ExhibitorCodeDistribution[]
 
   @@map("users")
 }
@@ -573,6 +574,20 @@ model CodeDistribution {
   user Users? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("code_distribution")
+}
+
+model ExhibitorCodeDistribution {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  code      String   @unique
+  isActive  Boolean  @default(false)
+  userId    String? // User ID who used the code
+
+  // Relations
+  user Users? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("exhibitor_code_distribution")
 }
 
 model sponsorship_interests {

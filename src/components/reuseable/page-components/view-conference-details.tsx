@@ -335,7 +335,9 @@ const ConferenceRegistrationDialog: React.FC<
               </h3>
               <div className="space-y-4 text-sm">
                 <div>
-                  <span className="font-medium">Primary Interest Categories:</span>
+                  <span className="font-medium">
+                    Primary Interest Categories:
+                  </span>
                   <div className="mt-2 flex flex-wrap gap-1">
                     {conference.conferenceInfo.interestAreas &&
                     conference.conferenceInfo.interestAreas.length > 0 ? (
@@ -355,33 +357,44 @@ const ConferenceRegistrationDialog: React.FC<
                 </div>
 
                 {/* Detailed Sub-Interests */}
-                {conference?.conferenceInfo?.detailedInterests && 
-                 Object.keys(conference.conferenceInfo?.detailedInterests).length > 0 && (
-                  <div>
-                    <span className="font-medium">Specific Areas of Interest:</span>
-                    <div className="mt-2 space-y-3">
-                      {Object.entries(conference.conferenceInfo.detailedInterests).map(
-                        ([category, subInterests]) => (
-                          <div key={category} className="border-l-2 border-blue-200 pl-3">
+                {conference?.conferenceInfo?.detailedInterests &&
+                  Object.keys(conference.conferenceInfo?.detailedInterests)
+                    .length > 0 && (
+                    <div>
+                      <span className="font-medium">
+                        Specific Areas of Interest:
+                      </span>
+                      <div className="mt-2 space-y-3">
+                        {Object.entries(
+                          conference.conferenceInfo.detailedInterests
+                        ).map(([category, subInterests]) => (
+                          <div
+                            key={category}
+                            className="border-l-2 border-blue-200 pl-3"
+                          >
                             <div className="font-medium text-blue-800 text-xs uppercase tracking-wide mb-1">
                               {category}
                             </div>
                             <div className="space-y-1">
-                              {(subInterests as string[]).map((subInterest, index) => (
-                                <div key={index} className="flex items-start gap-2">
-                                  <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
-                                  <span className="text-gray-700 text-xs leading-relaxed">
-                                    {subInterest}
-                                  </span>
-                                </div>
-                              ))}
+                              {(subInterests as string[]).map(
+                                (subInterest, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-start gap-2"
+                                  >
+                                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                                    <span className="text-gray-700 text-xs leading-relaxed">
+                                      {subInterest}
+                                    </span>
+                                  </div>
+                                )
+                              )}
                             </div>
                           </div>
-                        )
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {conference.conferenceInfo.otherInterests && (
                   <div>
@@ -502,7 +515,7 @@ const ConferenceRegistrationDialog: React.FC<
                         altText={`Payment receipt for ${fullName}`}
                         triggerText="View payment receipt"
                         triggerVariant="link"
-                        className="p-0 h-auto text-blue-300 hover:underline"
+                        className="p-0 h-auto dark:text-blue-300 text-blue-600 hover:underline"
                       />
                     </div>
                   </div>

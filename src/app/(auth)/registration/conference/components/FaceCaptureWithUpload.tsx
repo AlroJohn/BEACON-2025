@@ -25,18 +25,11 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import * as faceapi from "face-api.js";
-import { createClient } from "@supabase/supabase-js";
-import { v4 as uuidv4 } from "uuid";
-
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { FaceCaptureInstructions } from "./FaceCaptureInstructions";
 
 interface FaceCaptureWithUploadProps {
-  onCapture: (imageUrl: string) => void;
+  onCapture: (imageDataUrl: string) => void; // Now passes base64 data like visitor
   capturedImageUrl?: string;
-  userId?: string; // For generating unique file names
 }
 
 // Hook to detect mobile devices
@@ -64,443 +57,621 @@ const useIsMobile = () => {
 export function FaceCaptureWithUpload({
   onCapture,
   capturedImageUrl,
-  userId,
 }: FaceCaptureWithUploadProps) {
-  // State management
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isCapturing, setIsCapturing] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [capturedImage, setCapturedImage] = useState<string | null>(
-    capturedImageUrl || null
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [isModelLoading, setIsModelLoading] = useState(false);
-  const [modelLoadProgress, setModelLoadProgress] = useState(0);
-  const [faceDetected, setFaceDetected] = useState(false);
-  const [qualityScore, setQualityScore] = useState(0);
-  const [isValidFace, setIsValidFace] = useState(false);
-
-  // Refs
   const webcamRef = useRef<Webcam>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const detectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Modal States
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // Face Detection States
+  const [faceDetected, setFaceDetected] = useState(false);
+  const [faceConfidence, setFaceConfidence] = useState(0);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [modelLoadingProgress, setModelLoadingProgress] = useState(0);
+  const [faceDetectionActive, setFaceDetectionActive] = useState(false);
+  const [facePosition, setFacePosition] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const [faceProperlyPositioned, setFaceProperlyPositioned] = useState(false);
+  const [positioningFeedback, setPositioningFeedback] = useState<string>("");
+
+  // Camera States
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraLoading, setCameraLoading] = useState(false);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
 
   const isMobile = useIsMobile();
 
-  // Load face-api models
+  // Load Face Detection Models
   useEffect(() => {
     const loadModels = async () => {
-      if (typeof window === "undefined") return;
-
       try {
-        setIsModelLoading(true);
-        setModelLoadProgress(0);
-
-        const modelBaseUrl = "/models";
-
-        // Load models progressively
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector
-            .loadFromUri(modelBaseUrl)
-            .then(() => setModelLoadProgress(25)),
-          faceapi.nets.faceLandmark68Net
-            .loadFromUri(modelBaseUrl)
-            .then(() => setModelLoadProgress(50)),
-          faceapi.nets.faceRecognitionNet
-            .loadFromUri(modelBaseUrl)
-            .then(() => setModelLoadProgress(75)),
-          faceapi.nets.faceExpressionNet
-            .loadFromUri(modelBaseUrl)
-            .then(() => setModelLoadProgress(100)),
-        ]);
-
+        setModelLoadingProgress(30);
+        console.log("Loading face detection models...");
+        await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+        setModelLoadingProgress(100);
+        setModelsLoaded(true);
         console.log("Face detection models loaded successfully");
-      } catch (err) {
-        console.error("Error loading face detection models:", err);
-        setError(
-          "Failed to load face detection models. Face verification may not work optimally."
-        );
-      } finally {
-        setIsModelLoading(false);
+      } catch (error) {
+        console.error("Error loading face detection models:", error);
+        setModelsLoaded(false);
+        setModelLoadingProgress(0);
       }
     };
 
     loadModels();
   }, []);
 
-  // Face detection function
-  const detectFace = useCallback(async () => {
-    if (!webcamRef.current?.video || !canvasRef.current) return;
-
-    const video = webcamRef.current.video;
-    const canvas = canvasRef.current;
-
-    if (video.readyState !== 4) return;
-
-    try {
-      const detections = await faceapi
-        .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
-        .withFaceExpressions();
-
-      const displaySize = {
-        width: video.videoWidth,
-        height: video.videoHeight,
-      };
-      faceapi.matchDimensions(canvas, displaySize);
-
-      canvas.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (detections.length > 0) {
-        const detection = detections[0];
-        setFaceDetected(true);
-
-        // Calculate quality score based on detection confidence and face size
-        const faceBox = detection.detection.box;
-        const faceArea = faceBox.width * faceBox.height;
-        const totalArea = displaySize.width * displaySize.height;
-        const faceRatio = faceArea / totalArea;
-
-        // Quality scoring (0-100)
-        const confidenceScore = detection.detection.score * 100;
-        const sizeScore = Math.min(faceRatio * 500, 100); // Optimal face size around 20% of frame
-        const qualityScore = Math.round((confidenceScore + sizeScore) / 2);
-
-        setQualityScore(qualityScore);
-        setIsValidFace(qualityScore > 60 && detections.length === 1);
-
-        // Draw detection box
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.strokeStyle = qualityScore > 60 ? "#10b981" : "#f59e0b";
-          ctx.lineWidth = 3;
-          ctx.strokeRect(faceBox.x, faceBox.y, faceBox.width, faceBox.height);
-
-          // Draw quality indicator
-          ctx.fillStyle = qualityScore > 60 ? "#10b981" : "#f59e0b";
-          ctx.font = "16px Arial";
-          ctx.fillText(`Quality: ${qualityScore}%`, faceBox.x, faceBox.y - 10);
-        }
-      } else {
-        setFaceDetected(false);
-        setQualityScore(0);
-        setIsValidFace(false);
-      }
-    } catch (err) {
-      console.error("Face detection error:", err);
-    }
-  }, []);
-
-  // Start face detection when dialog opens
+  // Face Detection Loop
   useEffect(() => {
-    if (isDialogOpen && !isModelLoading) {
-      detectionIntervalRef.current = setInterval(detectFace, 100);
-    } else {
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-        detectionIntervalRef.current = null;
-      }
+    let interval: NodeJS.Timeout;
+
+    if (faceDetectionActive && modelsLoaded && webcamRef.current?.video) {
+      interval = setInterval(
+        async () => {
+          try {
+            const video = webcamRef.current?.video;
+            if (!video || video.readyState !== 4) return;
+
+            const detection = await faceapi.detectSingleFace(
+              video,
+              new faceapi.TinyFaceDetectorOptions({
+                inputSize: 416,
+                scoreThreshold: isMobile ? 0.5 : 0.3,
+              })
+            );
+
+            if (detection) {
+              const confidence = detection.score;
+              setFaceConfidence(confidence);
+
+              // Confidence threshold
+              const confidenceThreshold = isMobile ? 0.7 : 0.3;
+              if (confidence > confidenceThreshold) {
+                const { x, y, width, height } = detection.box;
+                setFacePosition({ x, y, width, height });
+
+                // Check if face is properly positioned within the oval
+                const { isProperlyPositioned, feedback } = checkFacePositioning(
+                  { x, y, width, height },
+                  video
+                );
+
+                setFaceDetected(true);
+                setFaceProperlyPositioned(isProperlyPositioned);
+                setPositioningFeedback(feedback);
+              } else {
+                setFaceDetected(false);
+                setFaceProperlyPositioned(false);
+                setPositioningFeedback("Face detection too weak");
+                setFacePosition(null);
+              }
+            } else {
+              setFaceDetected(false);
+              setFaceConfidence(0);
+              setFacePosition(null);
+              setFaceProperlyPositioned(false);
+              setPositioningFeedback("No face detected");
+            }
+          } catch (error) {
+            console.error("Face detection error:", error);
+            setFaceDetected(false);
+            setFaceConfidence(0);
+          }
+        },
+        isMobile ? 300 : 200
+      );
     }
 
     return () => {
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-      }
+      if (interval) clearInterval(interval);
     };
-  }, [isDialogOpen, isModelLoading, detectFace]);
+  }, [faceDetectionActive, modelsLoaded, isMobile]);
 
-  // Upload image to Supabase
-  const uploadImageToSupabase = async (
-    base64Image: string
-  ): Promise<string> => {
-    try {
-      // Remove data:image/jpeg;base64, prefix
-      const base64Data = base64Image.replace(/^data:image\/[a-z]+;base64,/, "");
+  // Function to check if face is properly positioned within the oval guide
+  const checkFacePositioning = useCallback(
+    (
+      faceBox: { x: number; y: number; width: number; height: number },
+      videoElement: HTMLVideoElement
+    ) => {
+      if (!faceBox || !videoElement)
+        return { isProperlyPositioned: false, feedback: "No face detected" };
 
-      // Convert base64 to buffer
-      const imageBuffer = Uint8Array.from(atob(base64Data), (c) =>
-        c.charCodeAt(0)
-      );
+      const videoRect = videoElement.getBoundingClientRect();
+      const videoWidth = videoElement.videoWidth || videoRect.width;
+      const videoHeight = videoElement.videoHeight || videoRect.height;
 
-      // Generate unique file name with sanitized userId
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const sanitizedUserId = userId
-        ? userId.replace(/[^a-zA-Z0-9-_]/g, "-")
-        : uuidv4();
-      const fileName = `${sanitizedUserId}/face-scan-${timestamp}.jpg`;
+      // Define the oval guide dimensions - larger for close-up faces
+      const ovalWidth = isMobile ? 200 : 280;
+      const ovalHeight = isMobile ? 240 : 320;
+      const ovalCenterX = videoWidth / 2;
+      const ovalCenterY = videoHeight / 2;
 
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from("user-profile")
-        .upload(fileName, imageBuffer, {
-          contentType: "image/jpeg",
-          cacheControl: "3600",
-          upsert: true,
-        });
+      // Calculate face center and dimensions
+      const faceCenterX = faceBox.x + faceBox.width / 2;
+      const faceCenterY = faceBox.y + faceBox.height / 2;
+      const faceWidth = faceBox.width;
+      const faceHeight = faceBox.height;
 
-      if (error) {
-        throw new Error(`Upload failed: ${error.message}`);
+      // More lenient tolerances for close-up faces
+      const centerToleranceX = isMobile ? 80 : 120;
+      const centerToleranceY = isMobile ? 60 : 100;
+
+      // Allow larger faces for close-up shots
+      const minFaceWidth = isMobile ? 60 : 80;
+      const maxFaceWidth = isMobile ? 400 : 500; // Much larger to allow close-ups
+      const minFaceHeight = isMobile ? 80 : 100;
+      const maxFaceHeight = isMobile ? 450 : 550; // Much larger to allow close-ups
+
+      // Check if face is reasonably centered
+      const isCenteredX =
+        Math.abs(faceCenterX - ovalCenterX) <= centerToleranceX;
+      const isCenteredY =
+        Math.abs(faceCenterY - ovalCenterY) <= centerToleranceY;
+
+      // Check if face size is appropriate (more lenient for close-ups)
+      const isGoodWidth =
+        faceWidth >= minFaceWidth && faceWidth <= maxFaceWidth;
+      const isGoodHeight =
+        faceHeight >= minFaceHeight && faceHeight <= maxFaceHeight;
+
+      // Check if face overlaps with oval (doesn't need to be completely inside)
+      const faceLeft = faceBox.x;
+      const faceRight = faceBox.x + faceBox.width;
+      const faceTop = faceBox.y;
+      const faceBottom = faceBox.y + faceBox.height;
+
+      const ovalLeft = ovalCenterX - ovalWidth / 2;
+      const ovalRight = ovalCenterX + ovalWidth / 2;
+      const ovalTop = ovalCenterY - ovalHeight / 2;
+      const ovalBottom = ovalCenterY + ovalHeight / 2;
+
+      // Check if face overlaps with oval (more lenient than being completely inside)
+      const hasXOverlap = faceRight > ovalLeft && faceLeft < ovalRight;
+      const hasYOverlap = faceBottom > ovalTop && faceTop < ovalBottom;
+      const overlapsOval = hasXOverlap && hasYOverlap;
+
+      // Calculate overlap percentage for better feedback
+      const overlapWidth =
+        Math.min(faceRight, ovalRight) - Math.max(faceLeft, ovalLeft);
+      const overlapHeight =
+        Math.min(faceBottom, ovalBottom) - Math.max(faceTop, ovalTop);
+      const overlapArea =
+        Math.max(0, overlapWidth) * Math.max(0, overlapHeight);
+      const faceArea = faceWidth * faceHeight;
+      const overlapPercentage =
+        faceArea > 0 ? (overlapArea / faceArea) * 100 : 0;
+
+      // Generate feedback based on positioning
+      let feedback = "";
+      if (!overlapsOval) {
+        if (!hasXOverlap && !hasYOverlap) {
+          feedback = "Position your face in the oval area";
+        } else if (!hasXOverlap) {
+          feedback =
+            faceCenterX < ovalCenterX
+              ? "Move right into the oval"
+              : "Move left into the oval";
+        } else {
+          feedback =
+            faceCenterY < ovalCenterY
+              ? "Move down into the oval"
+              : "Move up into the oval";
+        }
+      } else if (overlapPercentage < 30) {
+        feedback = "Center your face better in the oval";
+      } else if (!isGoodWidth || !isGoodHeight) {
+        if (faceWidth < minFaceWidth || faceHeight < minFaceHeight) {
+          feedback = "Move closer to the camera";
+        } else {
+          feedback = "Perfect close-up! Ready to capture";
+        }
+      } else if (!isCenteredX || !isCenteredY) {
+        if (!isCenteredX && !isCenteredY) {
+          feedback = "Almost perfect! Center slightly";
+        } else if (!isCenteredX) {
+          feedback =
+            faceCenterX < ovalCenterX
+              ? "Shift slightly right"
+              : "Shift slightly left";
+        } else {
+          feedback =
+            faceCenterY < ovalCenterY
+              ? "Shift slightly down"
+              : "Shift slightly up";
+        }
+      } else {
+        feedback = "Perfect! Ready to capture your close-up!";
       }
 
-      // Get public URL
-      const { data: publicData } = supabase.storage
-        .from("user-profile")
-        .getPublicUrl(fileName);
+      // More lenient positioning requirements - face just needs to overlap oval reasonably
+      const isProperlyPositioned =
+        overlapsOval &&
+        overlapPercentage >= 25 && // At least 25% of face in oval
+        isGoodWidth &&
+        isGoodHeight;
 
-      return publicData.publicUrl;
-    } catch (error) {
-      console.error("Image upload error:", error);
-      throw error;
+      return { isProperlyPositioned, feedback };
+    },
+    [isMobile]
+  );
+
+  // Just like visitor registration - pass base64 data directly to parent
+  const captureImageAsFile = async (imageSrc: string): Promise<string> => {
+    return imageSrc; // Return base64 data directly, no upload here
+  };
+
+  const handleWebcamCapture = useCallback(async () => {
+    // If models are loaded, require proper face positioning
+    if (modelsLoaded && !faceProperlyPositioned) {
+      alert(
+        `Please position your face properly before capturing. ${positioningFeedback}`
+      );
+      return;
     }
-  };
 
-  // Capture photo with upload
-  const capturePhoto = useCallback(async () => {
-    if (!webcamRef.current || !isValidFace) return;
-
-    try {
-      setIsCapturing(true);
-      setError(null);
-
-      // Capture image from webcam
-      const imageSrc = webcamRef.current.getScreenshot({
-        width: 640,
-        height: 480,
-      });
-
-      if (!imageSrc) {
-        throw new Error("Failed to capture image");
-      }
-
-      // Upload to Supabase
-      setIsUploading(true);
-      const uploadedUrl = await uploadImageToSupabase(imageSrc);
-
-      // Update state and call parent callback
-      setCapturedImage(uploadedUrl);
-      onCapture(uploadedUrl);
-      setIsDialogOpen(false);
-
-      console.log(
-        "Face image captured and uploaded successfully:",
-        uploadedUrl
-      );
-    } catch (err) {
-      console.error("Face capture error:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to capture and upload image"
-      );
-    } finally {
-      setIsCapturing(false);
-      setIsUploading(false);
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (imageSrc) {
+      // Just like visitor registration - pass base64 data directly
+      const processedImage = await captureImageAsFile(imageSrc);
+      setImagePreview(imageSrc);
+      onCapture(processedImage); // Pass base64 data, not URL
+      setShowCameraModal(false);
+      setFaceDetectionActive(false);
     }
-  }, [isValidFace, onCapture, userId]);
+  }, [faceProperlyPositioned, modelsLoaded, positioningFeedback, onCapture]);
 
-  // Retake photo
-  const retakePhoto = () => {
-    setCapturedImage(null);
-    setError(null);
-    setIsDialogOpen(true);
-  };
+  const handleRetakePhoto = useCallback(() => {
+    setImagePreview(null);
+    onCapture(""); // Clear the base64 data
+    setShowCameraModal(true);
+  }, [onCapture]);
 
-  // Get webcam constraints based on device
-  const getWebcamConstraints = () => {
-    const baseConstraints = {
-      width: isMobile ? 480 : 640,
-      height: isMobile ? 640 : 480,
-      facingMode: "user",
-    };
+  const openInstructionsModal = useCallback(() => {
+    setShowInstructionsModal(true);
+  }, []);
 
-    return {
-      video: baseConstraints,
-      audio: false,
-    };
-  };
+  const openCameraModal = useCallback(() => {
+    setShowInstructionsModal(false);
+    setShowCameraModal(true);
+    setCameraError(null);
+  }, []);
+
+  const handleCameraModalOpen = useCallback(() => {
+    setCameraLoading(true);
+    setFaceDetectionActive(true);
+    setCameraError(null);
+  }, []);
+
+  const handleCameraModalClose = useCallback(() => {
+    setShowCameraModal(false);
+    setFaceDetectionActive(false);
+    setCameraLoading(false);
+    setCameraError(null);
+    setFaceDetected(false);
+    setFaceConfidence(0);
+    setFacePosition(null);
+    setFaceProperlyPositioned(false);
+    setPositioningFeedback("");
+  }, []);
+
+  const switchCamera = useCallback(() => {
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+  }, []);
+
+  // Set preview from capturedImageUrl prop
+  useEffect(() => {
+    if (capturedImageUrl) {
+      setImagePreview(capturedImageUrl);
+    } else {
+      setImagePreview(null);
+    }
+  }, [capturedImageUrl]);
 
   return (
     <div className="space-y-4">
-      {/* Capture Status */}
-      {capturedImage ? (
-        <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center space-x-3">
-            <div className="flex-shrink-0">
-              <UserCheck className="h-6 w-6 text-green-600" />
+      {/* Image Preview */}
+      {imagePreview ? (
+        <div className="space-y-4">
+          <div className="relative w-48 h-48 mx-auto">
+            <img
+              src={imagePreview}
+              alt="Profile preview"
+              className="w-full h-full -scale-x-100 object-cover rounded-lg border-2 border-green-200"
+            />
+            <div className="absolute -top-2 -right-2 bg-green-100 rounded-full p-1">
+              <Check className="w-4 h-4 text-green-600" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-green-800">
-                Face captured successfully
-              </p>
-              <p className="text-xs text-green-600">
-                Your identity has been verified and uploaded
-              </p>
-            </div>
+            <Badge className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-green-100 text-green-800">
+              <UserCheck className="w-3 h-3 mr-1" />
+              Face Verified
+            </Badge>
           </div>
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            onClick={retakePhoto}
-            className="flex items-center space-x-2"
+            onClick={handleRetakePhoto}
+            className="w-full flex items-center gap-2"
           >
-            <RotateCcw className="h-4 w-4" />
-            <span>Retake</span>
+            <RotateCcw className="w-4 h-4" />
+            Retake Photo
           </Button>
         </div>
       ) : (
-        <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center space-x-3">
-            <div className="flex-shrink-0">
-              <Camera className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-blue-800">
-                Face verification required
-              </p>
-              <p className="text-xs text-blue-600">
-                Click to capture your photo for identity verification
-              </p>
+        <div className="space-y-4">
+          <div className="w-48 h-48 mx-auto border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+            <div className="text-center">
+              <Camera className="w-8 h-8  mx-auto mb-2" />
+              <p className="text-sm">No photo taken</p>
             </div>
           </div>
+
+          {/* Camera Loading Progress */}
+          {!modelsLoaded && modelLoadingProgress > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Loading face detection models...
+              </div>
+              <Progress value={modelLoadingProgress} className="w-full" />
+            </div>
+          )}
+
+          {/* Action Button */}
           <Button
             type="button"
-            onClick={() => setIsDialogOpen(true)}
-            className="flex items-center space-x-2"
+            onClick={openInstructionsModal}
+            disabled={modelLoadingProgress > 0 && modelLoadingProgress < 100}
+            className="w-full flex items-center gap-2"
           >
-            <Camera className="h-4 w-4" />
-            <span>Capture Face</span>
+            <Camera className="w-4 h-4" />
+            {isMobile ? "Take Selfie" : "Open Camera"}
+            {isMobile && <Smartphone className="w-4 h-4" />}
+            {!isMobile && <Monitor className="w-4 h-4" />}
           </Button>
         </div>
       )}
 
-      {/* Face Capture Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <Camera className="h-5 w-5" />
-              <span>Face Verification</span>
+      {/* Responsive Camera Modal */}
+      <Dialog open={showCameraModal} onOpenChange={handleCameraModalClose}>
+        <DialogContent
+          className={`${
+            isMobile
+              ? "max-w-[95vw] max-h-[95vh] w-full h-full p-2"
+              : "max-w-4xl max-h-[90vh]"
+          } overflow-hidden`}
+        >
+          <DialogHeader className={isMobile ? "text-center" : ""}>
+            <DialogTitle className="flex items-center gap-2 justify-center">
+              <Camera className="w-5 h-5" />
+              Take Your Profile Photo
+              {isMobile && <Smartphone className="w-4 h-4" />}
+              {!isMobile && <Monitor className="w-4 h-4" />}
             </DialogTitle>
-            <DialogDescription>
-              Position your face within the frame for identity verification.
-              We'll upload your photo securely.
+            <DialogDescription className="text-center">
+              {modelLoadingProgress > 0 && modelLoadingProgress < 100
+                ? "Loading face detection system..."
+                : !modelsLoaded
+                ? "Face detection disabled. You can still capture your photo manually."
+                : !faceDetected
+                ? "Position your face within the oval guide. The capture button will activate when your face is properly positioned."
+                : !faceProperlyPositioned
+                ? positioningFeedback
+                : "Perfect! Your face is properly positioned. You can now capture your photo."}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            {/* Model Loading Progress */}
-            {isModelLoading && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span>Loading face detection models...</span>
-                  <span>{modelLoadProgress}%</span>
-                </div>
-                <Progress value={modelLoadProgress} className="h-2" />
+          <div className="flex flex-col items-center gap-4 p-2">
+            {modelLoadingProgress > 0 && modelLoadingProgress < 100 ? (
+              <div className="text-center space-y-4 py-8">
+                <Loader2 className="w-12 h-12 text-blue-500 mx-auto animate-spin" />
+                <p className="text-gray-600">Initializing face detection...</p>
+                <Progress
+                  value={modelLoadingProgress}
+                  className="w-64 mx-auto"
+                />
               </div>
-            )}
+            ) : (
+              <>
+                {/* Camera Feed */}
+                <div className="relative">
+                  <Webcam
+                    ref={webcamRef}
+                    screenshotFormat="image/jpeg"
+                    className={`rounded-lg border-2 ${
+                      faceProperlyPositioned
+                        ? "border-green-400"
+                        : faceDetected
+                        ? "border-orange-400"
+                        : "border-gray-300"
+                    } ${
+                      isMobile ? "w-full max-w-sm" : "w-full max-w-md"
+                    } -scale-x-100`}
+                    videoConstraints={{
+                      facingMode: facingMode,
+                      width: isMobile ? 320 : 640,
+                      height: isMobile ? 240 : 480,
+                    }}
+                    onUserMedia={handleCameraModalOpen}
+                    onUserMediaError={(error) => {
+                      console.error("Camera error:", error);
+                      setCameraError(
+                        "Unable to access camera. Please check permissions."
+                      );
+                    }}
+                  />
 
-            {/* Camera Feed */}
-            <div className="relative">
-              <div className="relative mx-auto max-w-md">
-                <Webcam
-                  ref={webcamRef}
-                  audio={false}
-                  videoConstraints={getWebcamConstraints().video}
-                  onUserMedia={() => console.log("Camera started")}
-                  onUserMediaError={(err) => {
-                    console.error("Camera error:", err);
-                    setError(
-                      "Unable to access camera. Please check permissions."
-                    );
-                  }}
-                  className="w-full rounded-lg"
-                />
-                <canvas
-                  ref={canvasRef}
-                  className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                />
-
-                {/* Face Detection Overlay */}
-                <div className="absolute top-2 left-2 right-2 flex justify-between">
-                  <Badge
-                    variant={faceDetected ? "default" : "secondary"}
-                    className="bg-black/75 text-white"
-                  >
-                    {faceDetected ? "Face Detected" : "No Face"}
-                  </Badge>
-
-                  {faceDetected && (
-                    <Badge
-                      variant={isValidFace ? "default" : "secondary"}
-                      className={`${
-                        isValidFace ? "bg-green-600" : "bg-yellow-600"
-                      } text-white`}
-                    >
-                      Quality: {qualityScore}%
-                    </Badge>
+                  {/* Face Detection Overlay */}
+                  {modelsLoaded && facePosition && (
+                    <div
+                      className={`absolute border-2 rounded-lg pointer-events-none ${
+                        faceProperlyPositioned
+                          ? "border-green-400"
+                          : "border-orange-400"
+                      }`}
+                      style={{
+                        left: `${facePosition.x}px`,
+                        top: `${facePosition.y}px`,
+                        width: `${facePosition.width}px`,
+                        height: `${facePosition.height}px`,
+                      }}
+                    />
                   )}
+
+                  {/* Face Detection Guide Overlay */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {modelsLoaded && (
+                      <>
+                        {/* Oval guide */}
+                        <div
+                          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 border-dashed border-blue-400 rounded-full opacity-70"
+                          style={{
+                            width: isMobile ? "200px" : "280px",
+                            height: isMobile ? "240px" : "320px",
+                          }}
+                        />
+                        {/* Guide lines for better positioning */}
+                        <div
+                          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-blue-300 opacity-30"
+                          style={{
+                            width: "1px",
+                            height: isMobile ? "240px" : "320px",
+                          }}
+                        />
+                        <div
+                          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-blue-300 opacity-30"
+                          style={{
+                            width: isMobile ? "200px" : "280px",
+                            height: "1px",
+                          }}
+                        />
+                      </>
+                    )}
+                    <div className="absolute top-2 left-2 right-2">
+                      <Badge
+                        variant={
+                          modelsLoaded && faceProperlyPositioned
+                            ? "default"
+                            : "secondary"
+                        }
+                        className={`${
+                          modelsLoaded && faceProperlyPositioned
+                            ? "bg-green-500 text-white"
+                            : modelsLoaded && faceDetected
+                            ? "bg-orange-500 text-white"
+                            : modelsLoaded
+                            ? "bg-yellow-500 text-white"
+                            : "bg-gray-500 text-white"
+                        } text-xs`}
+                      >
+                        {!modelsLoaded ? (
+                          <>
+                            <Camera className="w-3 h-3 mr-1" />
+                            Manual Mode
+                          </>
+                        ) : faceProperlyPositioned ? (
+                          <>
+                            <UserCheck className="w-3 h-3 mr-1" />
+                            Ready to Capture!
+                          </>
+                        ) : faceDetected ? (
+                          <>
+                            <AlertCircle className="w-3 h-3 mr-1" />
+                            {positioningFeedback}
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="w-3 h-3 mr-1" />
+                            Position your face in the oval
+                          </>
+                        )}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Device Recommendations */}
-            <div className="flex items-center justify-center space-x-4 text-sm text-muted-foreground">
-              <div className="flex items-center space-x-1">
-                {isMobile ? (
-                  <Smartphone className="h-4 w-4" />
-                ) : (
-                  <Monitor className="h-4 w-4" />
+                {/* Error Display */}
+                {cameraError && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                    <AlertCircle className="w-5 h-5 text-red-500 mx-auto mb-2" />
+                    <p className="text-red-700 text-sm">{cameraError}</p>
+                  </div>
                 )}
-                <span>{isMobile ? "Mobile" : "Desktop"} Mode</span>
-              </div>
-            </div>
 
-            {/* Error Display */}
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+                {/* Control Buttons */}
+                <div className="flex gap-3 flex-wrap justify-center">
+                  {isMobile && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={switchCamera}
+                      className="flex items-center gap-2"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Flip Camera
+                    </Button>
+                  )}
+
+                  <Button
+                    type="button"
+                    onClick={handleWebcamCapture}
+                    disabled={modelsLoaded && !faceProperlyPositioned}
+                    className={`flex items-center gap-2 dark:text-accent-foreground ${
+                      modelsLoaded && faceProperlyPositioned
+                        ? "bg-green-600 hover:bg-green-700"
+                        : !modelsLoaded
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : "bg-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    <>
+                      <Camera className="w-4 h-4" />
+                      {!modelsLoaded
+                        ? "Capture Photo"
+                        : faceProperlyPositioned
+                        ? "Capture Photo"
+                        : "Position Face Properly"}
+                    </>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCameraModalClose}
+                    className="flex items-center gap-2"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </Button>
+                </div>
+
+                {/* Instructions */}
+                <div className="text-center space-y-2 max-w-md">
+                  <p className="text-sm text-gray-600">
+                    📱 Keep your device steady and look directly at the camera
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Face detection ensures better photo quality for verification
+                  </p>
+                </div>
+              </>
             )}
-
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsDialogOpen(false)}
-                disabled={isCapturing || isUploading}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
-
-              <Button
-                type="button"
-                onClick={capturePhoto}
-                disabled={
-                  !isValidFace || isCapturing || isUploading || isModelLoading
-                }
-                className="flex items-center space-x-2"
-              >
-                {isCapturing || isUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Check className="h-4 w-4" />
-                )}
-                <span>
-                  {isUploading
-                    ? "Uploading..."
-                    : isCapturing
-                    ? "Capturing..."
-                    : "Capture & Upload"}
-                </span>
-              </Button>
-            </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Instructions Modal */}
+      <FaceCaptureInstructions
+        isOpen={showInstructionsModal}
+        onClose={() => setShowInstructionsModal(false)}
+        onProceed={openCameraModal}
+        isMobile={isMobile}
+      />
     </div>
   );
 }

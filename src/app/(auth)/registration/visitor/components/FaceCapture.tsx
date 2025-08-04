@@ -23,9 +23,8 @@ import {
   Smartphone,
   Monitor,
 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import * as faceapi from "face-api.js";
-import { FaceCaptureInstructions } from "./FaceCaptureInstructions";
+import { FaceCaptureInstructions } from "@/components/reuseable/page-components/FaceCaptureInstructions";
 
 interface FaceCaptureProps {
   onCapture: (imageDataUrl: string) => void;

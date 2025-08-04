@@ -32,7 +32,6 @@ export function AdditionalInfo({ form }: AdditionalInfoProps) {
           <FormItem className="space-y-4">
             <div className="flex items-center justify-between">
               <FormLabel>1. How did you hear about this event? *</FormLabel>
-              <FormMessage />
             </div>
             <Select onValueChange={field.onChange} value={field.value || ""}>
               <FormControl>
@@ -69,7 +68,6 @@ export function AdditionalInfo({ form }: AdditionalInfoProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>Please specify</FormLabel>
-                <FormMessage />
               </div>
               <FormControl>
                 <Input {...field} value={field.value || ""} />
@@ -104,7 +102,6 @@ export function AdditionalInfo({ form }: AdditionalInfoProps) {
                   & Conditions. *
                 </FormLabel>
               </div>
-              <FormMessage />
             </FormItem>
           )}
         />

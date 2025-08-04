@@ -213,11 +213,10 @@ export function EventPreferences({ form }: EventPreferencesProps) {
               <FormLabel className="text-base font-medium">
                 1. Select Events to Attend *
               </FormLabel>
-              <FormMessage />
             </div>
             <FormDescription className="font-normal text-accent-foreground pb-4">
-              Select one or more events and specific dates you&apos;d like to
-              attend.
+              Select one or more events and <strong>at least one date</strong>{" "}
+              for each selected event.
             </FormDescription>
             <FormControl>
               <div className="space-y-4">
@@ -227,11 +226,17 @@ export function EventPreferences({ form }: EventPreferencesProps) {
                   );
                   const isExpanded = expandedEvents[event.id] || false;
                   const selectedDates = attendingDaysObj[event.eventName] || [];
+                  const hasDateError =
+                    isEventSelected && selectedDates.length === 0;
 
                   return (
                     <Collapsible
                       key={event.id}
-                      className="space-y-2"
+                      className={`space-y-2 ${
+                        hasDateError
+                          ? "border border-red-200 bg-red-50 dark:bg-red-950/10 rounded-lg p-3"
+                          : ""
+                      }`}
                       open={isExpanded}
                       onOpenChange={(open) =>
                         setExpandedEvents((prev) => ({
@@ -268,27 +273,40 @@ export function EventPreferences({ form }: EventPreferencesProps) {
                             <Calendar className="h-4 w-4 mr-2" />
                             {event.eventDates.length} available date(s)
                           </div>
-                          {/* {isEventSelected && selectedDates.length > 0 && (
-                            <div className="mt-2 text-xs text-muted-foreground">
-                              Selected:{" "}
+                          {hasDateError && (
+                            <div className="mt-2 text-xs text-red-600 dark:text-red-400 font-medium">
+                              ⚠️ Please select at least one date for this event
+                            </div>
+                          )}
+                          {isEventSelected && selectedDates.length > 0 && (
+                            <div className="mt-2 text-xs text-green-600 dark:text-green-400">
+                              ✓ {selectedDates.length} date(s) selected:{" "}
                               {selectedDates
                                 .map((d) => formatDate(d))
                                 .join(", ")}
                             </div>
-                          )} */}
+                          )}
                         </div>
                         <CollapsibleTrigger asChild>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="w-9 p-0"
+                            className={`w-9 p-0 ${
+                              hasDateError
+                                ? "text-red-500 hover:text-red-600"
+                                : ""
+                            }`}
                             disabled={!isEventSelected}
                             onClick={() => toggleEventExpansion(event.id)}
                           >
                             {isExpanded ? (
                               <ChevronUp className="h-4 w-4" />
                             ) : (
-                              <ChevronDown className="h-4 w-4" />
+                              <ChevronDown
+                                className={`h-4 w-4 ${
+                                  hasDateError ? "animate-bounce" : ""
+                                }`}
+                              />
                             )}
                             <span className="sr-only">Toggle</span>
                           </Button>
@@ -297,6 +315,9 @@ export function EventPreferences({ form }: EventPreferencesProps) {
 
                       <CollapsibleContent>
                         <div className="ml-10 space-y-2 mt-2">
+                          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Select dates to attend for {event.eventName}:
+                          </div>
                           {event.eventDates.map((dateObj) => {
                             const iso = toIsoDate(dateObj);
                             const inputId = `date-${event.id}-${iso}`;
@@ -348,7 +369,6 @@ export function EventPreferences({ form }: EventPreferencesProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>2. Attendee Type *</FormLabel>
-                <FormMessage />
               </div>
               <Select onValueChange={field.onChange} value={field.value || ""}>
                 <FormControl>
@@ -424,7 +444,6 @@ export function EventPreferences({ form }: EventPreferencesProps) {
                   />
                 ))}
               </div>
-              <FormMessage />
             </FormItem>
           )}
         />
@@ -440,7 +459,6 @@ export function EventPreferences({ form }: EventPreferencesProps) {
                   <FormLabel className="text-base font-medium">
                     4. Do you want to receive event updates?
                   </FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <RadioGroup
@@ -480,7 +498,6 @@ export function EventPreferences({ form }: EventPreferencesProps) {
                   <FormLabel className="text-base font-medium">
                     5. Do you want to be invited to future events?
                   </FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <RadioGroup

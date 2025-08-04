@@ -223,7 +223,7 @@ const ConferenceRegistrationDialog: React.FC<
           </DialogTrigger>
         )}
 
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogContent className="max-w-4xl max-h-[90vh] bg-muted">
           <DialogHeader className="pb-6">
             <DialogTitle className="flex items-center gap-3 text-xl">
               <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -237,7 +237,7 @@ const ConferenceRegistrationDialog: React.FC<
           </DialogHeader>
 
           <ScrollArea className="max-h-[70vh] pr-4">
-            <div className="space-y-8">
+            <div className="space-y-8 pb-4">
               {/* Header with Profile */}
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-xl p-6">
                 <div className="flex items-start gap-6">

@@ -9,11 +9,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import {
   Camera,
   CheckCircle,
-  AlertCircle,
   ArrowRight,
   ArrowLeft,
   Eye,

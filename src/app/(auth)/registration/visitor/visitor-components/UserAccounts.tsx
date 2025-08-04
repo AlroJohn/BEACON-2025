@@ -19,8 +19,10 @@ interface UserAccountsProps {
 
 export function UserAccounts({ form }: UserAccountsProps) {
   const email = form.watch("email");
-  const { data: emailCheck, isLoading: emailLoading } =
-    useEmailValidation(email, 'visitor');
+  const { data: emailCheck, isLoading: emailLoading } = useEmailValidation(
+    email,
+    "visitor"
+  );
 
   return (
     <div className="space-y-6">
@@ -123,7 +125,6 @@ export function UserAccounts({ form }: UserAccountsProps) {
                     />
                   </div>
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />
@@ -136,9 +137,7 @@ export function UserAccounts({ form }: UserAccountsProps) {
                 <FormLabel className="flex items-center gap-2">
                   3. Landline (Optional)
                 </FormLabel>
-                <div className="flex items-center justify-between">
-                  <FormMessage />
-                </div>
+                <div className="flex items-center justify-between"></div>
                 <FormControl>
                   <Input
                     {...field}
@@ -164,7 +163,6 @@ export function UserAccounts({ form }: UserAccountsProps) {
                   <FormLabel className="flex items-center gap-2">
                     4. Mailing Address (Optional)
                   </FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <Textarea

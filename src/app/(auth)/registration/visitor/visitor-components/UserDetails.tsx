@@ -55,7 +55,6 @@ export function UserDetails({ form }: UserDetailsProps) {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>1. First Name *</FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <Input
@@ -75,7 +74,6 @@ export function UserDetails({ form }: UserDetailsProps) {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>2. Last Name *</FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <Input
@@ -94,7 +92,6 @@ export function UserDetails({ form }: UserDetailsProps) {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>3. Middle Name</FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <Input
@@ -115,7 +112,6 @@ export function UserDetails({ form }: UserDetailsProps) {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>4. Suffix</FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <Input
@@ -139,7 +135,6 @@ export function UserDetails({ form }: UserDetailsProps) {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>5. Preferred Name</FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <Input
@@ -160,7 +155,6 @@ export function UserDetails({ form }: UserDetailsProps) {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>6. Nationality *</FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <Input
@@ -179,7 +173,6 @@ export function UserDetails({ form }: UserDetailsProps) {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>7. Gender *</FormLabel>
-                  <FormMessage />
                 </div>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
@@ -207,7 +200,6 @@ export function UserDetails({ form }: UserDetailsProps) {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>8. Age Bracket *</FormLabel>
-                  <FormMessage />
                 </div>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
@@ -237,7 +229,6 @@ export function UserDetails({ form }: UserDetailsProps) {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>Please specify *</FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <Input

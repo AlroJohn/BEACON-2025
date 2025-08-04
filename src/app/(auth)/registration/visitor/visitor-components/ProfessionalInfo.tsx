@@ -18,7 +18,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { RegistrationFormData } from "@/hooks/standard-hooks/visitor/useRegistrationSchema";
 import { AttendeeType } from "@prisma/client";
 
-
 interface ProfessionalInfoProps {
   form: UseFormReturn<RegistrationFormData>;
 }
@@ -45,7 +44,6 @@ export function ProfessionalInfo({ form }: ProfessionalInfoProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>Job Title {!isStudent && "*"}</FormLabel>
-                <FormMessage />
               </div>
               <FormControl>
                 <Input
@@ -64,7 +62,6 @@ export function ProfessionalInfo({ form }: ProfessionalInfoProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>Company/School Name {!isStudent && "*"}</FormLabel>
-                <FormMessage />
               </div>
               <FormControl>
                 <Input
@@ -83,7 +80,6 @@ export function ProfessionalInfo({ form }: ProfessionalInfoProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>Industry {!isStudent && "*"}</FormLabel>
-                <FormMessage />
               </div>
               <Select onValueChange={field.onChange} value={field.value || ""}>
                 <FormControl>
@@ -127,7 +123,6 @@ export function ProfessionalInfo({ form }: ProfessionalInfoProps) {
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel>Please specify industry</FormLabel>
-                  <FormMessage />
                 </div>
                 <FormControl>
                   <Input {...field} value={field.value || ""} />
@@ -143,7 +138,6 @@ export function ProfessionalInfo({ form }: ProfessionalInfoProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>Company/School Address</FormLabel>
-                <FormMessage />
               </div>
               <FormControl>
                 <Textarea
@@ -162,7 +156,6 @@ export function ProfessionalInfo({ form }: ProfessionalInfoProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>Company/School Website</FormLabel>
-                <FormMessage />
               </div>
               <FormControl>
                 <Input
@@ -181,7 +174,6 @@ export function ProfessionalInfo({ form }: ProfessionalInfoProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>Business/School Email</FormLabel>
-                <FormMessage />
               </div>
               <FormControl>
                 <Input

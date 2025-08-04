@@ -25,7 +25,6 @@ export function EmergencySafety({ form }: EmergencySafetyProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>1. Emergency Contact Person *</FormLabel>
-                <FormMessage />
               </div>
               <FormControl>
                 <Input {...field} />
@@ -40,7 +39,6 @@ export function EmergencySafety({ form }: EmergencySafetyProps) {
             <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel>2. Emergency Contact Number *</FormLabel>
-                <FormMessage />
               </div>
               <FormControl>
                 <Input {...field} />
@@ -56,7 +54,6 @@ export function EmergencySafety({ form }: EmergencySafetyProps) {
           <FormItem>
             <div className="flex items-center justify-between">
               <FormLabel>3. Special Assistance Needed</FormLabel>
-              <FormMessage />
             </div>
             <FormControl>
               <Textarea {...field} value={field.value || ""} />

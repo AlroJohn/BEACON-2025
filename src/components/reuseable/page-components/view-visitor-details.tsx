@@ -146,10 +146,10 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
           </DialogTrigger>
         )}
 
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogContent className="max-w-4xl max-h-[90vh] bg-muted">
           <DialogHeader className="pb-6">
             <DialogTitle className="flex items-center gap-3 text-xl">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <div className="p-2  rounded-lg">
                 <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               Visitor Details
@@ -160,9 +160,9 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
           </DialogHeader>
 
           <ScrollArea className="max-h-[70vh] pr-4">
-            <div className="space-y-8">
+            <div className="space-y-8 pb-4">
               {/* Header with Profile */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-xl p-6">
+              <div className="bg-gradient-to-r from-background to-muted rounded-xl p-6">
                 <div className="flex items-start gap-6">
                   {/* Profile Image */}
                   <div className="flex-shrink-0">
@@ -547,7 +547,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
               </div>
 
               {/* Registration Information */}
-              <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900/50 dark:to-blue-950/20 rounded-xl p-6 border ">
+              <div className="bg-gradient-to-r from-background to-muted rounded-xl p-6 ">
                 <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 ">
                   <div className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg">
                     <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-400" />

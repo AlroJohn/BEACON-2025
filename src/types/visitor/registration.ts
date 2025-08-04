@@ -72,6 +72,19 @@ export const registrationSchema = baseVisitorSchema
     message: 'Industry is required for non-student attendees',
     path: ['industry'],
   })
+  .refine(data => {
+    // Ensure that for each selected event, at least one date is selected
+    for (const eventName of data.eventParts) {
+      const selectedDates = data.attendingDays[eventName];
+      if (!selectedDates || selectedDates.length === 0) {
+        return false;
+      }
+    }
+    return true;
+  }, {
+    message: 'Please select at least one date for each selected event',
+    path: ['attendingDays'],
+  })
 
 export type RegistrationFormData = z.infer<typeof baseVisitorSchema>
 

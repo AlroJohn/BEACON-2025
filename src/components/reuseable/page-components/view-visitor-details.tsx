@@ -13,19 +13,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Eye,
-  ExternalLink,
   User,
   Phone,
   Building,
-  Heart,
   Calendar,
   Shield,
-  ZoomIn,
   UserCheck,
   MapPin,
   Globe,
 } from "lucide-react";
-import Link from "next/link";
 import { VisitorData } from "@/components/admin/visitors-data-table";
 import ImageModal from "@/components/reuseable/ImageModal";
 

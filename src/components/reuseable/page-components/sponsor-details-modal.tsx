@@ -26,7 +26,7 @@ import {
   Calendar,
   HandHeart,
 } from "lucide-react";
-import { SponsorData } from "./sponsors-data-table";
+import { SponsorData } from "../../admin/sponsors-data-table";
 import ImageModal from "@/components/reuseable/ImageModal";
 import StatusUpdateModal from "@/components/reuseable/StatusUpdateModal";
 import { useUpdateSponsorStatus } from "@/hooks/tanstasck-query/useAdminSponsors";
@@ -48,7 +48,10 @@ export function SponsorDetailsModal({
 
   if (!sponsor) return null;
 
-  const handleStatusUpdate = (newStatus: 'ACTIVE' | 'INACTIVE', notes?: string) => {
+  const handleStatusUpdate = (
+    newStatus: "ACTIVE" | "INACTIVE",
+    notes?: string
+  ) => {
     updateSponsorStatus.mutate(
       {
         sponsorId: sponsor.id,
@@ -62,7 +65,7 @@ export function SponsorDetailsModal({
         },
         onError: (error) => {
           toast.error("Failed to update sponsor status");
-          console.error('Status update error:', error);
+          console.error("Status update error:", error);
         },
       }
     );
@@ -244,7 +247,9 @@ export function SponsorDetailsModal({
                   <span className="font-medium">Application Status:</span>
                   <div className="mt-1 flex items-center gap-2">
                     <Badge
-                      className={getStatusBadgeColor(sponsor.contactInfo.status)}
+                      className={getStatusBadgeColor(
+                        sponsor.contactInfo.status
+                      )}
                     >
                       {sponsor.contactInfo.status}
                     </Badge>

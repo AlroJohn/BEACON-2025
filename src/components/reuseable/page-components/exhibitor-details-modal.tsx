@@ -26,7 +26,7 @@ import {
   Calendar,
   CheckCircle,
 } from "lucide-react";
-import { ExhibitorData } from "./exhibitors-data-table";
+import { ExhibitorData } from "../../admin/exhibitors-data-table";
 import ImageModal from "@/components/reuseable/ImageModal";
 import StatusUpdateModal from "@/components/reuseable/StatusUpdateModal";
 import { useUpdateExhibitorStatus } from "@/hooks/tanstasck-query/useAdminExhibitors";

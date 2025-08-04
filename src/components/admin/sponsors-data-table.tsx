@@ -40,13 +40,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -66,8 +59,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { SponsorDetailsModal } from "./sponsor-details-modal";
+import { SponsorDetailsModal } from "../reuseable/page-components/sponsor-details-modal";
 
 // Types
 export interface SponsorData {

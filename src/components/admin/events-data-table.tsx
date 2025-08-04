@@ -76,7 +76,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { EventStatusEnum } from "@prisma/client";
 import { SummaryOfPayments } from "@/types/conference";
-import { toast } from "sonner";
 import { useEventsQuery } from "@/hooks/tanstasck-query/useEventsQuery";
 import { CreateEventDialog } from "./create-event-dialog";
 

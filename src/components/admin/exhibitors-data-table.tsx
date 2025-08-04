@@ -39,13 +39,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -65,8 +58,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { ExhibitorDetailsModal } from "./exhibitor-details-modal";
+import { ExhibitorDetailsModal } from "../reuseable/page-components/exhibitor-details-modal";
 
 // Types
 export interface ExhibitorData {

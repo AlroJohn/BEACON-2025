@@ -12,30 +12,16 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
   Eye,
-  ExternalLink,
   User,
   Phone,
   Building,
   Heart,
   Calendar,
   CreditCard,
-  ZoomIn,
-  Save,
-  Loader2,
   MapPin,
   Globe,
 } from "lucide-react";
-import Link from "next/link";
 import { ConferenceData } from "@/components/admin/conference-data-table";
 import { useUpdatePaymentStatus } from "@/hooks/tanstasck-query/useAdminConference";
 import { toast } from "sonner";

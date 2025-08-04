@@ -64,7 +64,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import VisitorRegistrationDialog from "@/components/reuseable/page-components/view-visitor-details";
 import { useAdminVisitorsRealtime } from "@/hooks/tanstasck-query/useAdminVisitors";
 

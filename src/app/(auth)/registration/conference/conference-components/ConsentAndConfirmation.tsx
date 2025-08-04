@@ -9,10 +9,9 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent } from "@/components/ui/card";
-import { Mail, AlertTriangle } from "lucide-react";
+import { Mail } from "lucide-react";
 import { ConsentAndConfirmationProps } from "@/types/conference/components";
-import { TermsModal } from "../../visitor/components/TermsModal";
+import { TermsModal } from "../../../../../components/reuseable/page-components/TermsModal";
 
 export default function ConsentAndConfirmation({
   form,

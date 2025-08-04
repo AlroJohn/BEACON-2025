@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RegistrationFormData } from "@/hooks/standard-hooks/visitor/useRegistrationSchema";
-import { TermsModal } from "../components/TermsModal";
+import { TermsModal } from "../../../../../components/reuseable/page-components/TermsModal";
 
 interface AdditionalInfoProps {
   form: UseFormReturn<RegistrationFormData>;

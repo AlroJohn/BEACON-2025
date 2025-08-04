@@ -20,7 +20,7 @@ import {
   Edit,
   MoreHorizontal,
   Trash2,
-  Key,
+  Badge,
   User,
   CheckCircle,
   XCircle,
@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Badge as UIBadge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -76,12 +76,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useAllCodesQuery } from "@/hooks/tanstasck-query/useTMLCodeValidation";
-import { CreateCodeDialog } from "./create-code-dialog";
-import { BulkGenerateCodesDialog } from "./bulk-generate-codes-dialog";
+import { useQuery } from "@tanstack/react-query";
+import { CreateExhibitorCodeDialog } from "./create-exhibitor-code-dialog";
+import { BulkGenerateExhibitorCodesDialog } from "./bulk-generate-exhibitor-codes-dialog";
 
 // Types
-interface CodeDistributionData {
+interface ExhibitorCodeDistributionData {
   id: string;
   code: string;
   isActive: boolean;
@@ -100,17 +100,17 @@ interface CodeDistributionData {
   } | null;
 }
 
-interface CodeDistributionDataTableProps {
-  data: CodeDistributionData[];
+interface ExhibitorCodesDataTableProps {
+  data: ExhibitorCodeDistributionData[];
   onDeleteCode: (codeId: string, code: string) => void;
   currentAdminStatus: "SUPERADMIN" | "ADMIN";
 }
 
-export function CodeDistributionDataTable({
+export function ExhibitorCodesDataTable({
   data,
   onDeleteCode,
   currentAdminStatus,
-}: CodeDistributionDataTableProps) {
+}: ExhibitorCodesDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -119,7 +119,18 @@ export function CodeDistributionDataTable({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const { data: codesData, isLoading, error, refetch } = useAllCodesQuery();
+  const { data: codesData, isLoading, error, refetch } = useQuery({
+    queryKey: ['exhibitor-codes'],
+    queryFn: async () => {
+      const response = await fetch('/api/exhibitor-codes');
+      if (!response.ok) {
+        throw new Error('Failed to fetch exhibitor codes');
+      }
+      const result = await response.json();
+      return result.data;
+    },
+  });
+
   const handleCodeCreated = () => {
     refetch();
   };
@@ -137,39 +148,39 @@ export function CodeDistributionDataTable({
   const getStatusBadge = (isActive: boolean, hasUser: boolean) => {
     if (hasUser) {
       return (
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+        <UIBadge variant="secondary" className="bg-blue-100 text-blue-800">
           <User className="mr-1 h-3 w-3" />
           Used
-        </Badge>
+        </UIBadge>
       );
     }
 
     if (isActive) {
       return (
-        <Badge variant="default" className="bg-green-100 text-green-800">
+        <UIBadge variant="default" className="bg-green-100 text-green-800">
           <CheckCircle className="mr-1 h-3 w-3" />
           Available
-        </Badge>
+        </UIBadge>
       );
     }
 
     return (
-      <Badge variant="destructive">
+      <UIBadge variant="destructive">
         <XCircle className="mr-1 h-3 w-3" />
         Inactive
-      </Badge>
+      </UIBadge>
     );
   };
 
   const getActiveBadge = (isActive: boolean) => {
     return (
-      <Badge variant={isActive ? "default" : "destructive"}>
+      <UIBadge variant={isActive ? "default" : "destructive"}>
         {isActive ? "Active" : "Inactive"}
-      </Badge>
+      </UIBadge>
     );
   };
 
-  const columns: ColumnDef<CodeDistributionData>[] = [
+  const columns: ColumnDef<ExhibitorCodeDistributionData>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -201,8 +212,8 @@ export function CodeDistributionDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 px-2 lg:px-3"
           >
-            <Key className="mr-2 h-4 w-4" />
-            TML Code
+            <Badge className="mr-2 h-4 w-4" />
+            Exhibitor Code
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -324,7 +335,7 @@ export function CodeDistributionDataTable({
               <DropdownMenuItem
                 onClick={() => navigator.clipboard.writeText(code.code)}
               >
-                Copy TML code
+                Copy exhibitor code
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
@@ -338,9 +349,9 @@ export function CodeDistributionDataTable({
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>TML Code Details: {code.code}</DialogTitle>
+                    <DialogTitle>Exhibitor Code Details: {code.code}</DialogTitle>
                     <DialogDescription>
-                      Complete information about this TML member code
+                      Complete information about this exhibitor access code
                     </DialogDescription>
                   </DialogHeader>
 
@@ -350,7 +361,7 @@ export function CodeDistributionDataTable({
                       <h3 className="font-semibold mb-3">Code Information</h3>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <label className="font-medium">TML Code:</label>
+                          <label className="font-medium">Exhibitor Code:</label>
                           <p className="font-mono">{code.code}</p>
                         </div>
                         <div>
@@ -418,7 +429,7 @@ export function CodeDistributionDataTable({
               </Dialog>
 
               {/* Edit - Available for both ADMIN and SUPERADMIN */}
-              <CreateCodeDialog
+              <CreateExhibitorCodeDialog
                 trigger={
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                     <Edit className="mr-2 h-4 w-4" />
@@ -450,9 +461,9 @@ export function CodeDistributionDataTable({
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Delete TML Code</AlertDialogTitle>
+                        <AlertDialogTitle>Delete Exhibitor Code</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to delete the TML code{" "}
+                          Are you sure you want to delete the exhibitor code{" "}
                           <strong>{code.code}</strong>? This action cannot be
                           undone.
                           {code.userId && (
@@ -509,7 +520,7 @@ export function CodeDistributionDataTable({
         <div className="w-full flex items-center justify-between">
           <div className="w-full items-center flex gap-4">
             <Input
-              placeholder="Filter TML codes..."
+              placeholder="Filter exhibitor codes..."
               value={
                 (table.getColumn("code")?.getFilterValue() as string) ?? ""
               }
@@ -543,7 +554,7 @@ export function CodeDistributionDataTable({
           </div>
 
           <div className="flex gap-4 items-center">
-            <CreateCodeDialog
+            <CreateExhibitorCodeDialog
               trigger={
                 <Button className="flex items-center gap-2">
                   <Plus className="h-4 w-4" />
@@ -552,7 +563,7 @@ export function CodeDistributionDataTable({
               }
               onCodeCreated={handleCodeCreated}
             />
-            <BulkGenerateCodesDialog
+            <BulkGenerateExhibitorCodesDialog
               trigger={
                 <Button variant="secondary" className="flex items-center gap-2">
                   <Zap className="h-4 w-4" />
@@ -579,7 +590,7 @@ export function CodeDistributionDataTable({
               .filter((column) => column.getCanHide())
               .map((column) => {
                 const columnLabels: Record<string, string> = {
-                  code: "TML Code",
+                  code: "Exhibitor Code",
                   status: "Status",
                   usedBy: "Used By",
                   isActive: "Active",

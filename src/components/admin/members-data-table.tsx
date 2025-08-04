@@ -20,13 +20,15 @@ import {
   Edit,
   MoreHorizontal,
   Trash2,
-  Key,
+  Users,
   User,
   CheckCircle,
   XCircle,
   Clock,
   Plus,
-  Zap,
+  Upload,
+  Send,
+  Download,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -76,51 +78,46 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useAllCodesQuery } from "@/hooks/tanstasck-query/useTMLCodeValidation";
-import { CreateCodeDialog } from "./create-code-dialog";
-import { BulkGenerateCodesDialog } from "./bulk-generate-codes-dialog";
+import { useQuery } from "@tanstack/react-query";
+import { TmlMember, ExhibitorMember, MEMBER_STATUS_COLORS } from "@/types/members";
 
 // Types
-interface CodeDistributionData {
-  id: string;
-  code: string;
-  isActive: boolean;
-  userId: string | null;
-  createdAt: string;
-  updatedAt: string;
-  user?: {
-    id: string;
-    user_accounts?: Array<{
-      email: string;
-    }>;
-    user_details?: Array<{
-      firstName: string;
-      lastName: string;
-    }>;
-  } | null;
-}
-
-interface CodeDistributionDataTableProps {
-  data: CodeDistributionData[];
-  onDeleteCode: (codeId: string, code: string) => void;
+interface MembersDataTableProps {
+  memberType: 'tml' | 'exhibitor';
+  onDeleteMember: (memberId: string, memberName: string) => void;
   currentAdminStatus: "SUPERADMIN" | "ADMIN";
 }
 
-export function CodeDistributionDataTable({
-  data,
-  onDeleteCode,
-  currentAdminStatus,
-}: CodeDistributionDataTableProps) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+type MemberData = TmlMember | ExhibitorMember;
 
-  const { data: codesData, isLoading, error, refetch } = useAllCodesQuery();
-  const handleCodeCreated = () => {
+export function MembersDataTable({
+  memberType,
+  onDeleteMember,
+  currentAdminStatus,
+}: MembersDataTableProps) {
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [globalFilter, setGlobalFilter] = React.useState("");
+
+  // Fetch members data
+  const { data: membersData, isLoading, error, refetch } = useQuery({
+    queryKey: ['members', memberType, globalFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (globalFilter) params.append('search', globalFilter);
+      
+      const response = await fetch(`/api/members/${memberType}?${params}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${memberType} members`);
+      }
+      const result = await response.json();
+      return result.data;
+    },
+  });
+
+  const handleMemberCreated = () => {
     refetch();
   };
 
@@ -134,29 +131,16 @@ export function CodeDistributionDataTable({
     });
   };
 
-  const getStatusBadge = (isActive: boolean, hasUser: boolean) => {
-    if (hasUser) {
-      return (
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-          <User className="mr-1 h-3 w-3" />
-          Used
-        </Badge>
-      );
-    }
-
-    if (isActive) {
-      return (
-        <Badge variant="default" className="bg-green-100 text-green-800">
-          <CheckCircle className="mr-1 h-3 w-3" />
-          Available
-        </Badge>
-      );
-    }
-
+  const getStatusBadge = (status: string) => {
+    const statusUpper = status.toUpperCase();
+    const colorClass = MEMBER_STATUS_COLORS[statusUpper as keyof typeof MEMBER_STATUS_COLORS] || 'bg-gray-100 text-gray-800';
+    
     return (
-      <Badge variant="destructive">
-        <XCircle className="mr-1 h-3 w-3" />
-        Inactive
+      <Badge className={colorClass}>
+        {statusUpper === 'ACTIVE' && <CheckCircle className="mr-1 h-3 w-3" />}
+        {statusUpper === 'INACTIVE' && <XCircle className="mr-1 h-3 w-3" />}
+        {statusUpper === 'SUSPENDED' && <Clock className="mr-1 h-3 w-3" />}
+        {status}
       </Badge>
     );
   };
@@ -169,7 +153,33 @@ export function CodeDistributionDataTable({
     );
   };
 
-  const columns: ColumnDef<CodeDistributionData>[] = [
+  const formatMemberName = (member: MemberData) => {
+    const firstName = member.firstName || '';
+    const lastName = member.lastName || '';
+    const middleName = member.middleName || '';
+    
+    return middleName 
+      ? `${firstName} ${middleName} ${lastName}`
+      : `${firstName} ${lastName}`;
+  };
+
+  const getMemberCode = (member: MemberData) => {
+    if (memberType === 'tml') {
+      return (member as TmlMember).tmlMemberCode || 'N/A';
+    } else {
+      return (member as ExhibitorMember).exhibitorCode || 'N/A';
+    }
+  };
+
+  const getCompanyName = (member: MemberData) => {
+    if (memberType === 'exhibitor') {
+      return (member as ExhibitorMember).companyName;
+    } else {
+      return (member as TmlMember).companyName || 'N/A';
+    }
+  };
+
+  const columns: ColumnDef<MemberData>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -193,7 +203,7 @@ export function CodeDistributionDataTable({
       enableHiding: false,
     },
     {
-      accessorKey: "code",
+      accessorKey: "fullName",
       header: ({ column }) => {
         return (
           <Button
@@ -201,18 +211,66 @@ export function CodeDistributionDataTable({
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 px-2 lg:px-3"
           >
-            <Key className="mr-2 h-4 w-4" />
-            TML Code
+            <User className="mr-2 h-4 w-4" />
+            Full Name
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const member = row.original;
+        return (
+          <div className="font-medium">
+            {formatMemberName(member)}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "email",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-8 px-2 lg:px-3"
+          >
+            Email
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => (
-        <div className="font-mono font-medium">{row.getValue("code")}</div>
+        <div className="font-mono text-sm">{row.getValue("email")}</div>
       ),
     },
     {
-      id: "status",
+      id: "company",
+      header: "Company",
+      cell: ({ row }) => {
+        const member = row.original;
+        return (
+          <div className="text-sm">
+            {getCompanyName(member)}
+          </div>
+        );
+      },
+    },
+    {
+      id: "memberCode",
+      header: `${memberType.toUpperCase()} Code`,
+      cell: ({ row }) => {
+        const member = row.original;
+        const code = getMemberCode(member);
+        return (
+          <div className="font-mono text-sm">
+            {code !== 'N/A' ? code : <span className="text-muted-foreground">N/A</span>}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "membershipStatus",
       header: ({ column }) => {
         return (
           <Button
@@ -226,44 +284,36 @@ export function CodeDistributionDataTable({
         );
       },
       cell: ({ row }) => {
-        const code = row.original;
-        return getStatusBadge(code.isActive, !!code.userId);
-      },
-    },
-    {
-      id: "usedBy",
-      header: "Used By",
-      cell: ({ row }) => {
-        const code = row.original;
-        if (!code.user) {
-          return <span className="text-muted-foreground">Not used</span>;
-        }
-
-        const user_details = code.user.user_details?.[0];
-        const userAccount = code.user.user_accounts?.[0];
-
-        if (user_details) {
-          return (
-            <div className="text-sm">
-              <div className="font-medium">
-                {user_details.firstName} {user_details.lastName}
-              </div>
-              {userAccount && (
-                <div className="text-muted-foreground">{userAccount.email}</div>
-              )}
-            </div>
-          );
-        }
-
-        return (
-          <span className="text-muted-foreground">User ID: {code.userId}</span>
-        );
+        const status = row.getValue("membershipStatus") as string;
+        return getStatusBadge(status);
       },
     },
     {
       accessorKey: "isActive",
       header: "Active",
       cell: ({ row }) => getActiveBadge(row.getValue("isActive")),
+    },
+    {
+      id: "tags",
+      header: "Tags",
+      cell: ({ row }) => {
+        const member = row.original;
+        const tags = member.tags || [];
+        return (
+          <div className="flex flex-wrap gap-1">
+            {tags.slice(0, 2).map((tag, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+            {tags.length > 2 && (
+              <Badge variant="outline" className="text-xs">
+                +{tags.length - 2}
+              </Badge>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "createdAt",
@@ -286,30 +336,11 @@ export function CodeDistributionDataTable({
       ),
     },
     {
-      accessorKey: "updatedAt",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
-          >
-            Updated
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => (
-        <div className="text-sm text-muted-foreground">
-          {formatDate(row.getValue("updatedAt"))}
-        </div>
-      ),
-    },
-    {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const code = row.original;
+        const member = row.original;
+        const memberName = formatMemberName(member);
 
         return (
           <DropdownMenu>
@@ -322,9 +353,9 @@ export function CodeDistributionDataTable({
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(code.code)}
+                onClick={() => navigator.clipboard.writeText(member.email)}
               >
-                Copy TML code
+                Copy email
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
@@ -338,60 +369,117 @@ export function CodeDistributionDataTable({
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>TML Code Details: {code.code}</DialogTitle>
+                    <DialogTitle>{memberType.toUpperCase()} Member Details: {memberName}</DialogTitle>
                     <DialogDescription>
-                      Complete information about this TML member code
+                      Complete information about this {memberType} member
                     </DialogDescription>
                   </DialogHeader>
 
                   <div className="grid gap-6">
-                    {/* Code Information */}
+                    {/* Basic Information */}
                     <div>
-                      <h3 className="font-semibold mb-3">Code Information</h3>
+                      <h3 className="font-semibold mb-3">Basic Information</h3>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <label className="font-medium">TML Code:</label>
-                          <p className="font-mono">{code.code}</p>
+                          <label className="font-medium">Full Name:</label>
+                          <p>{memberName}</p>
                         </div>
                         <div>
-                          <label className="font-medium">Status:</label>
-                          <p>{getStatusBadge(code.isActive, !!code.userId)}</p>
+                          <label className="font-medium">Email:</label>
+                          <p className="font-mono">{member.email}</p>
                         </div>
                         <div>
-                          <label className="font-medium">Active:</label>
-                          <p>{getActiveBadge(code.isActive)}</p>
+                          <label className="font-medium">Mobile:</label>
+                          <p>{member.mobileNumber || 'N/A'}</p>
                         </div>
                         <div>
-                          <label className="font-medium">Usage Status:</label>
-                          <p>{code.userId ? "Used" : "Available"}</p>
+                          <label className="font-medium">Landline:</label>
+                          <p>{member.landline || 'N/A'}</p>
                         </div>
                       </div>
                     </div>
 
-                    {/* User Information */}
-                    {code.user && (
-                      <div>
-                        <h3 className="font-semibold mb-3">Used By</h3>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <label className="font-medium">User ID:</label>
-                            <p className="font-mono">{code.userId}</p>
-                          </div>
-                          <div>
-                            <label className="font-medium">Name:</label>
-                            <p>
-                              {code.user.user_details?.[0]
-                                ? `${code.user.user_details[0].firstName} ${code.user.user_details[0].lastName}`
-                                : "N/A"}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="font-medium">Email:</label>
-                            <p>
-                              {code.user.user_accounts?.[0]?.email || "N/A"}
-                            </p>
+                    {/* Company Information */}
+                    <div>
+                      <h3 className="font-semibold mb-3">Company Information</h3>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <label className="font-medium">Company:</label>
+                          <p>{getCompanyName(member)}</p>
+                        </div>
+                        {memberType === 'tml' && (
+                          <>
+                            <div>
+                              <label className="font-medium">Job Title:</label>
+                              <p>{(member as TmlMember).jobTitle || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <label className="font-medium">Industry:</label>
+                              <p>{(member as TmlMember).industry || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <label className="font-medium">Company Address:</label>
+                              <p>{(member as TmlMember).companyAddress || 'N/A'}</p>
+                            </div>
+                          </>
+                        )}
+                        {memberType === 'exhibitor' && (
+                          <>
+                            <div>
+                              <label className="font-medium">Business Registration:</label>
+                              <p>{(member as ExhibitorMember).businessRegistrationName || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <label className="font-medium">Website:</label>
+                              <p>{(member as ExhibitorMember).companyWebsite || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <label className="font-medium">Industry Sector:</label>
+                              <p>{(member as ExhibitorMember).industrySector || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <label className="font-medium">Booth Size:</label>
+                              <p>{(member as ExhibitorMember).boothSize || 'N/A'}</p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Member Information */}
+                    <div>
+                      <h3 className="font-semibold mb-3">Member Information</h3>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <label className="font-medium">{memberType.toUpperCase()} Code:</label>
+                          <p className="font-mono">{getMemberCode(member)}</p>
+                        </div>
+                        <div>
+                          <label className="font-medium">Status:</label>
+                          <p>{getStatusBadge(member.membershipStatus)}</p>
+                        </div>
+                        <div>
+                          <label className="font-medium">Active:</label>
+                          <p>{getActiveBadge(member.isActive)}</p>
+                        </div>
+                        <div>
+                          <label className="font-medium">Tags:</label>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {member.tags?.map((tag, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            )) || <span className="text-muted-foreground">None</span>}
                           </div>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Notes */}
+                    {member.notes && (
+                      <div>
+                        <h3 className="font-semibold mb-3">Notes</h3>
+                        <p className="text-sm bg-gray-50 p-3 rounded-md">{member.notes}</p>
                       </div>
                     )}
 
@@ -400,16 +488,16 @@ export function CodeDistributionDataTable({
                       <h3 className="font-semibold mb-3">System Information</h3>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <label className="font-medium">Code ID:</label>
-                          <p className="font-mono">{code.id}</p>
+                          <label className="font-medium">Member ID:</label>
+                          <p className="font-mono">{member.id}</p>
                         </div>
                         <div>
                           <label className="font-medium">Created:</label>
-                          <p>{formatDate(code.createdAt)}</p>
+                          <p>{formatDate(member.createdAt.toString())}</p>
                         </div>
                         <div>
                           <label className="font-medium">Last Updated:</label>
-                          <p>{formatDate(code.updatedAt)}</p>
+                          <p>{formatDate(member.updatedAt.toString())}</p>
                         </div>
                       </div>
                     </div>
@@ -418,21 +506,10 @@ export function CodeDistributionDataTable({
               </Dialog>
 
               {/* Edit - Available for both ADMIN and SUPERADMIN */}
-              <CreateCodeDialog
-                trigger={
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit code
-                  </DropdownMenuItem>
-                }
-                onCodeCreated={handleCodeCreated}
-                editingCode={{
-                  id: code.id,
-                  code: code.code,
-                  isActive: code.isActive,
-                }}
-                mode="edit"
-              />
+              <DropdownMenuItem>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit member
+              </DropdownMenuItem>
 
               {/* Delete - Only for SUPERADMIN */}
               {currentAdminStatus === "SUPERADMIN" && (
@@ -445,29 +522,22 @@ export function CodeDistributionDataTable({
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete code
+                        Delete member
                       </DropdownMenuItem>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Delete TML Code</AlertDialogTitle>
+                        <AlertDialogTitle>Delete {memberType.toUpperCase()} Member</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to delete the TML code{" "}
-                          <strong>{code.code}</strong>? This action cannot be
-                          undone.
-                          {code.userId && (
-                            <span className="text-destructive">
-                              {" "}
-                              This code is currently in use and deleting it may
-                              affect the associated user's registration.
-                            </span>
-                          )}
+                          Are you sure you want to delete{" "}
+                          <strong>{memberName}</strong>? This action cannot be
+                          undone and will permanently remove all member data.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => onDeleteCode(code.id, code.code)}
+                          onClick={() => onDeleteMember(member.id, memberName)}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                           Delete
@@ -485,7 +555,7 @@ export function CodeDistributionDataTable({
   ];
 
   const table = useReactTable({
-    data,
+    data: membersData || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -509,24 +579,20 @@ export function CodeDistributionDataTable({
         <div className="w-full flex items-center justify-between">
           <div className="w-full items-center flex gap-4">
             <Input
-              placeholder="Filter TML codes..."
-              value={
-                (table.getColumn("code")?.getFilterValue() as string) ?? ""
-              }
-              onChange={(event) =>
-                table.getColumn("code")?.setFilterValue(event.target.value)
-              }
+              placeholder={`Search ${memberType} members...`}
+              value={globalFilter}
+              onChange={(event) => setGlobalFilter( event.target.value)}
               className="max-w-sm"
             />
 
             {/* Status Filter */}
             <Select
               value={
-                (table.getColumn("status")?.getFilterValue() as string) ?? "all"
+                (table.getColumn("membershipStatus")?.getFilterValue() as string) ?? "all"
               }
               onValueChange={(value) =>
                 table
-                  .getColumn("status")
+                  .getColumn("membershipStatus")
                   ?.setFilterValue(value === "all" ? "" : value)
               }
             >
@@ -535,32 +601,30 @@ export function CodeDistributionDataTable({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="available">Available</SelectItem>
-                <SelectItem value="used">Used</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="INACTIVE">Inactive</SelectItem>
+                <SelectItem value="SUSPENDED">Suspended</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="flex gap-4 items-center">
-            <CreateCodeDialog
-              trigger={
-                <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Create Code
-                </Button>
-              }
-              onCodeCreated={handleCodeCreated}
-            />
-            <BulkGenerateCodesDialog
-              trigger={
-                <Button variant="secondary" className="flex items-center gap-2">
-                  <Zap className="h-4 w-4" />
-                  Bulk Generate
-                </Button>
-              }
-              onCodesGenerated={handleCodeCreated}
-            />
+          <div className="flex gap-2 items-center">
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Template
+            </Button>
+            <Button variant="outline" size="sm">
+              <Upload className="h-4 w-4 mr-2" />
+              Upload
+            </Button>
+            <Button variant="outline" size="sm">
+              <Send className="h-4 w-4 mr-2" />
+              Bulk Message
+            </Button>
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Member
+            </Button>
             <Button variant="outline" onClick={() => refetch()}>
               Refresh
             </Button>
@@ -579,12 +643,14 @@ export function CodeDistributionDataTable({
               .filter((column) => column.getCanHide())
               .map((column) => {
                 const columnLabels: Record<string, string> = {
-                  code: "TML Code",
-                  status: "Status",
-                  usedBy: "Used By",
+                  fullName: "Full Name",
+                  email: "Email",
+                  company: "Company",
+                  memberCode: `${memberType.toUpperCase()} Code`,
+                  membershipStatus: "Status",
                   isActive: "Active",
+                  tags: "Tags",
                   createdAt: "Created",
-                  updatedAt: "Updated",
                 };
 
                 return (
@@ -646,7 +712,7 @@ export function CodeDistributionDataTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {isLoading ? "Loading..." : "No results."}
                 </TableCell>
               </TableRow>
             )}
@@ -670,7 +736,7 @@ export function CodeDistributionDataTable({
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
-              {[5, 10, 20, 50, 100].map((pageSize) => (
+              {[10, 20, 50, 100].map((pageSize) => (
                 <SelectItem key={pageSize} value={`${pageSize}`}>
                   {pageSize}
                 </SelectItem>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Book, BookOpen, Frame, GalleryVerticalEnd } from "lucide-react";
+import { Book, BookOpen, Frame, GalleryVerticalEnd, Badge, Users, Building } from "lucide-react";
 
 import {
   Sidebar,
@@ -63,15 +63,29 @@ const data = {
       icon: Book,
     },
     {
+      name: "Exhibitor Codes",
+      url: "/admin/exhibitor-codes",
+      icon: Badge,
+    },
+    {
       name: "Events",
       url: "/admin/events",
       icon: BookOpen,
     },
-    // visitor-events
     {
       name: "Visitor Events",
       url: "/admin/visitor-events",
       icon: BookOpen,
+    },
+    {
+      name: "TML Members",
+      url: "/admin/members/tml",
+      icon: Users,
+    },
+    {
+      name: "Exhibitor Members",
+      url: "/admin/members/exhibitor",
+      icon: Building,
     },
   ],
 };

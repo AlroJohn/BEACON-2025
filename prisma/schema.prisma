@@ -633,3 +633,74 @@ model sponsorship_interests {
 
   @@map("sponsorship_interests")
 }
+
+model TmlMembers {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Member Information
+  firstName    String
+  lastName     String
+  middleName   String?
+  email        String   @unique
+  mobileNumber String?
+  landline     String?
+  
+  // Professional Information
+  jobTitle       String?
+  companyName    String?
+  industry       String?
+  companyAddress String?
+  
+  // TML Specific
+  tmlMemberCode String? @unique
+  membershipStatus String @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  
+  // Additional Information
+  notes String?
+  tags  String[] // For categorization and filtering
+  
+  // System fields
+  isActive Boolean @default(true)
+  
+  @@map("tml_members")
+}
+
+model ExhibitorMembers {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Member Information
+  firstName    String
+  lastName     String
+  middleName   String?
+  email        String   @unique
+  mobileNumber String?
+  landline     String?
+  
+  // Company Information
+  companyName              String
+  businessRegistrationName String?
+  companyAddress           String?
+  companyWebsite           String?
+  industrySector           String?
+  
+  // Exhibition Information
+  boothSize            String?
+  participationTypes   String[] // Array of participation types
+  exhibitorCode        String? @unique
+  
+  // Status
+  membershipStatus String @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  
+  // Additional Information
+  notes String?
+  tags  String[] // For categorization and filtering
+  
+  // System fields
+  isActive Boolean @default(true)
+  
+  @@map("exhibitor_members")
+}

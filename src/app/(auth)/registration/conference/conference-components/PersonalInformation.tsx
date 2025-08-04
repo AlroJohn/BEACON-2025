@@ -258,7 +258,6 @@ export default function PersonalInformation({
               <FaceCaptureWithUpload
                 onCapture={handleFaceCapture}
                 capturedImageUrl={form.watch("faceScannedUrl")}
-                userId={form.watch("email")} // Use email as temporary userId
               />
             </div>
           </CardContent>

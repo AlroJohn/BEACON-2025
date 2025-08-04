@@ -58,6 +58,24 @@ export interface ConferenceRegistrationEmailData {
   attendingDays?: Record<string, string[]>;
 }
 
+// Helper function to convert HTML to plain text
+function htmlToPlainText(html: string): string {
+  // Remove HTML tags and decode entities
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, '') // Remove style tags
+    .replace(/<script[\s\S]*?<\/script>/gi, '') // Remove script tags
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+    .replace(/&amp;/g, '&') // Replace &amp; with &
+    .replace(/&lt;/g, '<') // Replace &lt; with <
+    .replace(/&gt;/g, '>') // Replace &gt; with >
+    .replace(/&quot;/g, '"') // Replace &quot; with "
+    .replace(/&#39;/g, "'") // Replace &#39; with '
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .replace(/\n\s*\n/g, '\n\n') // Clean up multiple newlines
+    .trim();
+}
+
 // Send email function
 export async function sendEmail({ to, subject, html, from, userId }: EmailData): Promise<boolean> {
   try {
@@ -66,16 +84,29 @@ export async function sendEmail({ to, subject, html, from, userId }: EmailData):
       return false;
     }
 
+    // Generate plain text version of the email
+    const plainText = htmlToPlainText(html);
+
     const msg: any = {
       to,
       from: {
         email: 'noreply@thebeaconexpo.com',
         name: 'BEACON 2025 Team'
       },
-      subject,
-      html,
-      // Add deliverability improvements
       replyTo: 'mlbeacon2023@gmail.com',
+      subject,
+      // Add both HTML and plain text content for better deliverability
+      content: [
+        {
+          type: 'text/plain',
+          value: plainText
+        },
+        {
+          type: 'text/html', 
+          value: html
+        }
+      ],
+      // Improved deliverability settings
       trackingSettings: {
         clickTracking: {
           enable: false

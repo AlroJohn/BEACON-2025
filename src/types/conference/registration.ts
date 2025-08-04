@@ -1,4 +1,4 @@
-import { AgeBracket, ConferenceInterestArea, Gender, MaritimeLeagueMembership } from "@prisma/client";
+import { AgeBracket, ConferenceInterestArea, Gender, MaritimeLeagueMembership, PaymentMode } from "@prisma/client";
 import { z } from "zod";
 
 // Base schema that matches the corrected Prisma schema structure
@@ -71,10 +71,10 @@ export const conferenceRegistrationSchema = baseConferenceSchema
     // Basic validation that attending days is provided if events are selected
     if (data.selectedEventIds && data.selectedEventIds.length > 0) {
       const attendingDays = data.attendingDays || {};
-      const hasAnySelectedDates = Object.values(attendingDays).some(dates => 
+      const hasAnySelectedDates = Object.values(attendingDays).some(dates =>
         Array.isArray(dates) && dates.length > 0
       );
-      
+
       if (!hasAnySelectedDates) {
         return false;
       }
@@ -90,7 +90,7 @@ export const conferenceRegistrationSchema = baseConferenceSchema
       if (!data.tmlMemberCode || data.tmlMemberCode.trim().length === 0) {
         return false;
       }
-      
+
       // Additional format validation - TML codes should be at least 3 chars
       if (data.tmlMemberCode.trim().length < 3) {
         return false;
@@ -129,10 +129,10 @@ export const conferenceRegistrationSchema = baseConferenceSchema
     const isNonTMLMember = data.isMaritimeLeagueMember === MaritimeLeagueMembership.NO;
     const hasPaymentAmount = data.totalPaymentAmount && data.totalPaymentAmount > 0;
     const requiresPayment = isNonTMLMember && hasPaymentAmount;
-    
+
     if (requiresPayment) {
-      if (!data.referenceNumber || 
-          data.referenceNumber.trim().length === 0) {
+      if (!data.referenceNumber ||
+        data.referenceNumber.trim().length === 0) {
         return false;
       }
     }
@@ -161,118 +161,122 @@ export const conferenceRegistrationSchema = baseConferenceSchema
 export type ConferenceRegistrationFormData = z.infer<typeof conferenceRegistrationSchema>;
 
 // Default values for conference registration form
+export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData = {
+  /* ─── form-only ─── */
+  selectedEventIds: [],
+  faceScannedUrl: '',
+
+  /* ─── user_details ─── */
+  firstName: '',
+  lastName: '',
+  middleName: '',
+  suffix: '',
+  preferredName: '',
+  gender: Gender.MALE,          // Gender enum
+  genderOthers: '',
+  ageBracket: AgeBracket.AGE_18_24,      // AgeBracket enum
+  nationality: '',
+
+  /* ─── user_accounts ─── */
+  email: '',
+  mobileNumber: '',
+  mailingAddress: '',
+
+  /* ─── conference ─── */
+  isMaritimeLeagueMember: 'NO',   // MaritimeLeagueMembership enum
+  tmlMemberCode: '',
+  attendingDays: {},
+
+  /* ─── professional info ─── */
+  jobTitle: '',
+  companyName: '',
+  industry: '',
+  companyAddress: '',
+  companyWebsite: '',
+
+  /* ─── areas of interest ─── */
+  interestAreas: [],
+  detailedInterests: {},
+  otherInterests: '',
+  receiveEventInvites: false,
+
+  /* ─── payment details ─── */
+  totalPaymentAmount: null,
+  customPaymentAmount: null,
+  paymentMode: PaymentMode.GCASH,            // e.g. 'GCASH' | 'BANK_TRANSFER'
+  hasConferenceDiscount: false,
+  receiptImageUrl: '',
+  referenceNumber: '',
+
+  /* ─── consent & confirmation ─── */
+  emailCertificate: false,
+  photoVideoConsent: false,
+  dataUsageConsent: false,
+};
+
+
 // export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData = {
 //   // Form-only fields
-//   selectedEventIds: [],
+//   selectedEventIds: [], // example IDs
 //   faceScannedUrl: "",
 
 //   // user_details fields
-//   firstName: "",
-//   lastName: "",
-//   middleName: null,
+//   firstName: "Maria",
+//   lastName: "Santos",
+//   middleName: "Reyes",
 //   suffix: null,
-//   preferredName: null,
-//   gender: 'MALE',
+//   preferredName: "Mia",
+//   gender: Gender.FEMALE,
 //   genderOthers: null,
-//   ageBracket: 'AGE_18_24',
-//   nationality: "",
+//   ageBracket: AgeBracket.AGE_25_34,
+//   nationality: "Filipino",
 
 //   // user_accounts fields
-//   email: "",
-//   mobileNumber: "",
-//   mailingAddress: "",
+//   email: "alromercado08@gmail.com",
+//   mobileNumber: "09171234567",
+//   mailingAddress: "Unit 1003, Legazpi Village, Makati City, Metro Manila",
 
 //   // Conference fields
-//   isMaritimeLeagueMember: 'NO',
-//   tmlMemberCode: null,
+//   // Use YES here so receipt isn’t required by default even with selected events.
+//   isMaritimeLeagueMember: MaritimeLeagueMembership.NO,
+//   tmlMemberCode: "TML-2025-0001",
+//   attendingDays: {},
 
 //   // Professional Information
-//   jobTitle: "",
-//   companyName: "",
-//   industry: "",
-//   companyAddress: "",
-//   companyWebsite: "",
+//   jobTitle: "Business Development Manager",
+//   companyName: "Oceanic Innovations PH, Inc.",
+//   industry: "Marine Technology",
+//   companyAddress: "28F GT Tower, Ayala Avenue, Makati City, 1226 Philippines",
+//   companyWebsite: "https://oceanic.ph",
 
 //   // Areas of Interest
-//   interestAreas: [],
+//   interestAreas: [
+//     ConferenceInterestArea.MARINE_TECHNOLOGY,
+//     ConferenceInterestArea.INNOVATION_SUSTAINABILITY,
+//   ],
+//   detailedInterests: {},
 //   otherInterests: null,
-//   receiveEventInvites: false,
+//   receiveEventInvites: true,
 
 //   // Payment Details
-//   totalPaymentAmount: null,
+//   totalPaymentAmount: 3000,
 //   customPaymentAmount: null,
-//   paymentMode: null,
-//   receiptImageUrl: null,
-//   referenceNumber: null,
+//   paymentMode: "GCASH",
+//   hasConferenceDiscount: false,
+//   receiptImageUrl: null, // not required when member = YES
+//   referenceNumber: "GCASH-REF-12345678",
 
 //   // Consent & Confirmation
-//   emailCertificate: false,
-//   photoVideoConsent: false,
-//   dataUsageConsent: false,
+//   emailCertificate: true,
+//   photoVideoConsent: true,
+//   dataUsageConsent: true, // required by schema
 // };
-
-export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData = {
-  // Form-only fields
-  selectedEventIds: [], // example IDs
-  faceScannedUrl: "",
-
-  // user_details fields
-  firstName: "Maria",
-  lastName: "Santos",
-  middleName: "Reyes",
-  suffix: null,
-  preferredName: "Mia",
-  gender: Gender.FEMALE,
-  genderOthers: null,
-  ageBracket: AgeBracket.AGE_25_34,
-  nationality: "Filipino",
-
-  // user_accounts fields
-  email: "alromercado08@gmail.com",
-  mobileNumber: "09171234567",
-  mailingAddress: "Unit 1003, Legazpi Village, Makati City, Metro Manila",
-
-  // Conference fields
-  // Use YES here so receipt isn’t required by default even with selected events.
-  isMaritimeLeagueMember: MaritimeLeagueMembership.NO,
-  tmlMemberCode: "TML-2025-0001",
-  attendingDays: {},
-
-  // Professional Information
-  jobTitle: "Business Development Manager",
-  companyName: "Oceanic Innovations PH, Inc.",
-  industry: "Marine Technology",
-  companyAddress: "28F GT Tower, Ayala Avenue, Makati City, 1226 Philippines",
-  companyWebsite: "https://oceanic.ph",
-
-  // Areas of Interest
-  interestAreas: [
-    ConferenceInterestArea.MARINE_TECHNOLOGY,
-    ConferenceInterestArea.INNOVATION_SUSTAINABILITY,
-  ],
-  detailedInterests: {},
-  otherInterests: null,
-  receiveEventInvites: true,
-
-  // Payment Details
-  totalPaymentAmount: 3000,
-  customPaymentAmount: null,
-  paymentMode: "GCASH",
-  hasConferenceDiscount: false,
-  receiptImageUrl: null, // not required when member = YES
-  referenceNumber: "GCASH-REF-12345678",
-
-  // Consent & Confirmation
-  emailCertificate: true,
-  photoVideoConsent: true,
-  dataUsageConsent: true, // required by schema
-};
 
 
 // Conference Interest Areas options for UI with detailed sub-interests
 export const conferenceInterestAreasOptions = [
-  { 
-    value: ConferenceInterestArea.SHIPPING_PORT_TRANSPORT, 
+  {
+    value: ConferenceInterestArea.SHIPPING_PORT_TRANSPORT,
     label: "Shipping, Port, and Maritime Transport",
     subInterests: [
       "Domestic & international shipping lines",
@@ -284,8 +288,8 @@ export const conferenceInterestAreasOptions = [
       "Maritime Job fair"
     ]
   },
-  { 
-    value: ConferenceInterestArea.SHIPBUILDING_SHIP_REPAIR, 
+  {
+    value: ConferenceInterestArea.SHIPBUILDING_SHIP_REPAIR,
     label: "Shipbuilding, Boatbuilding & Ship Repair",
     subInterests: [
       "Philippine shipyards & repair facilities",
@@ -294,8 +298,8 @@ export const conferenceInterestAreasOptions = [
       "Classification societies and marine survey"
     ]
   },
-  { 
-    value: ConferenceInterestArea.FISHERIES_AQUACULTURE, 
+  {
+    value: ConferenceInterestArea.FISHERIES_AQUACULTURE,
     label: "Fisheries & Aquaculture",
     subInterests: [
       "Municipal and commercial fishing",
@@ -304,8 +308,8 @@ export const conferenceInterestAreasOptions = [
       "Marine biotech & sustainable seafood certification"
     ]
   },
-  { 
-    value: ConferenceInterestArea.MARITIME_TOURISM, 
+  {
+    value: ConferenceInterestArea.MARITIME_TOURISM,
     label: "Coastal & Marine Tourism",
     subInterests: [
       "Dive resorts, island hopping, marine parks",
@@ -314,8 +318,8 @@ export const conferenceInterestAreasOptions = [
       "Cruise tourism & destination marketing"
     ]
   },
-  { 
-    value: ConferenceInterestArea.MARINE_TECHNOLOGY, 
+  {
+    value: ConferenceInterestArea.MARINE_TECHNOLOGY,
     label: "Maritime Technology & Digitalization",
     subInterests: [
       "Ship navigation systems and marine electronics",
@@ -324,8 +328,8 @@ export const conferenceInterestAreasOptions = [
       "Smart shipbuilding and logistics software"
     ]
   },
-  { 
-    value: ConferenceInterestArea.RENEWABLE_OCEAN_ENERGY, 
+  {
+    value: ConferenceInterestArea.RENEWABLE_OCEAN_ENERGY,
     label: "Renewable Ocean Energy",
     subInterests: [
       "Offshore wind energy in Northern Luzon & Palawan",
@@ -334,8 +338,8 @@ export const conferenceInterestAreasOptions = [
       "Community-based hybrid energy systems in island barangays"
     ]
   },
-  { 
-    value: ConferenceInterestArea.MARINE_ENVIRONMENTAL_PROTECTION, 
+  {
+    value: ConferenceInterestArea.MARINE_ENVIRONMENTAL_PROTECTION,
     label: "Marine Environmental Protection & Blue Sustainability",
     subInterests: [
       "Coral reef and mangrove rehabilitation (DENR, NGOs, LGUs)",
@@ -344,8 +348,8 @@ export const conferenceInterestAreasOptions = [
       "Ocean conservation programs (PCG, BFAR, private sector)"
     ]
   },
-  { 
-    value: ConferenceInterestArea.BLUE_FINANCE_INVESTMENT, 
+  {
+    value: ConferenceInterestArea.BLUE_FINANCE_INVESTMENT,
     label: "Blue Finance & Investment",
     subInterests: [
       "Green and blue investment funds",
@@ -354,8 +358,8 @@ export const conferenceInterestAreasOptions = [
       "Investment in tourism ports, drydocks, shipyards, etc."
     ]
   },
-  { 
-    value: ConferenceInterestArea.NAVAL_DEFENSE_SECURITY, 
+  {
+    value: ConferenceInterestArea.NAVAL_DEFENSE_SECURITY,
     label: "Maritime Security & Defense",
     subInterests: [
       "Philippine Navy modernization",
@@ -364,8 +368,8 @@ export const conferenceInterestAreasOptions = [
       "Disaster preparedness and rapid response in maritime zones"
     ]
   },
-  { 
-    value: ConferenceInterestArea.EDUCATION_RESEARCH_CAPACITY, 
+  {
+    value: ConferenceInterestArea.EDUCATION_RESEARCH_CAPACITY,
     label: "Education, Research & Capacity Building",
     subInterests: [
       "Maritime schools and training centers (MARINA-accredited)",
@@ -374,8 +378,8 @@ export const conferenceInterestAreasOptions = [
       "Maritime youth leadership & community programs"
     ]
   },
-  { 
-    value: ConferenceInterestArea.OCEAN_GOVERNANCE_POLICY, 
+  {
+    value: ConferenceInterestArea.OCEAN_GOVERNANCE_POLICY,
     label: "Ocean Governance & Policy Development",
     subInterests: [
       "Implementation of the Philippine Maritime Industry Development Plan (MIDP)",
@@ -384,8 +388,8 @@ export const conferenceInterestAreasOptions = [
       "National blue economy roadmap"
     ]
   },
-  { 
-    value: ConferenceInterestArea.LIFESTYLE_FASHION, 
+  {
+    value: ConferenceInterestArea.LIFESTYLE_FASHION,
     label: "Ocean-Inspired Lifestyle, Art & Fashion",
     subInterests: [
       "Recycled marine waste apparel and accessories",

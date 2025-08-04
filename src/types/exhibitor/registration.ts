@@ -125,113 +125,113 @@ export const exhibitorRegistrationSchema = baseExhibitorSchema
 export type ExhibitorRegistrationFormData = z.infer<typeof exhibitorRegistrationSchema>;
 
 // Default values for exhibitor registration form
-// export const defaultExhibitorRegistrationValues: Partial<ExhibitorRegistrationFormData> = {
-//   // Form-only fields
-//   faceScannedUrl: "",
-
-//   // user_details fields
-//   firstName: "",
-//   lastName: "",
-//   middleName: null,
-//   suffix: null,
-//   preferredName: null,
-//   gender: Gender.MALE,
-//   genderOthers: null,
-//   ageBracket: AgeBracket.AGE_25_34,
-//   nationality: "",
-//   position: '',
-
-//   // user_accounts fields
-//   email: "",
-//   mobileNumber: "",
-//   mailingAddress: null,
-//   landline: null,
-
-//   // Company Information
-//   companyName: "",
-//   businessRegistrationName: '',
-//   industrySector: IndustrySector.MARITIME_EQUIPMENT_TECHNOLOGY,
-//   industrySectorOthers: null,
-//   companyAddress: '',
-//   companyWebsite: '',
-//   companyProfile: '',
-
-//   // Exhibition Package & Preferences
-//   participationTypes: [],
-//   boothSize: '',
-//   boothDescription: "",
-//   launchNewProduct: null,
-//   requireDemoArea: null,
-
-//   // Logistics & Marketing Coordination
-//   bringLargeEquipment: null,
-//   haveMarketingCollaterals: null,
-//   logoUrl: null,
-
-//   // Company Objectives & Collaboration
-//   goals: [],
-//   goalsOthers: null,
-//   exploreSponsorship: null,
-
-//   // Confirmation & Next Steps
-//   confirmIntent: ConfirmIntent.TENTATIVE,
-//   letterOfIntentUrl: null,
-//   additionalComments: null,
-// };
-
 export const defaultExhibitorRegistrationValues: Partial<ExhibitorRegistrationFormData> = {
   // Form-only fields
   faceScannedUrl: "",
 
   // user_details fields
-  firstName: "John",
-  lastName: "Doe",
-  middleName: "A.",
-  suffix: "Jr.",
-  preferredName: "John",
+  firstName: "",
+  lastName: "",
+  middleName: null,
+  suffix: null,
+  preferredName: null,
   gender: Gender.MALE,
-  genderOthers: null, // only use if gender === 'OTHERS'
+  genderOthers: null,
   ageBracket: AgeBracket.AGE_25_34,
-  nationality: "Filipino",
-  position: "Marketing Manager",
+  nationality: "",
+  position: '',
 
   // user_accounts fields
-  email: "alromercado08@gmail.com",
-  mobileNumber: "09171234567",
-  mailingAddress: "Unit 1203, Ayala Ave., Makati City, Metro Manila",
-  landline: "+63 2 8123 4567",
+  email: "",
+  mobileNumber: "",
+  mailingAddress: null,
+  landline: null,
 
   // Company Information
-  companyName: "Acme Maritime Solutions, Inc.",
-  businessRegistrationName: "Acme Maritime Solutions, Inc.",
+  companyName: "",
+  businessRegistrationName: '',
   industrySector: IndustrySector.MARITIME_EQUIPMENT_TECHNOLOGY,
-  industrySectorOthers: null, // only use if industrySector === 'OTHERS'
-  companyAddress: "123 Harbor Drive, Pasay City, Metro Manila",
-  companyWebsite: "https://www.acmemaritime.com",
-  companyProfile: "Provider of marine equipment, navigation systems, and coastal monitoring solutions.",
+  industrySectorOthers: null,
+  companyAddress: '',
+  companyWebsite: '',
+  companyProfile: '',
 
   // Exhibition Package & Preferences
-  participationTypes: [], // keep empty unless you want to pre-select in UI
-  boothSize: "3m x 3m (9 sqm)",
-  boothDescription: "Corner booth with storage and product display shelves.",
-  launchNewProduct: 'YES',
-  requireDemoArea: 'YES',
+  participationTypes: [],
+  boothSize: '',
+  boothDescription: "",
+  launchNewProduct: null,
+  requireDemoArea: null,
 
   // Logistics & Marketing Coordination
-  bringLargeEquipment: 'MAYBE',
-  haveMarketingCollaterals: '',
-  logoUrl: null, // file upload will populate this
+  bringLargeEquipment: null,
+  haveMarketingCollaterals: null,
+  logoUrl: null,
 
   // Company Objectives & Collaboration
-  goals: [], // keep empty unless you want to pre-select
-  goalsOthers: null, // fill only if goals contains 'OTHERS'
-  exploreSponsorship: 'MAYBE',
+  goals: [],
+  goalsOthers: null,
+  exploreSponsorship: null,
 
   // Confirmation & Next Steps
   confirmIntent: ConfirmIntent.TENTATIVE,
-  letterOfIntentUrl: null, // file upload will populate this
-  additionalComments: "We prefer a booth near the conference hall entrance.",
+  letterOfIntentUrl: null,
+  additionalComments: null,
 };
+
+// export const defaultExhibitorRegistrationValues: Partial<ExhibitorRegistrationFormData> = {
+//   // Form-only fields
+//   faceScannedUrl: "",
+
+//   // user_details fields
+//   firstName: "John",
+//   lastName: "Doe",
+//   middleName: "A.",
+//   suffix: "Jr.",
+//   preferredName: "John",
+//   gender: Gender.MALE,
+//   genderOthers: null, // only use if gender === 'OTHERS'
+//   ageBracket: AgeBracket.AGE_25_34,
+//   nationality: "Filipino",
+//   position: "Marketing Manager",
+
+//   // user_accounts fields
+//   email: "alromercado08@gmail.com",
+//   mobileNumber: "09171234567",
+//   mailingAddress: "Unit 1203, Ayala Ave., Makati City, Metro Manila",
+//   landline: "+63 2 8123 4567",
+
+//   // Company Information
+//   companyName: "Acme Maritime Solutions, Inc.",
+//   businessRegistrationName: "Acme Maritime Solutions, Inc.",
+//   industrySector: IndustrySector.MARITIME_EQUIPMENT_TECHNOLOGY,
+//   industrySectorOthers: null, // only use if industrySector === 'OTHERS'
+//   companyAddress: "123 Harbor Drive, Pasay City, Metro Manila",
+//   companyWebsite: "https://www.acmemaritime.com",
+//   companyProfile: "Provider of marine equipment, navigation systems, and coastal monitoring solutions.",
+
+//   // Exhibition Package & Preferences
+//   participationTypes: [], // keep empty unless you want to pre-select in UI
+//   boothSize: "3m x 3m (9 sqm)",
+//   boothDescription: "Corner booth with storage and product display shelves.",
+//   launchNewProduct: 'YES',
+//   requireDemoArea: 'YES',
+
+//   // Logistics & Marketing Coordination
+//   bringLargeEquipment: 'MAYBE',
+//   haveMarketingCollaterals: '',
+//   logoUrl: null, // file upload will populate this
+
+//   // Company Objectives & Collaboration
+//   goals: [], // keep empty unless you want to pre-select
+//   goalsOthers: null, // fill only if goals contains 'OTHERS'
+//   exploreSponsorship: 'MAYBE',
+
+//   // Confirmation & Next Steps
+//   confirmIntent: ConfirmIntent.TENTATIVE,
+//   letterOfIntentUrl: null, // file upload will populate this
+//   additionalComments: "We prefer a booth near the conference hall entrance.",
+// };
 
 
 // UI options for dropdowns and multi-selects

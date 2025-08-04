@@ -195,9 +195,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
 
                   {/* Basic Info */}
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                      {fullName}
-                    </h2>
+                    <h2 className="text-2xl font-bold  mb-2">{fullName}</h2>
                     {visitor.personalInfo.preferredName && (
                       <p className="text-lg text-gray-600 dark:text-gray-400 mb-3">
                         Preferred: {visitor.personalInfo.preferredName}
@@ -217,8 +215,8 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
               </div>
 
               {/* Personal Information */}
-              <div className="bg-white dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 text-gray-900 dark:text-gray-100">
+              <div className=" rounded-xl p-6 border ">
+                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 ">
                   <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
                     <User className="h-4 w-4 text-green-600 dark:text-green-400" />
                   </div>
@@ -229,15 +227,13 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Gender
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
-                      {genderDisplay}
-                    </p>
+                    <p className="">{genderDisplay}</p>
                   </div>
                   <div className="space-y-1">
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Age Bracket
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
+                    <p className="">
                       {formatAgeBracket(visitor.personalInfo.ageBracket)}
                     </p>
                   </div>
@@ -245,16 +241,14 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Nationality
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
-                      {visitor.personalInfo.nationality}
-                    </p>
+                    <p className="">{visitor.personalInfo.nationality}</p>
                   </div>
                 </div>
               </div>
 
               {/* Contact Information */}
-              <div className="bg-white dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 text-gray-900 dark:text-gray-100">
+              <div className=" rounded-xl p-6 border ">
+                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 ">
                   <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                     <Phone className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                   </div>
@@ -265,15 +259,13 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Email
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100 break-all">
-                      {visitor.contactInfo.email}
-                    </p>
+                    <p className=" break-all">{visitor.contactInfo.email}</p>
                   </div>
                   <div className="space-y-1">
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Mobile Number
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
+                    <p className="">
                       {visitor.contactInfo.mobileNumber || "Not provided"}
                     </p>
                   </div>
@@ -281,7 +273,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Landline
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
+                    <p className="">
                       {visitor.contactInfo.landline || "Not provided"}
                     </p>
                   </div>
@@ -289,7 +281,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Mailing Address
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
+                    <p className="">
                       {visitor.contactInfo.mailingAddress || "Not provided"}
                     </p>
                   </div>
@@ -297,8 +289,8 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
               </div>
 
               {/* Professional Information */}
-              <div className="bg-white dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 text-gray-900 dark:text-gray-100">
+              <div className=" rounded-xl p-6 border ">
+                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 ">
                   <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
                     <Building className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                   </div>
@@ -310,32 +302,26 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                         Job Title
                       </span>
-                      <p className="text-gray-900 dark:text-gray-100">
-                        {visitor.professionalInfo.jobTitle}
-                      </p>
+                      <p className="">{visitor.professionalInfo.jobTitle}</p>
                     </div>
                     <div className="space-y-1">
                       <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                         Company Name
                       </span>
-                      <p className="text-gray-900 dark:text-gray-100">
-                        {visitor.professionalInfo.companyName}
-                      </p>
+                      <p className="">{visitor.professionalInfo.companyName}</p>
                     </div>
                   </div>
                   <div className="space-y-1">
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Industry
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
-                      {industryDisplay}
-                    </p>
+                    <p className="">{industryDisplay}</p>
                   </div>
                   <div className="space-y-1">
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Business Email
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100 break-all">
+                    <p className=" break-all">
                       {visitor.professionalInfo.businessEmail || "Not provided"}
                     </p>
                   </div>
@@ -343,7 +329,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Company Address
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100 flex items-start gap-2">
+                    <p className=" flex items-start gap-2">
                       <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
                       {visitor.professionalInfo.companyAddress ||
                         "Not provided"}
@@ -371,9 +357,9 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
               </div>
 
               {/* Event Information */}
-              <div className="bg-white dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 text-gray-900 dark:text-gray-100">
-                  <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+              <div className=" rounded-xl p-6 border ">
+                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 ">
+                  <div className="p-1.5  rounded-lg">
                     <Calendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   </div>
                   Event Information
@@ -483,8 +469,8 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
               </div>
 
               {/* Emergency & Safety Information */}
-              <div className="bg-white dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 text-gray-900 dark:text-gray-100">
+              <div className=" rounded-xl p-6 border ">
+                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 ">
                   <div className="p-1.5 bg-red-100 dark:bg-red-900/30 rounded-lg">
                     <Shield className="h-4 w-4 text-red-600 dark:text-red-400" />
                   </div>
@@ -495,7 +481,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Emergency Contact Person
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
+                    <p className="">
                       {visitor.emergencyInfo.emergencyContactPerson ||
                         "Not provided"}
                     </p>
@@ -504,7 +490,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Emergency Contact Number
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
+                    <p className="">
                       {visitor.emergencyInfo.emergencyContactNumber ||
                         "Not provided"}
                     </p>
@@ -513,7 +499,7 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Special Assistance
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
+                    <p className="">
                       {visitor.emergencyInfo.specialAssistance ||
                         "None required"}
                     </p>
@@ -522,8 +508,8 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
               </div>
 
               {/* Consent & Privacy Information */}
-              <div className="bg-white dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 text-gray-900 dark:text-gray-100">
+              <div className=" rounded-xl p-6 border ">
+                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 ">
                   <div className="p-1.5 bg-teal-100 dark:bg-teal-900/30 rounded-lg">
                     <UserCheck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                   </div>
@@ -555,16 +541,14 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       How did you hear about this event?
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
-                      {hearAboutDisplay}
-                    </p>
+                    <p className="">{hearAboutDisplay}</p>
                   </div>
                 </div>
               </div>
 
               {/* Registration Information */}
-              <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900/50 dark:to-blue-950/20 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 text-gray-900 dark:text-gray-100">
+              <div className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900/50 dark:to-blue-950/20 rounded-xl p-6 border ">
+                <h3 className="text-lg font-semibold flex items-center gap-3 mb-4 ">
                   <div className="p-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg">
                     <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                   </div>
@@ -575,17 +559,13 @@ const VisitorRegistrationDialog: React.FC<VisitorRegistrationDialogProps> = ({
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Registered
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
-                      {formatDate(visitor.createdAt)}
-                    </p>
+                    <p className="">{formatDate(visitor.createdAt)}</p>
                   </div>
                   <div className="space-y-1">
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                       Last Updated
                     </span>
-                    <p className="text-gray-900 dark:text-gray-100">
-                      {formatDate(visitor.updatedAt)}
-                    </p>
+                    <p className="">{formatDate(visitor.updatedAt)}</p>
                   </div>
                 </div>
               </div>

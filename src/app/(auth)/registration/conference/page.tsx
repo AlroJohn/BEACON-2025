@@ -411,28 +411,31 @@ export default function ConferenceRegistrationSinglePage() {
     }
 
     // Additional validation for TML members - ensure code is validated
-    if (values.isMaritimeLeagueMember === 'YES') {
+    if (values.isMaritimeLeagueMember === "YES") {
       if (!values.tmlMemberCode || values.tmlMemberCode.trim().length < 3) {
         form.setError("tmlMemberCode", {
           type: "manual",
           message: "TML Member Code must be at least 3 characters long.",
         });
         toast.error("Invalid TML Member Code", {
-          description: "Please enter a valid TML member code with at least 3 characters.",
+          description:
+            "Please enter a valid TML member code with at least 3 characters.",
           duration: 5000,
         });
         setTimeout(scrollToFirstError, 100);
         return;
       }
-      
+
       // Ensure the code validation was actually performed
       if (!tmlCodeValidationState.isValid) {
         form.setError("tmlMemberCode", {
           type: "manual",
-          message: "Please wait for code validation to complete or enter a valid code.",
+          message:
+            "Please wait for code validation to complete or enter a valid code.",
         });
         toast.error("Code Validation Required", {
-          description: "Please ensure your TML member code is validated before submitting.",
+          description:
+            "Please ensure your TML member code is validated before submitting.",
           duration: 5000,
         });
         setTimeout(scrollToFirstError, 100);
@@ -441,21 +444,29 @@ export default function ConferenceRegistrationSinglePage() {
     }
 
     // Additional validation for non-TML members - ensure receipt and reference number are provided
-    if (values.isMaritimeLeagueMember === 'NO' && values.totalPaymentAmount && values.totalPaymentAmount > 0) {
+    if (
+      values.isMaritimeLeagueMember === "NO" &&
+      values.totalPaymentAmount &&
+      values.totalPaymentAmount > 0
+    ) {
       if (!values.receiptImageUrl) {
         form.setError("receiptImageUrl", {
           type: "manual",
           message: "Payment receipt is required for registration.",
         });
         toast.error("Receipt Required", {
-          description: "Please upload your payment receipt to complete registration.",
+          description:
+            "Please upload your payment receipt to complete registration.",
           duration: 5000,
         });
         setTimeout(scrollToFirstError, 100);
         return;
       }
 
-      if (!values.referenceNumber || values.referenceNumber.trim().length === 0) {
+      if (
+        !values.referenceNumber ||
+        values.referenceNumber.trim().length === 0
+      ) {
         form.setError("referenceNumber", {
           type: "manual",
           message: "Reference number is required for payment verification.",
@@ -543,7 +554,8 @@ export default function ConferenceRegistrationSinglePage() {
         <Card className="relative dark:bg-white/20 flex-1 flex flex-col h-full lg:p-12 p-2">
           <CardHeader className="shrink-0 p-0">
             <CardTitle className="text-2xl uppercase">
-              BEACON EXPO & Conference 2025
+              BEACON EXPO & Conference <span className="lowercase">with</span>{" "}
+              Blue Runway 2025
             </CardTitle>
             <Separator className="w-24 max-w-24 border-c1 border-2 rounded-full" />
             <CardDescription className="">
@@ -582,31 +594,33 @@ export default function ConferenceRegistrationSinglePage() {
                   <form
                     onSubmit={form.handleSubmit(onSubmit, (errors) => {
                       console.log("Form validation errors:", errors);
-                      
+
                       // Show specific error messages for common validation failures
                       if (errors.receiptImageUrl) {
                         toast.error("Receipt Required", {
-                          description: "Please upload your payment receipt to proceed.",
+                          description:
+                            "Please upload your payment receipt to proceed.",
                           duration: 5000,
                         });
                       }
                       if (errors.referenceNumber) {
                         toast.error("Reference Number Required", {
-                          description: "Please enter your transaction reference number.",
+                          description:
+                            "Please enter your transaction reference number.",
                           duration: 5000,
                         });
                       }
                       if (errors.tmlMemberCode) {
                         toast.error("TML Code Required", {
-                          description: "Please enter a valid TML member code or select 'No'.",
+                          description:
+                            "Please enter a valid TML member code or select 'No'.",
                           duration: 5000,
                         });
                       }
-                      
+
                       setTimeout(scrollToFirstError, 100);
                     })}
                   >
-                    <Separator className="max-w-sm mx-auto border-c1 border rounded-full mt-6 mb-12" />
                     <div
                       ref={maritimeContainerRef}
                       className="min-h-24 flex flex-row lg:gap-4"

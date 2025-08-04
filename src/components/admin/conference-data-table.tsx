@@ -129,7 +129,7 @@ export interface ConferenceData {
   selectedEvents: Array<{
     id: string;
     name: string;
-    date: string;
+    dates: string[];  // Changed from 'date: string' to 'dates: string[]'
     price: number;
     status: string;
   }>;

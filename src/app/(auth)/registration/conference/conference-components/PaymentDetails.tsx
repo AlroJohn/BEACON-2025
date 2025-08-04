@@ -401,7 +401,7 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
                     </span>{" "}
                     <div className="flex gap-2 flex-row items-center">
                       <p className="lg:text-2xl text-xl font-medium">
-                        09369118818
+                        09173114147
                       </p>
                       <Button
                         type="button"

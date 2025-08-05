@@ -224,31 +224,31 @@ async function seedManagerAccounts() {
     })));
 }
 
-async function seedTestCodes() {
-    logStep('Seeding Test TML Codes');
+// async function seedTestCodes() {
+//     logStep('Seeding Test TML Codes');
 
-    const codes = [
-        'TML001', 'TML002', 'TML003',
-        'BEACON001', 'BEACON002',
-        'TEST001', 'TEST002'
-    ];
+//     const codes = [
+//         'TML001', 'TML002', 'TML003',
+//         'BEACON001', 'BEACON002',
+//         'TEST001', 'TEST002'
+//     ];
 
-    try {
-        const createPromises = codes.map(code =>
-            prisma.codeDistribution.upsert({
-                where: { code },
-                update: {},
-                create: { code, isActive: true }
-            })
-        );
+//     try {
+//         const createPromises = codes.map(code =>
+//             prisma.codeDistribution.upsert({
+//                 where: { code },
+//                 update: {},
+//                 create: { code, isActive: true }
+//             })
+//         );
 
-        await Promise.all(createPromises);
-        logSuccess(`Created ${codes.length} test codes`);
-        console.log('📋 Available test codes:', codes.join(', '));
-    } catch (error) {
-        logError('Failed to create test codes', error);
-    }
-}
+//         await Promise.all(createPromises);
+//         logSuccess(`Created ${codes.length} test codes`);
+//         console.log('📋 Available test codes:', codes.join(', '));
+//     } catch (error) {
+//         logError('Failed to create test codes', error);
+//     }
+// }
 
 async function main() {
     try {
@@ -256,7 +256,7 @@ async function main() {
 
         await seedVisitorEvents();
         await seedManagerAccounts();
-        await seedTestCodes();
+        // await seedTestCodes();
 
         logStep('Seeding Completed Successfully');
     } catch (error) {

@@ -1,44 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { SectionCards } from "@/components/reuseable/SectionCard";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
-  CardContent,
+  CardAction,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
-import { Loader2, Users, LogOut } from "lucide-react";
-import { useAdminStore } from "@/stores/adminStore";
-import {
-  useAdminVisitors,
-  useDeleteVisitor,
-} from "@/hooks/tanstasck-query/useAdminVisitors";
-import { useAdminLogout } from "@/hooks/tanstasck-query/useAdminAuth";
-import { VisitorsDataTable } from "@/components/admin/visitors-data-table";
+import { TrendingDown, TrendingUp } from "lucide-react";
 
 export default function AdminDashboard() {
-  const router = useRouter();
-  const { isAuthenticated, currentAdmin, isSessionValid } = useAdminStore();
-  const logout = useAdminLogout();
-  const { data: visitorsData, isLoading, error, refetch } = useAdminVisitors();
-  const deleteVisitor = useDeleteVisitor();
-
   // Authentication is handled by the (private) layout, no need for checks here
 
   return (
-    <div className="flex flex-1 flex-col min-h-screen gap-4 p-4">
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="bg-muted aspect-video rounded-xl" />
-        <div className="bg-muted aspect-video rounded-xl" />
-        <div className="bg-muted aspect-video rounded-xl" />
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-2">
+        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+          <SectionCards />
+          <div className="px-4 lg:px-6">{/* <ChartAreaInteractive /> */}</div>
+          {/* <DataTable data={data} /> */}
+        </div>
       </div>
-      <div className="bg-muted min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
     </div>
   );
 }

@@ -1,7 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { Book, BookOpen, Frame, GalleryVerticalEnd, Badge, Users, Building } from "lucide-react";
+import {
+  Book,
+  BookOpen,
+  Frame,
+  GalleryVerticalEnd,
+  Badge,
+  Users,
+  Building,
+  BarChart,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -32,60 +41,68 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "",
-      icon: Frame,
+      url: "/admin",
+      icon: BarChart,
+    },
+    {
+      title: "Visitors",
+      url: "#",
+      icon: Users,
       isActive: true,
       items: [
         {
-          title: "Visitors ",
+          title: "Events",
+          url: "/admin/visitor-events",
+        },
+        {
+          title: "Registered Visitors",
           url: "/admin/visitors",
-        },
-        {
-          title: "Conference ",
-          url: "/admin/conference",
-        },
-        {
-          title: "Exhibitors ",
-          url: "/admin/exhibitors",
-        },
-        {
-          title: "Sponsors ",
-          url: "/admin/sponsors",
         },
       ],
     },
-  ],
-
-  projects: [
     {
-      name: "Code Distribution",
-      url: "/admin/codes",
-      icon: Book,
-    },
-    {
-      name: "Exhibitor Codes",
-      url: "/admin/exhibitor-codes",
-      icon: Badge,
-    },
-    {
-      name: "Events",
-      url: "/admin/events",
+      title: "Conference Management",
+      url: "",
       icon: BookOpen,
+      isActive: true,
+      items: [
+        {
+          title: "Events",
+          url: "/admin/events",
+        },
+        {
+          title: "Codes",
+          url: "/admin/conference-codes",
+        },
+        {
+          title: "TML Members",
+          url: "/admin/members/tml",
+        },
+        {
+          title: "Registered User",
+          url: "/admin/conference",
+        },
+      ],
     },
     {
-      name: "Visitor Events",
-      url: "/admin/visitor-events",
-      icon: BookOpen,
-    },
-    {
-      name: "TML Members",
-      url: "/admin/members/tml",
-      icon: Users,
-    },
-    {
-      name: "Exhibitor Members",
-      url: "/admin/members/exhibitor",
+      title: "Exhibitor Management",
+      url: "",
       icon: Building,
+      isActive: true,
+      items: [
+        {
+          title: "Codes",
+          url: "/admin/conference-codes",
+        },
+        {
+          title: "Exhibit Members",
+          url: "/admin/members/exhibitor",
+        },
+        {
+          title: "Registrered User ",
+          url: "/admin/exhibitors",
+        },
+      ],
     },
   ],
 };
@@ -98,7 +115,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

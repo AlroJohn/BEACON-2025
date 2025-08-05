@@ -25,7 +25,9 @@
       "Bash(rm:*)",
       "Bash(git checkout:*)",
       "Bash(curl:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(touch:*)",
+      "Bash(cd:*)"
     ],
     "deny": []
   }

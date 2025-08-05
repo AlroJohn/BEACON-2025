@@ -20,15 +20,13 @@ import {
   Edit,
   MoreHorizontal,
   Trash2,
-  Users,
   User,
-  CheckCircle,
-  XCircle,
-  Clock,
   Plus,
   Upload,
   Send,
   Download,
+  Loader2,
+  Mail,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -79,11 +77,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useQuery } from "@tanstack/react-query";
-import { TmlMember, ExhibitorMember, MEMBER_STATUS_COLORS } from "@/types/members";
+import { TmlMember, ExhibitorMember } from "@/types/members";
+import { toast } from "sonner";
+import { AddExhibitorMemberDialog } from "./add-exhibitor-member-dialog";
+import { BulkMessageDialog } from "./bulk-message-dialog";
+import { CSVUploadDialog } from "./csv-upload-dialog";
+import { EditExhibitorMemberDialog } from "./edit-exhibitor-member-dialog";
 
 // Types
 interface MembersDataTableProps {
-  memberType: 'tml' | 'exhibitor';
+  memberType: "tml" | "exhibitor";
   onDeleteMember: (memberId: string, memberName: string) => void;
   currentAdminStatus: "SUPERADMIN" | "ADMIN";
 }
@@ -96,18 +99,29 @@ export function MembersDataTable({
   currentAdminStatus,
 }: MembersDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
+  const [sendingCodes, setSendingCodes] = React.useState<Set<string>>(
+    new Set()
+  );
 
   // Fetch members data
-  const { data: membersData, isLoading, error, refetch } = useQuery({
-    queryKey: ['members', memberType, globalFilter],
+  const {
+    data: membersData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["members", memberType, globalFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (globalFilter) params.append('search', globalFilter);
-      
+      if (globalFilter) params.append("search", globalFilter);
+
       const response = await fetch(`/api/members/${memberType}?${params}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch ${memberType} members`);
@@ -121,6 +135,59 @@ export function MembersDataTable({
     refetch();
   };
 
+  const handleSendCode = async (
+    memberId: string,
+    memberName: string,
+    memberEmail: string
+  ) => {
+    if (memberType !== "exhibitor") {
+      toast.error("Code sending is only available for exhibitor members");
+      return;
+    }
+
+    // Add to sending state
+    setSendingCodes((prev) => new Set(prev).add(memberId));
+
+    try {
+      const response = await fetch("/api/members/exhibitor/send-code", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ memberId }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send code");
+      }
+
+      toast.success(`Exhibitor code sent successfully to ${memberEmail}!`, {
+        description: `Code ${result.codeSent} has been emailed to ${memberName}`,
+      });
+    } catch (error) {
+      console.error("Error sending code:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to send exhibitor code"
+      );
+    } finally {
+      // Remove from sending state
+      setSendingCodes((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(memberId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleDownloadTemplate = () => {
+    const link = document.createElement("a");
+    link.href = `/api/members/${memberType}/template`;
+    link.download = `${memberType}-members-template.csv`;
+    link.click();
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -129,20 +196,6 @@ export function MembersDataTable({
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusUpper = status.toUpperCase();
-    const colorClass = MEMBER_STATUS_COLORS[statusUpper as keyof typeof MEMBER_STATUS_COLORS] || 'bg-gray-100 text-gray-800';
-    
-    return (
-      <Badge className={colorClass}>
-        {statusUpper === 'ACTIVE' && <CheckCircle className="mr-1 h-3 w-3" />}
-        {statusUpper === 'INACTIVE' && <XCircle className="mr-1 h-3 w-3" />}
-        {statusUpper === 'SUSPENDED' && <Clock className="mr-1 h-3 w-3" />}
-        {status}
-      </Badge>
-    );
   };
 
   const getActiveBadge = (isActive: boolean) => {
@@ -154,28 +207,27 @@ export function MembersDataTable({
   };
 
   const formatMemberName = (member: MemberData) => {
-    const firstName = member.firstName || '';
-    const lastName = member.lastName || '';
-    const middleName = member.middleName || '';
-    
-    return middleName 
+    const firstName = member.firstName || "";
+    const lastName = member.lastName || "";
+    const middleName = member.middleName || "";
+
+    return middleName
       ? `${firstName} ${middleName} ${lastName}`
       : `${firstName} ${lastName}`;
   };
 
   const getMemberCode = (member: MemberData) => {
-    if (memberType === 'tml') {
-      return (member as TmlMember).tmlMemberCode || 'N/A';
-    } else {
-      return (member as ExhibitorMember).exhibitorCode || 'N/A';
+    if (memberType === "exhibitor") {
+      return (member as ExhibitorMember).sentCode || "N/A";
     }
+    return "N/A"; // TML members don't have codes in schema
   };
 
   const getCompanyName = (member: MemberData) => {
-    if (memberType === 'exhibitor') {
+    if (memberType === "exhibitor") {
       return (member as ExhibitorMember).companyName;
     } else {
-      return (member as TmlMember).companyName || 'N/A';
+      return (member as TmlMember).companyName || "N/A";
     }
   };
 
@@ -219,11 +271,7 @@ export function MembersDataTable({
       },
       cell: ({ row }) => {
         const member = row.original;
-        return (
-          <div className="font-medium">
-            {formatMemberName(member)}
-          </div>
-        );
+        return <div className="font-medium">{formatMemberName(member)}</div>;
       },
     },
     {
@@ -249,71 +297,47 @@ export function MembersDataTable({
       header: "Company",
       cell: ({ row }) => {
         const member = row.original;
-        return (
-          <div className="text-sm">
-            {getCompanyName(member)}
-          </div>
-        );
+        return <div className="text-sm">{getCompanyName(member)}</div>;
       },
     },
     {
-      id: "memberCode",
-      header: `${memberType.toUpperCase()} Code`,
-      cell: ({ row }) => {
-        const member = row.original;
-        const code = getMemberCode(member);
-        return (
-          <div className="font-mono text-sm">
-            {code !== 'N/A' ? code : <span className="text-muted-foreground">N/A</span>}
-          </div>
-        );
-      },
+      accessorKey: "mobileNumber",
+      header: "Mobile",
+      cell: ({ row }) => (
+        <div className="text-sm">{row.getValue("mobileNumber") || "N/A"}</div>
+      ),
     },
-    {
-      accessorKey: "membershipStatus",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
-          >
-            Status
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const status = row.getValue("membershipStatus") as string;
-        return getStatusBadge(status);
-      },
-    },
+    // Only show member code for exhibitors since TML members don't have codes in schema
+    ...(memberType === "exhibitor"
+      ? [
+          {
+            id: "memberCode",
+            header: "Sent Code",
+            cell: ({ row }: { row: any }) => {
+              const member = row.original as ExhibitorMember;
+              const code = member.sentCode;
+              return (
+                <div className="font-mono text-sm">
+                  {code ? (
+                    <Badge
+                      variant="outline"
+                      className="bg-green-50 text-green-700"
+                    >
+                      {code}
+                    </Badge>
+                  ) : (
+                    <span className="text-muted-foreground">Not sent</span>
+                  )}
+                </div>
+              );
+            },
+          },
+        ]
+      : []),
     {
       accessorKey: "isActive",
       header: "Active",
       cell: ({ row }) => getActiveBadge(row.getValue("isActive")),
-    },
-    {
-      id: "tags",
-      header: "Tags",
-      cell: ({ row }) => {
-        const member = row.original;
-        const tags = member.tags || [];
-        return (
-          <div className="flex flex-wrap gap-1">
-            {tags.slice(0, 2).map((tag, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {tags.length > 2 && (
-              <Badge variant="outline" className="text-xs">
-                +{tags.length - 2}
-              </Badge>
-            )}
-          </div>
-        );
-      },
     },
     {
       accessorKey: "createdAt",
@@ -369,7 +393,9 @@ export function MembersDataTable({
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>{memberType.toUpperCase()} Member Details: {memberName}</DialogTitle>
+                    <DialogTitle>
+                      {memberType.toUpperCase()} Member Details: {memberName}
+                    </DialogTitle>
                     <DialogDescription>
                       Complete information about this {memberType} member
                     </DialogDescription>
@@ -390,40 +416,34 @@ export function MembersDataTable({
                         </div>
                         <div>
                           <label className="font-medium">Mobile:</label>
-                          <p>{member.mobileNumber || 'N/A'}</p>
+                          <p>{member.mobileNumber || "N/A"}</p>
                         </div>
                         <div>
                           <label className="font-medium">Landline:</label>
-                          <p>{member.landline || 'N/A'}</p>
+                          <p>{member.landline || "N/A"}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Company Information */}
                     <div>
-                      <h3 className="font-semibold mb-3">Company Information</h3>
+                      <h3 className="font-semibold mb-3">
+                        Company Information
+                      </h3>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <label className="font-medium">Company:</label>
                           <p>{getCompanyName(member)}</p>
                         </div>
-                        {memberType === 'tml' && (
+                        {memberType === "tml" && (
                           <>
                             <div>
                               <label className="font-medium">Job Title:</label>
-                              <p>{(member as TmlMember).jobTitle || 'N/A'}</p>
-                            </div>
-                            <div>
-                              <label className="font-medium">Industry:</label>
-                              <p>{(member as TmlMember).industry || 'N/A'}</p>
-                            </div>
-                            <div>
-                              <label className="font-medium">Company Address:</label>
-                              <p>{(member as TmlMember).companyAddress || 'N/A'}</p>
+                              <p>{(member as TmlMember).jobTitle || "N/A"}</p>
                             </div>
                           </>
                         )}
-                        {memberType === 'exhibitor' && (
+                        {/* {memberType === 'exhibitor' && (
                           <>
                             <div>
                               <label className="font-medium">Business Registration:</label>
@@ -442,7 +462,7 @@ export function MembersDataTable({
                               <p>{(member as ExhibitorMember).boothSize || 'N/A'}</p>
                             </div>
                           </>
-                        )}
+                        )} */}
                       </div>
                     </div>
 
@@ -451,37 +471,18 @@ export function MembersDataTable({
                       <h3 className="font-semibold mb-3">Member Information</h3>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <label className="font-medium">{memberType.toUpperCase()} Code:</label>
+                          <label className="font-medium">
+                            {memberType.toUpperCase()} Code:
+                          </label>
                           <p className="font-mono">{getMemberCode(member)}</p>
-                        </div>
-                        <div>
-                          <label className="font-medium">Status:</label>
-                          <p>{getStatusBadge(member.membershipStatus)}</p>
                         </div>
                         <div>
                           <label className="font-medium">Active:</label>
                           <p>{getActiveBadge(member.isActive)}</p>
                         </div>
-                        <div>
-                          <label className="font-medium">Tags:</label>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {member.tags?.map((tag, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
-                                {tag}
-                              </Badge>
-                            )) || <span className="text-muted-foreground">None</span>}
-                          </div>
-                        </div>
                       </div>
                     </div>
 
-                    {/* Notes */}
-                    {member.notes && (
-                      <div>
-                        <h3 className="font-semibold mb-3">Notes</h3>
-                        <p className="text-sm bg-gray-50 p-3 rounded-md">{member.notes}</p>
-                      </div>
-                    )}
 
                     {/* System Information */}
                     <div>
@@ -505,11 +506,45 @@ export function MembersDataTable({
                 </DialogContent>
               </Dialog>
 
+              {/* Send Code - Only for exhibitor members */}
+              {memberType === "exhibitor" && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() =>
+                      handleSendCode(member.id, memberName, member.email)
+                    }
+                    disabled={sendingCodes.has(member.id)}
+                  >
+                    {sendingCodes.has(member.id) ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Mail className="mr-2 h-4 w-4" />
+                    )}
+                    {sendingCodes.has(member.id)
+                      ? "Sending..."
+                      : "Send Exhibitor Code"}
+                  </DropdownMenuItem>
+                </>
+              )}
+
               {/* Edit - Available for both ADMIN and SUPERADMIN */}
-              <DropdownMenuItem>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit member
-              </DropdownMenuItem>
+              {memberType === "exhibitor" ? (
+                <EditExhibitorMemberDialog
+                  member={member as ExhibitorMember}
+                  onMemberUpdated={() => refetch()}
+                >
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit member
+                  </DropdownMenuItem>
+                </EditExhibitorMemberDialog>
+              ) : (
+                <DropdownMenuItem>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit member
+                </DropdownMenuItem>
+              )}
 
               {/* Delete - Only for SUPERADMIN */}
               {currentAdminStatus === "SUPERADMIN" && (
@@ -527,7 +562,9 @@ export function MembersDataTable({
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Delete {memberType.toUpperCase()} Member</AlertDialogTitle>
+                        <AlertDialogTitle>
+                          Delete {memberType.toUpperCase()} Member
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
                           Are you sure you want to delete{" "}
                           <strong>{memberName}</strong>? This action cannot be
@@ -581,50 +618,64 @@ export function MembersDataTable({
             <Input
               placeholder={`Search ${memberType} members...`}
               value={globalFilter}
-              onChange={(event) => setGlobalFilter( event.target.value)}
+              onChange={(event) => setGlobalFilter(event.target.value)}
               className="max-w-sm"
             />
 
-            {/* Status Filter */}
+            {/* Active Filter */}
             <Select
               value={
-                (table.getColumn("membershipStatus")?.getFilterValue() as string) ?? "all"
+                (table.getColumn("isActive")?.getFilterValue() as string) ??
+                "all"
               }
-              onValueChange={(value) =>
-                table
-                  .getColumn("membershipStatus")
-                  ?.setFilterValue(value === "all" ? "" : value)
-              }
+              onValueChange={(value) => {
+                if (value === "all") {
+                  table.getColumn("isActive")?.setFilterValue("");
+                } else {
+                  table.getColumn("isActive")?.setFilterValue(value === "true");
+                }
+              }}
             >
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="ACTIVE">Active</SelectItem>
-                <SelectItem value="INACTIVE">Inactive</SelectItem>
-                <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                <SelectItem value="true">Active</SelectItem>
+                <SelectItem value="false">Inactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex gap-2 items-center">
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadTemplate}
+            >
               <Download className="h-4 w-4 mr-2" />
               Template
             </Button>
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload
-            </Button>
-            <Button variant="outline" size="sm">
-              <Send className="h-4 w-4 mr-2" />
-              Bulk Message
-            </Button>
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Member
-            </Button>
+            {memberType === "exhibitor" ? (
+              <CSVUploadDialog
+                memberType={memberType}
+                onUploadComplete={() => refetch()}
+              />
+            ) : (
+              <Button variant="outline" size="sm">
+                <Upload className="h-4 w-4 mr-2" />
+                Upload
+              </Button>
+            )}
+            <BulkMessageDialog memberType={memberType} />
+            {memberType === "exhibitor" ? (
+              <AddExhibitorMemberDialog onMemberCreated={() => refetch()} />
+            ) : (
+              <Button size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Member
+              </Button>
+            )}
             <Button variant="outline" onClick={() => refetch()}>
               Refresh
             </Button>
@@ -646,10 +697,9 @@ export function MembersDataTable({
                   fullName: "Full Name",
                   email: "Email",
                   company: "Company",
-                  memberCode: `${memberType.toUpperCase()} Code`,
-                  membershipStatus: "Status",
+                  mobileNumber: "Mobile",
+                  memberCode: memberType === "exhibitor" ? "Sent Code" : "Code",
                   isActive: "Active",
-                  tags: "Tags",
                   createdAt: "Created",
                 };
 

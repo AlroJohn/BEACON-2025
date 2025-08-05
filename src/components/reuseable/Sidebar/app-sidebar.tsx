@@ -92,7 +92,7 @@ const data = {
       items: [
         {
           title: "Codes",
-          url: "/admin/conference-codes",
+          url: "/admin/exhibitor-codes",
         },
         {
           title: "Exhibit Members",

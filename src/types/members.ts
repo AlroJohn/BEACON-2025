@@ -9,7 +9,7 @@ export const MEMBER_STATUS = {
 
 export type MemberStatus = typeof MEMBER_STATUS[keyof typeof MEMBER_STATUS];
 
-// TML Member Types
+// TML Member Types (aligned with Prisma schema)
 export interface TmlMember {
   id: string;
   createdAt: Date;
@@ -22,12 +22,6 @@ export interface TmlMember {
   landline?: string | null;
   jobTitle?: string | null;
   companyName?: string | null;
-  industry?: string | null;
-  companyAddress?: string | null;
-  tmlMemberCode?: string | null;
-  membershipStatus: string;
-  notes?: string | null;
-  tags: string[];
   isActive: boolean;
 }
 
@@ -36,23 +30,15 @@ export interface ExhibitorMember {
   id: string;
   createdAt: Date;
   updatedAt: Date;
-  firstName: string;
-  lastName: string;
+  firstName?: string | null;
+  lastName?: string | null;
   middleName?: string | null;
   email: string;
+  jobTitle?: string | null;
+  companyName?: string | null;
   mobileNumber?: string | null;
   landline?: string | null;
-  companyName: string;
-  businessRegistrationName?: string | null;
-  companyAddress?: string | null;
-  companyWebsite?: string | null;
-  industrySector?: string | null;
-  boothSize?: string | null;
-  participationTypes: string[];
-  exhibitorCode?: string | null;
-  membershipStatus: string;
-  notes?: string | null;
-  tags: string[];
+  sentCode?: string | null;
   isActive: boolean;
 }
 
@@ -66,33 +52,19 @@ export const tmlMemberSchema = z.object({
   landline: z.string().optional(),
   jobTitle: z.string().optional(),
   companyName: z.string().optional(),
-  industry: z.string().optional(),
-  companyAddress: z.string().optional(),
-  tmlMemberCode: z.string().optional(),
-  membershipStatus: z.string().default("ACTIVE"),
-  notes: z.string().optional(),
-  tags: z.array(z.string()).default([]),
   isActive: z.boolean().default(true),
 });
 
 export const exhibitorMemberSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
   middleName: z.string().optional(),
   email: z.string().email("Valid email is required"),
+  jobTitle: z.string().optional(),
+  companyName: z.string().optional(),
   mobileNumber: z.string().optional(),
   landline: z.string().optional(),
-  companyName: z.string().min(1, "Company name is required"),
-  businessRegistrationName: z.string().optional(),
-  companyAddress: z.string().optional(),
-  companyWebsite: z.string().optional(),
-  industrySector: z.string().optional(),
-  boothSize: z.string().optional(),
-  participationTypes: z.array(z.string()).default([]),
-  exhibitorCode: z.string().optional(),
-  membershipStatus: z.string().default("ACTIVE"),
-  notes: z.string().optional(),
-  tags: z.array(z.string()).default([]),
+  sentCode: z.string().optional(),
   isActive: z.boolean().default(true),
 });
 

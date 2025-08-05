@@ -27,6 +27,8 @@ import {
   Clock,
   Plus,
   Zap,
+  Mail,
+  MailCheck,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -86,6 +88,9 @@ interface ExhibitorCodeDistributionData {
   code: string;
   isActive: boolean;
   userId: string | null;
+  isSent: boolean;
+  sentAt: string | null;
+  sentTo: string | null;
   createdAt: string;
   updatedAt: string;
   user?: {
@@ -180,6 +185,23 @@ export function ExhibitorCodesDataTable({
     );
   };
 
+  const getSentBadge = (isSent: boolean, sentTo?: string | null) => {
+    if (isSent && sentTo) {
+      return (
+        <UIBadge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          <MailCheck className="mr-1 h-3 w-3" />
+          Sent
+        </UIBadge>
+      );
+    }
+    return (
+      <UIBadge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+        <Mail className="mr-1 h-3 w-3" />
+        Not Sent
+      </UIBadge>
+    );
+  };
+
   const columns: ColumnDef<ExhibitorCodeDistributionData>[] = [
     {
       id: "select",
@@ -223,25 +245,6 @@ export function ExhibitorCodesDataTable({
       ),
     },
     {
-      id: "status",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
-          >
-            Status
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const code = row.original;
-        return getStatusBadge(code.isActive, !!code.userId);
-      },
-    },
-    {
       id: "usedBy",
       header: "Used By",
       cell: ({ row }) => {
@@ -272,6 +275,40 @@ export function ExhibitorCodesDataTable({
       },
     },
     {
+      id: "sentStatus",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="h-8 px-2 lg:px-3"
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            Sent Status
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const code = row.original;
+        return (
+          <div className="flex flex-col gap-1">
+            {getSentBadge(code.isSent, code.sentTo)}
+            {code.isSent && code.sentTo && (
+              <div className="text-xs text-muted-foreground">
+                To: {code.sentTo}
+              </div>
+            )}
+            {code.isSent && code.sentAt && (
+              <div className="text-xs text-muted-foreground">
+                {formatDate(code.sentAt)}
+              </div>
+            )}
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "isActive",
       header: "Active",
       cell: ({ row }) => getActiveBadge(row.getValue("isActive")),
@@ -293,26 +330,6 @@ export function ExhibitorCodesDataTable({
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
           {formatDate(row.getValue("createdAt"))}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "updatedAt",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
-          >
-            Updated
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => (
-        <div className="text-sm text-muted-foreground">
-          {formatDate(row.getValue("updatedAt"))}
         </div>
       ),
     },
@@ -530,27 +547,6 @@ export function ExhibitorCodesDataTable({
               className="max-w-sm"
             />
 
-            {/* Status Filter */}
-            <Select
-              value={
-                (table.getColumn("status")?.getFilterValue() as string) ?? "all"
-              }
-              onValueChange={(value) =>
-                table
-                  .getColumn("status")
-                  ?.setFilterValue(value === "all" ? "" : value)
-              }
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="available">Available</SelectItem>
-                <SelectItem value="used">Used</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="flex gap-4 items-center">
@@ -591,11 +587,10 @@ export function ExhibitorCodesDataTable({
               .map((column) => {
                 const columnLabels: Record<string, string> = {
                   code: "Exhibitor Code",
-                  status: "Status",
                   usedBy: "Used By",
+                  sentStatus: "Sent Status",
                   isActive: "Active",
                   createdAt: "Created",
-                  updatedAt: "Updated",
                 };
 
                 return (

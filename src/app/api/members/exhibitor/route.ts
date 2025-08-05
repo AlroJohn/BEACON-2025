@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || '';
     const isActive = searchParams.get('isActive');
+    const codeStatus = searchParams.get('codeStatus');
     const tags = searchParams.get('tags')?.split(',').filter(Boolean) || [];
+    const countOnly = searchParams.get('countOnly') === 'true';
 
     const skip = (page - 1) * limit;
 
@@ -27,14 +29,11 @@ export async function GET(request: NextRequest) {
         { lastName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { companyName: { contains: search, mode: 'insensitive' } },
-        { exhibitorCode: { contains: search, mode: 'insensitive' } },
-        { industrySector: { contains: search, mode: 'insensitive' } },
+        { sentCode: { contains: search, mode: 'insensitive' } },
       ];
     }
 
-    if (status) {
-      where.membershipStatus = status;
-    }
+    // Remove status filter since membershipStatus doesn't exist in schema
 
     if (isActive !== null && isActive !== undefined) {
       where.isActive = isActive === 'true';
@@ -44,8 +43,25 @@ export async function GET(request: NextRequest) {
       where.tags = { hasSome: tags };
     }
 
+    // Filter by code status
+    if (codeStatus) {
+      if (codeStatus === 'HAS_CODE') {
+        where.sentCode = { not: null };
+      } else if (codeStatus === 'NO_CODE') {
+        where.sentCode = null;
+      }
+    }
+
     // Get total count for pagination
     const total = await prisma.exhibitorMembers.count({ where });
+
+    // If only count is requested, return just the count
+    if (countOnly) {
+      return NextResponse.json({
+        success: true,
+        count: total,
+      });
+    }
 
     // Get members
     const members = await prisma.exhibitorMembers.findMany({
@@ -92,19 +108,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if exhibitor code already exists (if provided)
-    if (validatedData.exhibitorCode) {
-      const existingCode = await prisma.exhibitorMembers.findUnique({
-        where: { exhibitorCode: validatedData.exhibitorCode },
-      });
 
-      if (existingCode) {
-        return NextResponse.json(
-          { success: false, error: "Exhibitor code already exists" },
-          { status: 400 }
-        );
-      }
-    }
 
     const newMember = await prisma.exhibitorMembers.create({
       data: validatedData,
@@ -175,19 +179,6 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Check for exhibitor code conflicts (if code is being changed)
-    if (validatedData.exhibitorCode && validatedData.exhibitorCode !== existingMember.exhibitorCode) {
-      const codeConflict = await prisma.exhibitorMembers.findUnique({
-        where: { exhibitorCode: validatedData.exhibitorCode },
-      });
-
-      if (codeConflict) {
-        return NextResponse.json(
-          { success: false, error: "Exhibitor code already exists" },
-          { status: 400 }
-        );
-      }
-    }
 
     const updatedMember = await prisma.exhibitorMembers.update({
       where: { id },

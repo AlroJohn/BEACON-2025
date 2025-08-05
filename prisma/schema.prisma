@@ -562,34 +562,6 @@ model VisitorEvents {
   @@map("visitor_events")
 }
 
-model CodeDistribution {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  code      String   @unique
-  isActive  Boolean  @default(false)
-  userId    String? // User ID who used the code
-
-  // Relations
-  user Users? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@map("code_distribution")
-}
-
-model ExhibitorCodeDistribution {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  code      String   @unique
-  isActive  Boolean  @default(false)
-  userId    String? // User ID who used the code
-
-  // Relations
-  user Users? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@map("exhibitor_code_distribution")
-}
-
 model sponsorship_interests {
   id         String   @id @default(cuid())
   created_at DateTime @default(now())
@@ -634,36 +606,60 @@ model sponsorship_interests {
   @@map("sponsorship_interests")
 }
 
+model CodeDistribution {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  code      String    @unique
+  isActive  Boolean   @default(false)
+  userId    String? // User ID who used the code
+  isSent    Boolean   @default(false) // Whether the code has been sent via email
+  sentAt    DateTime? // When the code was sent
+  sentTo    String? // Email address the code was sent to
+
+  // Relations
+  user Users? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("code_distribution")
+}
+
+model ExhibitorCodeDistribution {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  code      String    @unique
+  isActive  Boolean   @default(false)
+  userId    String? // User ID who used the code
+  isSent    Boolean   @default(false) // Whether the code has been sent via email
+  sentAt    DateTime? // When the code was sent
+  sentTo    String? // Email address the code was sent to
+
+  // Relations
+  user Users? @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("exhibitor_code_distribution")
+}
+
 model TmlMembers {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Member Information
   firstName    String
   lastName     String
   middleName   String?
-  email        String   @unique
+  email        String  @unique
   mobileNumber String?
   landline     String?
-  
+  jobTitle     String?
+  companyName  String?
+
   // Professional Information
-  jobTitle       String?
-  companyName    String?
-  industry       String?
-  companyAddress String?
-  
-  // TML Specific
-  tmlMemberCode String? @unique
-  membershipStatus String @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
-  
-  // Additional Information
-  notes String?
-  tags  String[] // For categorization and filtering
-  
+
   // System fields
   isActive Boolean @default(true)
-  
+
   @@map("tml_members")
 }
 
@@ -671,36 +667,20 @@ model ExhibitorMembers {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Member Information
-  firstName    String
-  lastName     String
+  firstName    String?
+  lastName     String?
   middleName   String?
-  email        String   @unique
+  email        String  @unique
+  jobTitle     String?
+  companyName  String?
   mobileNumber String?
   landline     String?
-  
-  // Company Information
-  companyName              String
-  businessRegistrationName String?
-  companyAddress           String?
-  companyWebsite           String?
-  industrySector           String?
-  
-  // Exhibition Information
-  boothSize            String?
-  participationTypes   String[] // Array of participation types
-  exhibitorCode        String? @unique
-  
-  // Status
-  membershipStatus String @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
-  
-  // Additional Information
-  notes String?
-  tags  String[] // For categorization and filtering
-  
+  sentCode     String?
+
   // System fields
   isActive Boolean @default(true)
-  
+
   @@map("exhibitor_members")
 }

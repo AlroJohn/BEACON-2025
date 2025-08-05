@@ -49,13 +49,13 @@ function htmlToPlainText(html: string): string {
 }
 
 // Send single member email
-export async function sendMemberEmail({ 
-  to, 
-  subject, 
-  html, 
+export async function sendMemberEmail({
+  to,
+  subject,
+  html,
   from,
   memberName,
-  memberType 
+  memberType
 }: MemberEmailData): Promise<boolean> {
   try {
     if (!SENDGRID_API_KEY) {
@@ -80,7 +80,7 @@ export async function sendMemberEmail({
           value: plainText
         },
         {
-          type: 'text/html', 
+          type: 'text/html',
           value: html
         }
       ],
@@ -120,11 +120,11 @@ export async function sendMemberEmail({
 }
 
 // Send bulk member emails with rate limiting
-export async function sendBulkMemberEmails({ 
-  recipients, 
-  subject, 
-  html, 
-  from 
+export async function sendBulkMemberEmails({
+  recipients,
+  subject,
+  html,
+  from
 }: BulkMemberEmailData): Promise<{
   totalSent: number;
   successfulSends: number;
@@ -144,9 +144,9 @@ export async function sendBulkMemberEmails({
 
   for (let i = 0; i < recipients.length; i += batchSize) {
     const batch = recipients.slice(i, i + batchSize);
-    
+
     console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(recipients.length / batchSize)}`);
-    
+
     // Process batch in parallel but with controlled concurrency
     const batchPromises = batch.map(async (recipient) => {
       try {
@@ -160,7 +160,7 @@ export async function sendBulkMemberEmails({
         });
 
         results.totalSent++;
-        
+
         if (success) {
           results.successfulSends++;
         } else {
@@ -201,7 +201,7 @@ export function generateMemberCodeEmail(data: {
   codeType: string;
 }): string {
   const { memberName, memberType, code, codeType } = data;
-  
+
   const memberTypeLabel = memberType === 'tml' ? 'TML Member' : 'Exhibitor';
   const codeTypeLabel = memberType === 'tml' ? 'TML Member Code' : 'Exhibitor Access Code';
 
@@ -226,7 +226,7 @@ export function generateMemberCodeEmail(data: {
         <div style="padding: 30px;">
           <!-- Welcome Message -->
           <div style="margin-bottom: 30px; text-align: center;">
-            <h2 style="color: #1f2937; margin: 0 0 16px 0; font-size: 24px;">Hello ${memberName}!</h2>
+            <h2 style="color: #1f2937; margin: 0 0 16px 0; font-size: 24px;">Hello ${memberName !== '' || null ? 'memberName' : 'exhibitor!'}!</h2>
             <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.5;">
               You have received your ${codeTypeLabel} for BEACON 2025. Please keep this code safe as you'll need it for registration and access.
             </p>
@@ -320,7 +320,7 @@ export async function sendMemberCodeEmail(data: {
 }): Promise<boolean> {
   const emailHTML = generateMemberCodeEmail(data);
   const codeTypeLabel = data.memberType === 'tml' ? 'TML Member Code' : 'Exhibitor Access Code';
-  
+
   const subject = `Your BEACON 2025 ${codeTypeLabel}: ${data.code}`;
 
   return await sendMemberEmail({
@@ -340,9 +340,9 @@ export function generateBulkMessageEmail(data: {
   subject: string;
 }): string {
   const { memberName, memberType, customContent, subject } = data;
-  
-  const memberTypeLabel = memberType === 'tml' ? 'TML Member' : 
-                          memberType === 'exhibitor' ? 'Exhibitor' : 'Member';
+
+  const memberTypeLabel = memberType === 'tml' ? 'TML Member' :
+    memberType === 'exhibitor' ? 'Exhibitor' : 'Member';
 
   return `
     <!DOCTYPE html>
@@ -433,4 +433,150 @@ export async function sendCustomBulkMessage(data: {
     html: emailPromises[0].html, // This will be overridden per recipient
     from: 'noreply@thebeaconexpo.com'
   });
+}
+
+// Generate exhibitor code email
+export function generateExhibitorCodeEmail(data: {
+  memberName: string;
+  companyName: string;
+  exhibitorCode: string;
+  email: string;
+}): string {
+  const { memberName, companyName, exhibitorCode, email } = data;
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your BEACON 2025 Exhibitor Access Code</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">BEACON 2025</h1>
+          <p style="color: #d1fae5; margin: 8px 0 0 0; font-size: 16px;">Exhibitor Access Code</p>
+        </div>
+
+        <!-- Main Content -->
+        <div style="padding: 30px;">
+          <!-- Welcome Message -->
+          <div style="margin-bottom: 30px; text-align: center;">
+            <h2 style="color: #1f2937; margin: 0 0 16px 0; font-size: 24px;">Hello ${memberName}!</h2>
+            <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.5;">
+              Welcome to BEACON 2025! Your exhibitor access code for <strong>${companyName}</strong> is ready. 
+              Use this code to register and access exclusive exhibitor features.
+            </p>
+          </div>
+
+          <!-- Code Display -->
+          <div style="background-color: #f0fdfa; border: 2px solid #10b981; border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 30px;">
+            <div style="margin-bottom: 16px;">
+              <h3 style="color: #059669; margin: 0; font-size: 18px; font-weight: 600;">Your Exhibitor Access Code</h3>
+            </div>
+            <div style="background-color: white; border: 2px dashed #6ee7b7; border-radius: 8px; padding: 20px; margin: 16px 0;">
+              <div style="font-family: 'Courier New', monospace; font-size: 32px; font-weight: bold; color: #059669; letter-spacing: 4px;">
+                ${exhibitorCode}
+              </div>
+            </div>
+            <p style="color: #6b7280; margin: 0; font-size: 14px;">
+              Copy this code exactly as shown above
+            </p>
+          </div>
+
+          <!-- Instructions -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">How to Use Your Exhibitor Code</h3>
+            <div style="background-color: #f0fdfa; padding: 20px; border-radius: 8px;">
+              <ul style="margin: 0; padding-left: 20px; color: #4b5563; line-height: 1.6;">
+                <li style="margin-bottom: 8px;">🏢 <strong>Exhibitor Registration:</strong> Use this code during BEACON 2025 exhibitor registration</li>
+                <li style="margin-bottom: 8px;">🎪 <strong>Booth Setup:</strong> Present this code during booth setup and installation</li>
+                <li style="margin-bottom: 8px;">🎟️ <strong>Staff Access:</strong> Your team can use this code for staff registration</li>
+                <li style="margin-bottom: 8px;">📋 <strong>Exhibitor Services:</strong> Access exclusive exhibitor resources and support</li>
+                <li style="margin-bottom: 8px;">💼 <strong>Business Privileges:</strong> Enjoy exhibitor-only networking events and benefits</li>
+                <li>🔐 <strong>Security:</strong> Keep this code confidential and share only with authorized team members</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Exhibitor Benefits -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Exhibitor Benefits & Features</h3>
+            <div style="background-color: #f0fdfa; padding: 20px; border-radius: 8px;">
+              <div style="display: grid; gap: 12px;">
+                <div style="display: flex; align-items: center;">
+                  <span style="color: #059669; font-weight: 500; width: 180px;">🎪 Booth Space:</span>
+                  <span style="color: #1f2937;">Premium exhibition space allocation</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                  <span style="color: #059669; font-weight: 500; width: 180px;">👥 Staff Passes:</span>
+                  <span style="color: #1f2937;">Multiple staff member registrations</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                  <span style="color: #059669; font-weight: 500; width: 180px;">📊 Lead Generation:</span>
+                  <span style="color: #1f2937;">Access to visitor contact information</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                  <span style="color: #059669; font-weight: 500; width: 180px;">🍽️ Networking Events:</span>
+                  <span style="color: #1f2937;">Exclusive exhibitor dinners and meetups</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                  <span style="color: #059669; font-weight: 500; width: 180px;">📈 Marketing Support:</span>
+                  <span style="color: #1f2937;">Digital and print marketing opportunities</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Event Information -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">BEACON 2025 Event Details</h3>
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px;">
+              <div style="display: grid; gap: 12px;">
+                <div style="display: flex; align-items: center;">
+                  <span style="color: #6b7280; font-weight: 500; width: 120px;">📅 Dates:</span>
+                  <span style="color: #1f2937;">September 29 - October 1, 2025</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                  <span style="color: #6b7280; font-weight: 500; width: 120px;">📍 Venue:</span>
+                  <span style="color: #1f2937;">SMX Convention Center, MOA Complex, Pasay City</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                  <span style="color: #6b7280; font-weight: 500; width: 120px;">🕘 Setup:</span>
+                  <span style="color: #1f2937;">September 28, 2025 (8:00 AM - 6:00 PM)</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                  <span style="color: #6b7280; font-weight: 500; width: 120px;">🎪 Exhibition:</span>
+                  <span style="color: #1f2937;">September 29 - October 1 (9:00 AM - 6:00 PM)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+            <h4 style="color: #1f2937; margin: 0 0 12px 0;">Exhibitor Support</h4>
+            <p style="margin: 0; color: #6b7280; line-height: 1.5;">
+              For exhibitor-specific inquiries, setup assistance, or technical support:<br>
+              <strong>Email:</strong> <a href="mailto:mlbeacon2023@gmail.com" style="color: #059669;">mlbeacon2023@gmail.com</a><br>
+              <strong>Phone:</strong> +63 (02) 123-4567<br>
+              <strong>Company:</strong> ${companyName}<br>
+              <strong>Code:</strong> ${exhibitorCode}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #1f2937; padding: 20px; text-align: center;">
+          <p style="color: #9ca3af; margin: 0; font-size: 14px;">
+            © 2025 BEACON Conference & Exhibition. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
 }

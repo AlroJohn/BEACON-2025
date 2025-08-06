@@ -80,9 +80,11 @@ import { useQuery } from "@tanstack/react-query";
 import { TmlMember, ExhibitorMember } from "@/types/members";
 import { toast } from "sonner";
 import { AddExhibitorMemberDialog } from "./add-exhibitor-member-dialog";
+import { AddTmlMemberDialog } from "./add-tml-member-dialog";
 import { BulkMessageDialog } from "./bulk-message-dialog";
 import { CSVUploadDialog } from "./csv-upload-dialog";
 import { EditExhibitorMemberDialog } from "./edit-exhibitor-member-dialog";
+import { EditTmlMemberDialog } from "./edit-tml-member-dialog";
 
 // Types
 interface MembersDataTableProps {
@@ -140,16 +142,11 @@ export function MembersDataTable({
     memberName: string,
     memberEmail: string
   ) => {
-    if (memberType !== "exhibitor") {
-      toast.error("Code sending is only available for exhibitor members");
-      return;
-    }
-
     // Add to sending state
     setSendingCodes((prev) => new Set(prev).add(memberId));
 
     try {
-      const response = await fetch("/api/members/exhibitor/send-code", {
+      const response = await fetch(`/api/members/${memberType}/send-code`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -163,13 +160,15 @@ export function MembersDataTable({
         throw new Error(result.error || "Failed to send code");
       }
 
-      toast.success(`Exhibitor code sent successfully to ${memberEmail}!`, {
+      const codeType = memberType === "tml" ? "TML code" : "Exhibitor code";
+      toast.success(`${codeType} sent successfully to ${memberEmail}!`, {
         description: `Code ${result.codeSent} has been emailed to ${memberName}`,
       });
     } catch (error) {
       console.error("Error sending code:", error);
+      const codeType = memberType === "tml" ? "TML code" : "exhibitor code";
       toast.error(
-        error instanceof Error ? error.message : "Failed to send exhibitor code"
+        error instanceof Error ? error.message : `Failed to send ${codeType}`
       );
     } finally {
       // Remove from sending state
@@ -219,8 +218,9 @@ export function MembersDataTable({
   const getMemberCode = (member: MemberData) => {
     if (memberType === "exhibitor") {
       return (member as ExhibitorMember).sentCode || "N/A";
+    } else {
+      return (member as TmlMember).sentCode || "N/A";
     }
-    return "N/A"; // TML members don't have codes in schema
   };
 
   const getCompanyName = (member: MemberData) => {
@@ -307,33 +307,31 @@ export function MembersDataTable({
         <div className="text-sm">{row.getValue("mobileNumber") || "N/A"}</div>
       ),
     },
-    // Only show member code for exhibitors since TML members don't have codes in schema
-    ...(memberType === "exhibitor"
-      ? [
-          {
-            id: "memberCode",
-            header: "Sent Code",
-            cell: ({ row }: { row: any }) => {
-              const member = row.original as ExhibitorMember;
-              const code = member.sentCode;
-              return (
-                <div className="font-mono text-sm">
-                  {code ? (
-                    <Badge
-                      variant="outline"
-                      className="bg-green-50 text-green-700"
-                    >
-                      {code}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground">Not sent</span>
-                  )}
-                </div>
-              );
-            },
-          },
-        ]
-      : []),
+    // Show sent code column for both TML and exhibitor members
+    {
+      id: "memberCode",
+      header: "Sent Code",
+      cell: ({ row }: { row: any }) => {
+        const member = row.original;
+        const code = getMemberCode(member);
+        const codeTypeColor = memberType === "tml" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700";
+        
+        return (
+          <div className="font-mono text-sm">
+            {code && code !== "N/A" ? (
+              <Badge
+                variant="outline"
+                className={codeTypeColor}
+              >
+                {code}
+              </Badge>
+            ) : (
+              <span className="text-muted-foreground">Not sent</span>
+            )}
+          </div>
+        );
+      },
+    },
     {
       accessorKey: "isActive",
       header: "Active",
@@ -506,27 +504,25 @@ export function MembersDataTable({
                 </DialogContent>
               </Dialog>
 
-              {/* Send Code - Only for exhibitor members */}
-              {memberType === "exhibitor" && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() =>
-                      handleSendCode(member.id, memberName, member.email)
-                    }
-                    disabled={sendingCodes.has(member.id)}
-                  >
-                    {sendingCodes.has(member.id) ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Mail className="mr-2 h-4 w-4" />
-                    )}
-                    {sendingCodes.has(member.id)
-                      ? "Sending..."
-                      : "Send Exhibitor Code"}
-                  </DropdownMenuItem>
-                </>
-              )}
+              {/* Send Code - Available for both TML and exhibitor members */}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() =>
+                  handleSendCode(member.id, memberName, member.email)
+                }
+                disabled={sendingCodes.has(member.id)}
+              >
+                {sendingCodes.has(member.id) ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Mail className="mr-2 h-4 w-4" />
+                )}
+                {sendingCodes.has(member.id)
+                  ? "Sending..."
+                  : memberType === "tml" 
+                    ? "Send TML Code" 
+                    : "Send Exhibitor Code"}
+              </DropdownMenuItem>
 
               {/* Edit - Available for both ADMIN and SUPERADMIN */}
               {memberType === "exhibitor" ? (
@@ -540,10 +536,15 @@ export function MembersDataTable({
                   </DropdownMenuItem>
                 </EditExhibitorMemberDialog>
               ) : (
-                <DropdownMenuItem>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit member
-                </DropdownMenuItem>
+                <EditTmlMemberDialog
+                  member={member as TmlMember}
+                  onMemberUpdated={() => refetch()}
+                >
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit member
+                  </DropdownMenuItem>
+                </EditTmlMemberDialog>
               )}
 
               {/* Delete - Only for SUPERADMIN */}
@@ -656,25 +657,15 @@ export function MembersDataTable({
               <Download className="h-4 w-4 mr-2" />
               Template
             </Button>
-            {memberType === "exhibitor" ? (
-              <CSVUploadDialog
-                memberType={memberType}
-                onUploadComplete={() => refetch()}
-              />
-            ) : (
-              <Button variant="outline" size="sm">
-                <Upload className="h-4 w-4 mr-2" />
-                Upload
-              </Button>
-            )}
+            <CSVUploadDialog
+              memberType={memberType}
+              onUploadComplete={() => refetch()}
+            />
             <BulkMessageDialog memberType={memberType} />
             {memberType === "exhibitor" ? (
               <AddExhibitorMemberDialog onMemberCreated={() => refetch()} />
             ) : (
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Member
-              </Button>
+              <AddTmlMemberDialog onMemberCreated={() => refetch()} />
             )}
             <Button variant="outline" onClick={() => refetch()}>
               Refresh
@@ -698,7 +689,7 @@ export function MembersDataTable({
                   email: "Email",
                   company: "Company",
                   mobileNumber: "Mobile",
-                  memberCode: memberType === "exhibitor" ? "Sent Code" : "Code",
+                  memberCode: "Sent Code",
                   isActive: "Active",
                   createdAt: "Created",
                 };

@@ -580,3 +580,89 @@ export function generateExhibitorCodeEmail(data: {
     </html>
   `;
 }
+
+// Generate TML member code email
+export function generateTmlCodeEmail(data: {
+  memberName: string;
+  companyName: string;
+  tmlCode: string;
+  email: string;
+}): string {
+  const { memberName, companyName, tmlCode, email } = data;
+  const displayCompany = companyName ? ` from ${companyName}` : "";
+
+  return `
+    <\!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your BEACON 2025 TML Access Code</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        
+        <\!-- Header -->
+        <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">🚢 BEACON 2025</h1>
+          <p style="color: #bfdbfe; margin: 8px 0 0 0; font-size: 16px;">TML Member Access Code</p>
+        </div>
+
+        <\!-- Main Content -->
+        <div style="padding: 30px;">
+          <\!-- Welcome Message -->
+          <div style="margin-bottom: 30px; text-align: center;">
+            <h2 style="color: #1f2937; margin: 0 0 16px 0; font-size: 24px;">Hello ${memberName}\!</h2>
+            <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.5;">
+              Welcome to BEACON 2025\! Your TML (The Maritime League) access code${displayCompany} is ready. 
+              Use this code to register and access exclusive TML member benefits.
+            </p>
+          </div>
+
+          <\!-- Code Display -->
+          <div style="background-color: #eff6ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 30px;">
+            <div style="margin-bottom: 16px;">
+              <h3 style="color: #1e40af; margin: 0; font-size: 18px; font-weight: 600;">Your TML Access Code</h3>
+            </div>
+            <div style="background-color: white; border: 2px dashed #93c5fd; border-radius: 8px; padding: 20px; margin: 16px 0;">
+              <div style="font-family: 'Courier New', monospace; font-size: 32px; font-weight: bold; color: #1e40af; letter-spacing: 4px;">
+                ${tmlCode}
+              </div>
+            </div>
+            <p style="color: #6b7280; margin: 0; font-size: 14px;">
+              Copy this code exactly as shown above
+            </p>
+          </div>
+
+          <\!-- Instructions -->
+          <div style="margin-bottom: 30px;">
+            <h3 style="color: #1f2937; margin: 0 0 16px 0; font-size: 20px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">How to Use Your TML Code</h3>
+            <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px;">
+              <ul style="margin: 0; padding-left: 20px; color: #4b5563; line-height: 1.6;">
+                <li style="margin-bottom: 8px;">🚢 <strong>Conference Registration:</strong> Use this code during BEACON 2025 conference registration</li>
+                <li style="margin-bottom: 8px;">👥 <strong>TML Member Events:</strong> Access exclusive TML member sessions and networking</li>
+                <li style="margin-bottom: 8px;">🎟️ <strong>Special Discounts:</strong> Enjoy TML member pricing and benefits</li>
+                <li style="margin-bottom: 8px;">📋 <strong>Member Resources:</strong> Access TML member-only content and materials</li>
+                <li style="margin-bottom: 8px;">💼 <strong>Maritime Network:</strong> Connect with fellow maritime professionals</li>
+                <li>🔐 <strong>Security:</strong> Keep this code confidential and for your personal use only</li>
+              </ul>
+            </div>
+          </div>
+
+          <\!-- Contact Information -->
+          <div style="text-align: center; color: #6b7280; font-size: 14px; line-height: 1.5;">
+            <p style="margin: 0 0 8px 0;">Need assistance? Contact our support team:</p>
+            <p style="margin: 0;">📧 mlbeacon2023@gmail.com</p>
+          </div>
+        </div>
+
+        <\!-- Footer -->
+        <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+          <p style="margin: 0; color: #6b7280; font-size: 14px;">BEACON 2025  < /dev/null |  Maritime Industry Expo & Conference</p>
+          <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">Building Excellence, Advancing Careers, Optimizing Networks</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}

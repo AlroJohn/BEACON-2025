@@ -128,11 +128,14 @@ export function CSVUploadDialog({ memberType, onUploadComplete }: CSVUploadDialo
     setUploadProgress(0);
   };
 
-  const downloadTemplate = () => {
-    // This will be implemented in the template functionality
+  const downloadTemplate = (type?: 'simple' | 'full') => {
     const link = document.createElement('a');
-    link.href = `/api/members/${memberType}/template`;
-    link.download = `${memberType}-members-template.csv`;
+    const params = type ? `?type=${type}` : '';
+    link.href = `/api/members/${memberType}/template${params}`;
+    const filename = type === 'simple' 
+      ? `${memberType}-members-simple-template.csv`
+      : `${memberType}-members-template.csv`;
+    link.download = filename;
     link.click();
   };
 
@@ -152,7 +155,9 @@ export function CSVUploadDialog({ memberType, onUploadComplete }: CSVUploadDialo
           </DialogTitle>
           <DialogDescription>
             Upload multiple {memberTypeLabel} members from a CSV file. 
-            Make sure your CSV follows the correct format.
+            {memberType === 'tml' 
+              ? 'Only email column is required - you can upload a single-column CSV with just emails!' 
+              : 'Make sure your CSV follows the correct format.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -163,13 +168,23 @@ export function CSVUploadDialog({ memberType, onUploadComplete }: CSVUploadDialo
               <div>
                 <h4 className="font-medium text-blue-800">Need a template?</h4>
                 <p className="text-sm text-blue-600">
-                  Download the CSV template with the correct format and required columns.
+                  {memberType === 'tml' 
+                    ? 'Download the CSV template. For simple uploads, just use an email column!' 
+                    : 'Download the CSV template with the correct format and required columns.'}
                 </p>
               </div>
-              <Button variant="outline" size="sm" onClick={downloadTemplate}>
-                <FileText className="h-4 w-4 mr-2" />
-                Download Template
-              </Button>
+              <div className="flex gap-2">
+                {memberType === 'tml' && (
+                  <Button variant="outline" size="sm" onClick={() => downloadTemplate('simple')}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Simple (Email Only)
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => downloadTemplate('full')}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  {memberType === 'tml' ? 'Full Template' : 'Download Template'}
+                </Button>
+              </div>
             </div>
           </div>
 

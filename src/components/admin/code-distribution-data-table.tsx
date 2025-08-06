@@ -86,6 +86,9 @@ interface CodeDistributionData {
   code: string;
   isActive: boolean;
   userId: string | null;
+  isSent: boolean;
+  sentAt: string | null;
+  sentTo: string | null;
   createdAt: string;
   updatedAt: string;
   user?: {
@@ -134,12 +137,21 @@ export function CodeDistributionDataTable({
     });
   };
 
-  const getStatusBadge = (isActive: boolean, hasUser: boolean) => {
+  const getStatusBadge = (isActive: boolean, hasUser: boolean, isSent: boolean) => {
     if (hasUser) {
       return (
         <Badge variant="secondary" className="bg-blue-100 text-blue-800">
           <User className="mr-1 h-3 w-3" />
           Used
+        </Badge>
+      );
+    }
+
+    if (isSent) {
+      return (
+        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+          <Clock className="mr-1 h-3 w-3" />
+          Sent
         </Badge>
       );
     }
@@ -227,7 +239,7 @@ export function CodeDistributionDataTable({
       },
       cell: ({ row }) => {
         const code = row.original;
-        return getStatusBadge(code.isActive, !!code.userId);
+        return getStatusBadge(code.isActive, !!code.userId, code.isSent);
       },
     },
     {
@@ -257,6 +269,27 @@ export function CodeDistributionDataTable({
 
         return (
           <span className="text-muted-foreground">User ID: {code.userId}</span>
+        );
+      },
+    },
+    {
+      id: "sentTo",
+      header: "Sent To",
+      cell: ({ row }) => {
+        const code = row.original;
+        if (!code.isSent || !code.sentTo) {
+          return <span className="text-muted-foreground">Not sent</span>;
+        }
+
+        return (
+          <div className="text-sm">
+            <div className="font-medium">{code.sentTo}</div>
+            {code.sentAt && (
+              <div className="text-muted-foreground text-xs">
+                {formatDate(code.sentAt)}
+              </div>
+            )}
+          </div>
         );
       },
     },
@@ -355,7 +388,7 @@ export function CodeDistributionDataTable({
                         </div>
                         <div>
                           <label className="font-medium">Status:</label>
-                          <p>{getStatusBadge(code.isActive, !!code.userId)}</p>
+                          <p>{getStatusBadge(code.isActive, !!code.userId, code.isSent)}</p>
                         </div>
                         <div>
                           <label className="font-medium">Active:</label>
@@ -389,6 +422,32 @@ export function CodeDistributionDataTable({
                             <label className="font-medium">Email:</label>
                             <p>
                               {code.user.user_accounts?.[0]?.email || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Email Sent Information */}
+                    {code.isSent && (
+                      <div>
+                        <h3 className="font-semibold mb-3">Email Sent Information</h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <label className="font-medium">Sent To:</label>
+                            <p className="font-mono">{code.sentTo || "N/A"}</p>
+                          </div>
+                          <div>
+                            <label className="font-medium">Sent At:</label>
+                            <p>{code.sentAt ? formatDate(code.sentAt) : "N/A"}</p>
+                          </div>
+                          <div>
+                            <label className="font-medium">Email Status:</label>
+                            <p>
+                              <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                                <Clock className="mr-1 h-3 w-3" />
+                                Code Sent via Email
+                              </Badge>
                             </p>
                           </div>
                         </div>
@@ -536,6 +595,7 @@ export function CodeDistributionDataTable({
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="available">Available</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
                 <SelectItem value="used">Used</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
@@ -582,6 +642,7 @@ export function CodeDistributionDataTable({
                   code: "TML Code",
                   status: "Status",
                   usedBy: "Used By",
+                  sentTo: "Sent To",
                   isActive: "Active",
                   createdAt: "Created",
                   updatedAt: "Updated",

@@ -646,14 +646,15 @@ model TmlMembers {
   updatedAt DateTime @updatedAt
 
   // Member Information
-  firstName    String
-  lastName     String
+  firstName    String?
+  lastName     String?
   middleName   String?
   email        String  @unique
   mobileNumber String?
   landline     String?
   jobTitle     String?
   companyName  String?
+  sentCode     String?
 
   // Professional Information
 

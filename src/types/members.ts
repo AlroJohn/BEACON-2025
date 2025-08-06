@@ -14,14 +14,15 @@ export interface TmlMember {
   id: string;
   createdAt: Date;
   updatedAt: Date;
-  firstName: string;
-  lastName: string;
+  firstName?: string | null;
+  lastName?: string | null;
   middleName?: string | null;
   email: string;
   mobileNumber?: string | null;
   landline?: string | null;
   jobTitle?: string | null;
   companyName?: string | null;
+  sentCode?: string | null;
   isActive: boolean;
 }
 
@@ -44,14 +45,15 @@ export interface ExhibitorMember {
 
 // Form validation schemas
 export const tmlMemberSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
   middleName: z.string().optional(),
   email: z.string().email("Valid email is required"),
   mobileNumber: z.string().optional(),
   landline: z.string().optional(),
   jobTitle: z.string().optional(),
   companyName: z.string().optional(),
+  sentCode: z.string().optional(),
   isActive: z.boolean().default(true),
 });
 

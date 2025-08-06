@@ -314,15 +314,15 @@ export function MembersDataTable({
       cell: ({ row }: { row: any }) => {
         const member = row.original;
         const code = getMemberCode(member);
-        const codeTypeColor = memberType === "tml" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700";
-        
+        const codeTypeColor =
+          memberType === "tml"
+            ? "bg-blue-50 text-blue-700"
+            : "bg-green-50 text-green-700";
+
         return (
           <div className="font-mono text-sm">
             {code && code !== "N/A" ? (
-              <Badge
-                variant="outline"
-                className={codeTypeColor}
-              >
+              <Badge variant="outline" className={codeTypeColor}>
                 {code}
               </Badge>
             ) : (
@@ -481,7 +481,6 @@ export function MembersDataTable({
                       </div>
                     </div>
 
-
                     {/* System Information */}
                     <div>
                       <h3 className="font-semibold mb-3">System Information</h3>
@@ -519,9 +518,9 @@ export function MembersDataTable({
                 )}
                 {sendingCodes.has(member.id)
                   ? "Sending..."
-                  : memberType === "tml" 
-                    ? "Send TML Code" 
-                    : "Send Exhibitor Code"}
+                  : memberType === "tml"
+                  ? "Send TML Code"
+                  : "Send Exhibitor Code"}
               </DropdownMenuItem>
 
               {/* Edit - Available for both ADMIN and SUPERADMIN */}
@@ -614,7 +613,7 @@ export function MembersDataTable({
   return (
     <div className="w-full">
       <div className="flex items-center py-4 gap-4">
-        <div className="w-full flex items-center justify-between">
+        <div className="w-full flex items-center justify-between gap-2">
           <div className="w-full items-center flex gap-4">
             <Input
               placeholder={`Search ${memberType} members...`}
@@ -637,10 +636,13 @@ export function MembersDataTable({
                 }
               }}
             >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Filter by status" />
+              <SelectTrigger className="w-[150px] text-accent-foreground">
+                <SelectValue
+                  placeholder="Filter by status"
+                  className="text-black"
+                />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-accent-foreground">
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="true">Active</SelectItem>
                 <SelectItem value="false">Inactive</SelectItem>

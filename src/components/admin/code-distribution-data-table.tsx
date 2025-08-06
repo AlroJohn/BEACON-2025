@@ -241,6 +241,27 @@ export function CodeDistributionDataTable({
         const code = row.original;
         return getStatusBadge(code.isActive, !!code.userId, code.isSent);
       },
+      filterFn: (row, columnId, filterValue) => {
+        if (!filterValue) return true;
+        
+        const code = row.original;
+        const hasUser = !!code.userId;
+        const isSent = code.isSent;
+        const isActive = code.isActive;
+        
+        switch (filterValue) {
+          case "used":
+            return hasUser;
+          case "sent":
+            return isSent && !hasUser;
+          case "available":
+            return isActive && !hasUser && !isSent;
+          case "inactive":
+            return !isActive;
+          default:
+            return true;
+        }
+      },
     },
     {
       id: "usedBy",

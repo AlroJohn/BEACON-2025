@@ -71,6 +71,7 @@ src/
 - **Payment Integration**: Manual payment verification with receipt upload for conferences
 - **Database Provider**: PostgreSQL with Supabase (supports both `DATABASE_URL` and `DIRECT_URL`)
 - **Client Generation**: Standard Prisma client (not custom output)
+- **Member Management**: `TmlMembers` and `ExhibitorMembers` models for bulk member operations and code distribution
 
 ### Authentication Flow
 - Route-based authentication with Next.js route groups
@@ -93,7 +94,7 @@ src/
 - Route group architecture for clean authentication flow: `(auth)`, `(private)`, `(public)`
 - Admin panel with data tables for managing visitors, conferences, events, and codes
 - Real-time capabilities via Supabase realtime provider
-- State management using Zustand stores: `appStore`, `registrationStore`, `visitorRegistrationStore`, `adminStore`, `userStore`
+- State management using Zustand stores: `appStore`, `registrationStore`, `userStore`, `adminStore`, `visitorRegistrationStore`, `visitorEventsStore`
 - Email notifications via SendGrid integration for registration confirmations and payment status updates
 
 ### Domain Context
@@ -103,6 +104,7 @@ src/
 - **Registration Flow**: Comprehensive multi-step registration with personal, professional, and event-specific data
 
 ### Development Protocols
+- Always ask before running any `npx prisma ...` or `npm install` commands
 - Always look at `prisma/schema.prisma` before creating API routes or database-related code
 - Always check `src/types/` directory if there are available data types for specific schema models
 - Face capture functionality is integrated - check `face-api.js` configuration in Next.js config
@@ -110,6 +112,7 @@ src/
 - Admin authentication uses simplified database verification via `ManagerAccount` model
 - **Realtime Integration**: Admin pages automatically refresh when database changes occur via Supabase realtime subscriptions
 - **Modal State Management**: For admin modals, use external state management to prevent auto-closing during realtime updates
+- When working with Next.js 15, always use the new params format in `[id]` routes
 
 ### Realtime Features
 - **Live Admin Dashboard**: Visitor and conference admin tables show real-time updates with visual indicators
@@ -274,9 +277,22 @@ api/
 3. Start Supabase local development: `npx supabase start` (optional)
 4. Push database schema: `npx prisma db push`
 5. Start development server: `npm run dev`
-```
 
 ## Development Guidelines
 
+### State Management Pattern
+- **Workflow**: Supabase streams DB changes via WebSockets → TanStack Query manages server state + realtime cache updates → Zustand handles client state (UI preferences, computed data) → Components combine both for rendering
+
+### Form and Schema Validation
+- All forms use React Hook Form with Zod validation
+- Schema types are centralized in `src/types/` directory
+- When creating edit dialogs, import schemas from types rather than defining inline
+- Match Zod schema field requirements to Prisma model field nullability
+
+### Data Table Filtering
+- Use custom `filterFn` for computed columns that don't have direct `accessorKey`
+- Status filters need custom logic when status is derived from multiple fields
+
 ### Routing Best Practices
-- Always use the nextjs 15 params when in [id]
+- Always use the Next.js 15 params format when working with `[id]` routes
+- Route groups are used for authentication: `(auth)`, `(private)`, `(public)`

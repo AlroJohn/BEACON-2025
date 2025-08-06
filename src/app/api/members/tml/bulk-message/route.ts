@@ -1,138 +1,190 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { sendCustomBulkMessage } from "@/lib/code-email";
+import { generateTmlCodeEmail, sendCustomBulkMessage } from "@/lib/code-email";
+import sgMail from '@sendgrid/mail';
 
 const prisma = new PrismaClient();
 
+// Initialize SendGrid
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
+
 // Validation schema for TML bulk message request
 const tmlBulkMessageSchema = z.object({
-  subject: z.string().min(1, "Subject is required").max(200, "Subject too long"),
-  htmlContent: z.string().min(1, "Message content is required"),
-  selectedMemberIds: z.array(z.string()).optional(),
-  filters: z.object({
-    isActive: z.boolean().optional(),
-  }).optional(),
+  filterActive: z.enum(["ALL", "ACTIVE", "INACTIVE"]).optional(),
+  filterCodeStatus: z.enum(["ALL", "HAS_CODE", "NO_CODE"]).optional(),
+  sendCodesToMembers: z.boolean().default(true),
   testMode: z.boolean().default(false),
+  selectedRecipientIds: z.array(z.string()).optional(),
 });
 
-// POST /api/members/tml/bulk-message - Send bulk message to TML members
+// POST /api/members/tml/bulk-message - Send TML codes to selected members
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const validatedData = tmlBulkMessageSchema.parse(body);
-
     const {
-      subject,
-      htmlContent,
-      selectedMemberIds = [],
-      filters = {},
-      testMode = false,
-    } = validatedData;
-
-    console.log(`Starting TML bulk message send...`);
-    console.log(`Test mode: ${testMode}`);
-
-    let whereClause: any = {};
-
-    // If specific member IDs are selected, use those
-    if (selectedMemberIds.length > 0) {
-      whereClause.id = { in: selectedMemberIds };
-    }
-
-    // Apply filters
-    if (filters.isActive !== undefined) {
-      whereClause.isActive = filters.isActive;
-    }
-
-    // Fetch TML members
-    const tmlMembers = await prisma.tmlMembers.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-      },
-    });
-
-    console.log(`Found ${tmlMembers.length} TML members`);
-
-    if (tmlMembers.length === 0) {
-      return NextResponse.json({
-        success: false,
-        error: "No TML members found matching the specified criteria",
-      }, { status: 400 });
-    }
-
-    // Format recipients for email service
-    const recipients = tmlMembers.map(member => ({
-      email: member.email,
-      name: `${member.firstName} ${member.lastName}`,
-      memberType: 'tml' as const,
-    }));
-
-    // In test mode, send only to admin email
-    let finalRecipients = recipients;
-    if (testMode) {
-      finalRecipients = [{
-        email: 'mlbeacon2023@gmail.com', // Admin email for testing
-        name: 'Test Admin',
-        memberType: 'tml' as const,
-      }];
-      console.log('Test mode enabled - sending to admin email only');
-    }
-
-    // Send bulk messages
-    const emailResults = await sendCustomBulkMessage({
-      recipients: finalRecipients,
-      subject: testMode ? `[TEST] ${subject}` : subject,
-      customContent: testMode 
-        ? `<div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
-             <p style="margin: 0; color: #92400e; font-weight: bold;">🧪 TEST MODE</p>
-             <p style="margin: 5px 0 0 0; color: #78350f; font-size: 14px;">This is a test message. In production, this would be sent to ${recipients.length} TML members.</p>
-           </div>
-           ${htmlContent}`
-        : htmlContent,
-    });
-
-    // Log results
-    console.log(`TML bulk message completed:`, {
-      totalRecipients: testMode ? recipients.length : finalRecipients.length,
-      actualSent: emailResults.totalSent,
-      successful: emailResults.successfulSends,
-      failed: emailResults.failedSends,
+      filterActive,
+      filterCodeStatus,
+      sendCodesToMembers,
       testMode,
+      selectedRecipientIds,
+    } = await request.json();
+
+    // Get only selected members by IDs
+    const members = await prisma.tmlMembers.findMany({
+      where: {
+        id: {
+          in: selectedRecipientIds || [],
+        },
+      },
+      orderBy: { createdAt: 'desc' },
     });
+
+    if (members.length === 0) {
+      return NextResponse.json({
+        success: true,
+        totalSent: 0,
+        successfulSends: 0,
+        failedSends: 0,
+        codesSent: 0,
+        message: 'No members selected or found',
+      });
+    }
+
+    let totalSent = 0;
+    let successfulSends = 0;
+    let failedSends = 0;
+    let codesSent = 0;
+    const errors: Array<{ email: string; error: string }> = [];
+
+    // If test mode, only send to admin emails
+    const testEmails = ['mlbeacon2023@gmail.com'];
+    const membersToProcess = testMode ? 
+      members.slice(0, 1).map(member => ({ ...member, email: testEmails[0] })) : 
+      members;
+
+    for (const member of membersToProcess) {
+      totalSent++;
+      
+      try {
+        let emailContent = '';
+        let emailSubject = '';
+        let codeSentToMember = false;
+
+        // Always try to send codes to members without codes
+        if (!member.sentCode && !testMode) {
+          // Find an available TML code
+          const availableCode = await prisma.codeDistribution.findFirst({
+            where: {
+              isActive: true,
+              userId: null,
+              isSent: false,
+            },
+            orderBy: { createdAt: 'asc' },
+          });
+
+          if (availableCode) {
+            // Generate standard TML code email
+            emailContent = generateTmlCodeEmail({
+              memberName: `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'TML Member',
+              companyName: member.companyName || 'Company',
+              tmlCode: availableCode.code,
+              email: member.email,
+            });
+            emailSubject = `Your BEACON 2025 TML Code: ${availableCode.code}`;
+
+            // Update code and member in transaction
+            await prisma.$transaction([
+              prisma.codeDistribution.update({
+                where: { id: availableCode.id },
+                data: {
+                  isSent: true,
+                  sentAt: new Date(),
+                  sentTo: member.email,
+                },
+              }),
+              prisma.tmlMembers.update({
+                where: { id: member.id },
+                data: {
+                  sentCode: availableCode.code,
+                },
+              }),
+            ]);
+
+            codesSent++;
+            codeSentToMember = true;
+          } else {
+            // No available codes
+            failedSends++;
+            errors.push({
+              email: member.email,
+              error: 'No available TML codes'
+            });
+            continue;
+          }
+        } else if (member.sentCode) {
+          // Member already has a code, skip
+          failedSends++;
+          errors.push({
+            email: member.email,
+            error: 'Member already has a TML code'
+          });
+          continue;
+        } else {
+          // Test mode or other scenario
+          emailContent = generateTmlCodeEmail({
+            memberName: `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'TML Member',
+            companyName: member.companyName || 'Company',
+            tmlCode: 'TEST-TML-123',
+            email: member.email,
+          });
+          emailSubject = 'Your BEACON 2025 TML Code (Test)';
+        }
+
+        // Send email using SendGrid
+        const msg = {
+          to: testMode ? testEmails[0] : member.email,
+          from: {
+            email: 'noreply@thebeaconexpo.com',
+            name: 'BEACON 2025 Team'
+          },
+          replyTo: 'mlbeacon2023@gmail.com',
+          subject: emailSubject,
+          html: emailContent,
+        };
+
+        await sgMail.send(msg);
+        successfulSends++;
+        
+      } catch (error) {
+        console.error(`Error processing member ${member.email}:`, error);
+        failedSends++;
+        errors.push({
+          email: member.email,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      data: {
-        totalRecipients: testMode ? recipients.length : finalRecipients.length,
-        successfulSends: emailResults.successfulSends,
-        failedSends: emailResults.failedSends,
-        errors: emailResults.errors,
-        testMode,
-      },
+      totalSent,
+      successfulSends,
+      failedSends,
+      codesSent,
+      errors: errors.slice(0, 10), // Limit error details
       message: testMode 
-        ? `Test message sent successfully to admin. Would reach ${recipients.length} TML members in production.`
-        : `Bulk message sent successfully to ${emailResults.successfulSends} TML members`,
+        ? `Test completed: ${successfulSends} TML code emails would be sent, ${codesSent} codes would be assigned`
+        : `Bulk operation completed: ${successfulSends} TML code emails sent, ${codesSent} codes assigned`,
     });
 
   } catch (error) {
-    console.error("Error sending TML bulk message:", error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: "Validation failed", details: error.issues },
-        { status: 400 }
-      );
-    }
-
+    console.error('Error in TML bulk message operation:', error);
     return NextResponse.json(
-      { success: false, error: "Failed to send TML bulk message" },
+      { error: 'Failed to process TML bulk message operation' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 

@@ -64,7 +64,7 @@ export function EditTmlMemberDialog({
   const [open, setOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const form = useForm({
+  const form = useForm<TmlMemberFormData>({
     resolver: zodResolver(tmlMemberSchema),
     defaultValues: {
       firstName: member.firstName || "",
@@ -96,7 +96,7 @@ export function EditTmlMemberDialog({
     }
   }, [member, form]);
 
-  const onSubmit = async (data: z.infer<typeof tmlMemberSchema>) => {
+  const onSubmit: SubmitHandler<TmlMemberFormData> = async (data) => {
     setIsSubmitting(true);
     try {
       // Convert empty strings to null for optional fields

@@ -82,8 +82,6 @@ export function BulkMessageDialog({ memberType }: BulkMessageDialogProps) {
 
   // Get list of members without codes
   const fetchRecipients = React.useCallback(async () => {
-    if (memberType !== "exhibitor") return;
-
     setIsLoadingRecipients(true);
     try {
       const params = new URLSearchParams();
@@ -165,7 +163,7 @@ export function BulkMessageDialog({ memberType }: BulkMessageDialogProps) {
 
       if (data.testMode) {
         toast.success("Test operation completed!", {
-          description: `${codesSent} exhibitor codes would be sent to ${selectedRecipients.size} selected ${memberTypeLabel} members.`,
+          description: `${codesSent} ${memberType === "tml" ? "TML" : "exhibitor"} codes would be sent to ${selectedRecipients.size} selected ${memberTypeLabel} members.`,
         });
       } else {
         if (failedSends > 0) {
@@ -174,7 +172,7 @@ export function BulkMessageDialog({ memberType }: BulkMessageDialogProps) {
           });
         } else {
           toast.success("Bulk operation completed successfully!", {
-            description: `${codesSent} exhibitor codes sent to ${successfulSends} ${memberTypeLabel} members.`,
+            description: `${codesSent} ${memberType === "tml" ? "TML" : "exhibitor"} codes sent to ${successfulSends} ${memberTypeLabel} members.`,
           });
         }
       }
@@ -203,10 +201,10 @@ export function BulkMessageDialog({ memberType }: BulkMessageDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ScrollText className="h-5 w-5" />
-            Send Exhibitor Codes to {memberTypeLabel} Members
+            Send {memberType === "tml" ? "TML" : "Exhibitor"} Codes to {memberTypeLabel} Members
           </DialogTitle>
           <DialogDescription>
-            Send exhibitor access codes to multiple {memberTypeLabel} members at
+            Send {memberType === "tml" ? "TML" : "exhibitor"} access codes to multiple {memberTypeLabel} members at
             once. Use filters to target specific groups who don't have codes
             yet.
           </DialogDescription>
@@ -227,7 +225,7 @@ export function BulkMessageDialog({ memberType }: BulkMessageDialogProps) {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Target:</span>
                     <span className="text-sm">
-                      All exhibitor members without codes
+                      All {memberType === "tml" ? "TML" : "exhibitor"} members without codes
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
@@ -319,19 +317,19 @@ export function BulkMessageDialog({ memberType }: BulkMessageDialogProps) {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Subject:</span>
                     <span className="text-sm">
-                      Your BEACON 2025 Exhibitor Code
+                      Your BEACON 2025 {memberType === "tml" ? "TML" : "Exhibitor"} Code
                     </span>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-sm font-medium">Content:</span>
                     <span className="text-sm">
-                      Standard exhibitor code email with access instructions and
+                      Standard {memberType === "tml" ? "TML" : "exhibitor"} code email with access instructions and
                       event details
                     </span>
                   </div>
                   <div className="text-xs  mt-2">
                     ℹ️ Each recipient will receive a personalized email with
-                    their unique exhibitor code
+                    their unique {memberType === "tml" ? "TML" : "exhibitor"} code
                   </div>
                 </div>
               </div>
@@ -340,32 +338,30 @@ export function BulkMessageDialog({ memberType }: BulkMessageDialogProps) {
             {/* Options */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold border-b pb-2">Options</h3>
-              {memberType === "exhibitor" && (
-                <FormField
-                  control={form.control}
-                  name="sendCodesToMembers"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          Send Exhibitor Codes to Selected Members
-                        </FormLabel>
-                        <div className="text-sm text-muted-foreground">
-                          Send available exhibitor codes to the selected
-                          members. This will automatically assign and email
-                          codes to members who don't have one yet.
-                        </div>
+              <FormField
+                control={form.control}
+                name="sendCodesToMembers"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        Send {memberType === "tml" ? "TML" : "Exhibitor"} Codes to Selected Members
+                      </FormLabel>
+                      <div className="text-sm text-muted-foreground">
+                        Send available {memberType === "tml" ? "TML" : "exhibitor"} codes to the selected
+                        members. This will automatically assign and email
+                        codes to members who don't have one yet.
                       </div>
-                    </FormItem>
-                  )}
-                />
-              )}
+                    </div>
+                  </FormItem>
+                )}
+              />
             </div>
 
             <DialogFooter>

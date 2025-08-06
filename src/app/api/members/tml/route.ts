@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || '';
     const isActive = searchParams.get('isActive');
+    const codeStatus = searchParams.get('codeStatus') || '';
     const tags = searchParams.get('tags')?.split(',').filter(Boolean) || [];
 
     const skip = (page - 1) * limit;
@@ -41,6 +42,30 @@ export async function GET(request: NextRequest) {
 
     if (tags.length > 0) {
       where.tags = { hasSome: tags };
+    }
+
+    // Filter by code status
+    if (codeStatus === 'NO_CODE') {
+      // Combine with existing OR condition if it exists
+      const codeFilter = [
+        { sentCode: null },
+        { sentCode: '' }
+      ];
+      
+      if (where.OR) {
+        where.AND = [
+          { OR: where.OR },
+          { OR: codeFilter }
+        ];
+        delete where.OR;
+      } else {
+        where.OR = codeFilter;
+      }
+    } else if (codeStatus === 'HAS_CODE') {
+      where.sentCode = { 
+        not: null,
+        notIn: ['', null]
+      };
     }
 
     // Get total count for pagination

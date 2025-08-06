@@ -41,15 +41,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { 
-  visitorEventSchema, 
-  VisitorEventFormData, 
+import {
+  visitorEventSchema,
+  VisitorEventFormData,
   VisitorEvent,
-  EVENT_STATUS_OPTIONS 
+  EVENT_STATUS_OPTIONS,
 } from "@/types/visitor-events";
-import { 
-  useCreateVisitorEventMutation, 
-  useUpdateVisitorEventMutation 
+import {
+  useCreateVisitorEventMutation,
+  useUpdateVisitorEventMutation,
 } from "@/hooks/tanstasck-query/useVisitorEventsQuery";
 import { useVisitorEventsStore } from "@/stores/visitorEventsStore";
 
@@ -84,9 +84,13 @@ export function CreateVisitorEventDialog({
     if (mode === "edit" && editingEvent) {
       return {
         eventName: editingEvent.eventName,
-        eventDates: editingEvent.eventDates.map(date => new Date(date)),
-        eventStartTime: editingEvent.eventStartTime ? new Date(editingEvent.eventStartTime) : null,
-        eventEndTime: editingEvent.eventEndTime ? new Date(editingEvent.eventEndTime) : null,
+        eventDates: editingEvent.eventDates.map((date) => new Date(date)),
+        eventStartTime: editingEvent.eventStartTime
+          ? new Date(editingEvent.eventStartTime)
+          : null,
+        eventEndTime: editingEvent.eventEndTime
+          ? new Date(editingEvent.eventEndTime)
+          : null,
         eventStatus: editingEvent.eventStatus,
         isActive: editingEvent.isActive,
         description: editingEvent.description,
@@ -173,10 +177,12 @@ export function CreateVisitorEventDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>
-            {mode === "edit" ? "Edit Visitor Event" : "Create New Visitor Event"}
+            {mode === "edit"
+              ? "Edit Visitor Event"
+              : "Create New Visitor Event"}
           </DialogTitle>
           <DialogDescription>
             {mode === "edit"
@@ -186,8 +192,11 @@ export function CreateVisitorEventDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6 overflow-y-auto"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full ">
               {/* Event Name */}
               <FormField
                 control={form.control}
@@ -229,7 +238,10 @@ export function CreateVisitorEventDialog({
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
                               <Calendar
                                 mode="single"
                                 selected={date}
@@ -241,7 +253,8 @@ export function CreateVisitorEventDialog({
                                   }
                                 }}
                                 disabled={(date) =>
-                                  date < new Date(new Date().setHours(0, 0, 0, 0))
+                                  date <
+                                  new Date(new Date().setHours(0, 0, 0, 0))
                                 }
                                 initialFocus
                               />
@@ -253,7 +266,9 @@ export function CreateVisitorEventDialog({
                               variant="outline"
                               size="icon"
                               onClick={() => {
-                                const newDates = field.value.filter((_, i) => i !== index);
+                                const newDates = field.value.filter(
+                                  (_, i) => i !== index
+                                );
                                 field.onChange(newDates);
                               }}
                             >
@@ -343,20 +358,27 @@ export function CreateVisitorEventDialog({
                         <Input
                           type="time"
                           placeholder="09:00"
-                          value={field.value ? formatTimeForInput(field.value) : ""}
+                          value={
+                            field.value ? formatTimeForInput(field.value) : ""
+                          }
                           onChange={(e) => {
                             const timeValue = e.target.value;
                             if (!timeValue) {
                               field.onChange(null);
                               return;
                             }
-                            
+
                             const dates = form.getValues("eventDates");
                             const startDate = dates && dates[0];
                             if (startDate) {
                               const [hours, minutes] = timeValue.split(":");
                               const dateTime = new Date(startDate);
-                              dateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                              dateTime.setHours(
+                                parseInt(hours),
+                                parseInt(minutes),
+                                0,
+                                0
+                              );
                               field.onChange(dateTime);
                             }
                           }}
@@ -382,20 +404,27 @@ export function CreateVisitorEventDialog({
                         <Input
                           type="time"
                           placeholder="17:00"
-                          value={field.value ? formatTimeForInput(field.value) : ""}
+                          value={
+                            field.value ? formatTimeForInput(field.value) : ""
+                          }
                           onChange={(e) => {
                             const timeValue = e.target.value;
                             if (!timeValue) {
                               field.onChange(null);
                               return;
                             }
-                            
+
                             const dates = form.getValues("eventDates");
                             const endDate = dates && dates[0];
                             if (endDate) {
                               const [hours, minutes] = timeValue.split(":");
                               const dateTime = new Date(endDate);
-                              dateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                              dateTime.setHours(
+                                parseInt(hours),
+                                parseInt(minutes),
+                                0,
+                                0
+                              );
                               field.onChange(dateTime);
                             }
                           }}

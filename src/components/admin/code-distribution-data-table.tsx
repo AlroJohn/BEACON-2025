@@ -79,6 +79,7 @@ import {
 import { useAllCodesQuery } from "@/hooks/tanstasck-query/useTMLCodeValidation";
 import { CreateCodeDialog } from "./create-code-dialog";
 import { BulkGenerateCodesDialog } from "./bulk-generate-codes-dialog";
+import { toast } from "sonner";
 
 // Types
 interface CodeDistributionData {
@@ -582,6 +583,29 @@ export function CodeDistributionDataTable({
       rowSelection,
     },
   });
+  
+  // Bulk delete selected codes
+  const handleBulkDelete = async () => {
+    const selectedRows = table.getSelectedRowModel().rows;
+    
+    if (selectedRows.length === 0) return;
+    
+    try {
+      // Process each selected code
+      for (const row of selectedRows) {
+        const code = row.original;
+        await onDeleteCode(code.id, code.code);
+      }
+      
+      // Clear selection after successful deletion
+      setRowSelection({});
+      
+      toast.success(`Successfully deleted ${selectedRows.length} TML codes`);
+    } catch (error) {
+      console.error("Error in bulk delete:", error);
+      toast.error("Failed to delete some TML codes. Please try again.");
+    }
+  };
 
   return (
     <div className="w-full">
@@ -624,6 +648,44 @@ export function CodeDistributionDataTable({
           </div>
 
           <div className="flex gap-4 items-center">
+            {currentAdminStatus === "SUPERADMIN" && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    disabled={table.getSelectedRowModel().rows.length === 0}
+                    className="flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Selected
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Selected TML Codes</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete the {table.getSelectedRowModel().rows.length} selected TML code(s)? 
+                      This action cannot be undone.
+                      {table.getSelectedRowModel().rows.some(row => row.original.userId) && (
+                        <span className="text-destructive block mt-2">
+                          Warning: Some selected codes are currently in use and deleting them may
+                          affect the associated users' registrations.
+                        </span>
+                      )}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleBulkDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <CreateCodeDialog
               trigger={
                 <Button className="flex items-center gap-2">

@@ -603,6 +603,30 @@ export function MembersDataTable({
     },
   });
 
+  // Bulk delete selected members
+  const handleBulkDelete = async () => {
+    const selectedRows = table.getSelectedRowModel().rows;
+    
+    if (selectedRows.length === 0) return;
+    
+    try {
+      // Process each selected member
+      for (const row of selectedRows) {
+        const member = row.original;
+        const memberName = formatMemberName(member);
+        await onDeleteMember(member.id, memberName);
+      }
+      
+      // Clear selection after successful deletion
+      setRowSelection({});
+      
+      toast.success(`Successfully deleted ${selectedRows.length} members`);
+    } catch (error) {
+      console.error("Error in bulk delete:", error);
+      toast.error("Failed to delete some members. Please try again.");
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="flex items-center py-4 gap-4">
@@ -644,6 +668,38 @@ export function MembersDataTable({
           </div>
 
           <div className="flex gap-2 items-center">
+            {currentAdminStatus === "SUPERADMIN" && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    disabled={table.getSelectedRowModel().rows.length === 0}
+                    className="flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Selected
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Selected Members</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete the {table.getSelectedRowModel().rows.length} selected member(s)? 
+                      This action cannot be undone and will permanently remove all member data.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleBulkDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <CSVUploadDialog
               memberType={memberType}
               onUploadComplete={() => refetch()}

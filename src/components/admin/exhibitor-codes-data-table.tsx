@@ -596,6 +596,8 @@ export function ExhibitorCodesDataTable({
                           const code = row.original;
                           onDeleteCode(code.id, code.code);
                         });
+                        // Clear row selection after deletion
+                        setRowSelection({});
                       }}
                     >
                       Delete

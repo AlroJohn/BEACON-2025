@@ -54,7 +54,7 @@ export const tmlMemberSchema = z.object({
   jobTitle: z.string().optional(),
   companyName: z.string().optional(),
   sentCode: z.string().optional(),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 export const exhibitorMemberSchema = z.object({
@@ -67,7 +67,7 @@ export const exhibitorMemberSchema = z.object({
   mobileNumber: z.string().optional(),
   landline: z.string().optional(),
   sentCode: z.string().optional(),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 // Form data types

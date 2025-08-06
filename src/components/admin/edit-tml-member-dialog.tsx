@@ -33,22 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TmlMember } from "@/types/members";
+import { TmlMember, tmlMemberSchema, TmlMemberFormData } from "@/types/members";
 
-// Validation schema for TML member - firstName/lastName now optional
-const tmlMemberSchema = z.object({
-  firstName: z.string().max(100, "First name too long").optional().or(z.literal("")),
-  lastName: z.string().max(100, "Last name too long").optional().or(z.literal("")),
-  middleName: z.string().max(100, "Middle name too long").optional().or(z.literal("")),
-  email: z.string().email("Invalid email address").max(255, "Email too long"),
-  mobileNumber: z.string().max(20, "Mobile number too long").optional().or(z.literal("")),
-  landline: z.string().max(20, "Landline too long").optional().or(z.literal("")),
-  jobTitle: z.string().max(255, "Job title too long").optional().or(z.literal("")),
-  companyName: z.string().max(255, "Company name too long").optional().or(z.literal("")),
-  isActive: z.boolean().default(true),
-});
-
-type TmlMemberFormData = z.infer<typeof tmlMemberSchema>;
 
 interface EditTmlMemberDialogProps {
   member: TmlMember;
@@ -56,10 +42,10 @@ interface EditTmlMemberDialogProps {
   children: React.ReactNode;
 }
 
-export function EditTmlMemberDialog({ 
-  member, 
-  onMemberUpdated, 
-  children 
+export function EditTmlMemberDialog({
+  member,
+  onMemberUpdated,
+  children,
 }: EditTmlMemberDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -70,7 +56,7 @@ export function EditTmlMemberDialog({
       firstName: member.firstName || "",
       lastName: member.lastName || "",
       middleName: member.middleName || "",
-      email: member.email || "",
+      email: member.email,
       mobileNumber: member.mobileNumber || "",
       landline: member.landline || "",
       jobTitle: member.jobTitle || "",
@@ -96,7 +82,7 @@ export function EditTmlMemberDialog({
     }
   }, [member, form]);
 
-  const onSubmit: SubmitHandler<TmlMemberFormData> = async (data) => {
+  const onSubmit = async (data: TmlMemberFormData) => {
     setIsSubmitting(true);
     try {
       // Convert empty strings to null for optional fields
@@ -113,10 +99,10 @@ export function EditTmlMemberDialog({
         isActive: data.isActive,
       };
 
-      const response = await fetch('/api/members/tml', {
-        method: 'PUT',
+      const response = await fetch("/api/members/tml", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
@@ -124,25 +110,25 @@ export function EditTmlMemberDialog({
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to update TML member');
+        throw new Error(result.error || "Failed to update TML member");
       }
 
       // Create a meaningful display name
-      const memberName = [data.firstName, data.lastName].filter(Boolean).join(' ') || 
-                        data.companyName || 
-                        data.email;
+      const memberName =
+        [data.firstName, data.lastName].filter(Boolean).join(" ") ||
+        data.companyName ||
+        data.email;
 
-      toast.success('TML member updated successfully!', {
+      toast.success("TML member updated successfully!", {
         description: `${memberName} has been updated.`,
       });
 
       setOpen(false);
       onMemberUpdated?.();
-
     } catch (error) {
-      console.error('Error updating TML member:', error);
+      console.error("Error updating TML member:", error);
       toast.error(
-        error instanceof Error ? error.message : 'Failed to update TML member'
+        error instanceof Error ? error.message : "Failed to update TML member"
       );
     } finally {
       setIsSubmitting(false);
@@ -151,9 +137,7 @@ export function EditTmlMemberDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -169,7 +153,9 @@ export function EditTmlMemberDialog({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Personal Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Personal Information</h3>
+              <h3 className="text-lg font-semibold border-b pb-2">
+                Personal Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -215,7 +201,9 @@ export function EditTmlMemberDialog({
 
             {/* Contact Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Contact Information</h3>
+              <h3 className="text-lg font-semibold border-b pb-2">
+                Contact Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -224,7 +212,11 @@ export function EditTmlMemberDialog({
                     <FormItem>
                       <FormLabel>Email Address *</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="juan.delacruz@tml.org" {...field} />
+                        <Input
+                          type="email"
+                          placeholder="juan.delacruz@tml.org"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -261,7 +253,9 @@ export function EditTmlMemberDialog({
 
             {/* Professional Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Professional Information</h3>
+              <h3 className="text-lg font-semibold border-b pb-2">
+                Professional Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -301,7 +295,12 @@ export function EditTmlMemberDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(value === "true")} value={field.value ? "true" : "false"}>
+                    <Select
+                      onValueChange={(value) =>
+                        field.onChange(value === "true")
+                      }
+                      value={field.value ? "true" : "false"}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select status" />
@@ -328,7 +327,9 @@ export function EditTmlMemberDialog({
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 {isSubmitting ? "Updating..." : "Update Member"}
               </Button>
             </DialogFooter>

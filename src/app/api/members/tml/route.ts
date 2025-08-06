@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         { sentCode: null },
         { sentCode: '' }
       ];
-      
+
       if (where.OR) {
         where.AND = [
           { OR: where.OR },
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
         where.OR = codeFilter;
       }
     } else if (codeStatus === 'HAS_CODE') {
-      where.sentCode = { 
+      where.sentCode = {
         not: null,
         notIn: ['', null]
       };
@@ -116,19 +116,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if TML member code already exists (if provided)
-    if (validatedData.tmlMemberCode) {
-      const existingCode = await prisma.tmlMembers.findUnique({
-        where: { tmlMemberCode: validatedData.tmlMemberCode },
-      });
-
-      if (existingCode) {
-        return NextResponse.json(
-          { success: false, error: "TML member code already exists" },
-          { status: 400 }
-        );
-      }
-    }
 
     const newMember = await prisma.tmlMembers.create({
       data: validatedData,
@@ -199,19 +186,6 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Check for TML code conflicts (if code is being changed)
-    if (validatedData.tmlMemberCode && validatedData.tmlMemberCode !== existingMember.tmlMemberCode) {
-      const codeConflict = await prisma.tmlMembers.findUnique({
-        where: { tmlMemberCode: validatedData.tmlMemberCode },
-      });
-
-      if (codeConflict) {
-        return NextResponse.json(
-          { success: false, error: "TML member code already exists" },
-          { status: 400 }
-        );
-      }
-    }
 
     const updatedMember = await prisma.tmlMembers.update({
       where: { id },

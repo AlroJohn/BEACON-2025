@@ -180,13 +180,6 @@ export function MembersDataTable({
     }
   };
 
-  const handleDownloadTemplate = () => {
-    const link = document.createElement("a");
-    link.href = `/api/members/${memberType}/template`;
-    link.download = `${memberType}-members-template.csv`;
-    link.click();
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -651,14 +644,6 @@ export function MembersDataTable({
           </div>
 
           <div className="flex gap-2 items-center">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadTemplate}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Template
-            </Button>
             <CSVUploadDialog
               memberType={memberType}
               onUploadComplete={() => refetch()}

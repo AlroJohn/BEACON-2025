@@ -568,6 +568,42 @@ export function ExhibitorCodesDataTable({
               }
               onCodesGenerated={handleCodeCreated}
             />
+            {currentAdminStatus === "SUPERADMIN" && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    disabled={table.getSelectedRowModel().rows.length === 0}
+                    className="flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Selected
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Selected Codes</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete the {table.getSelectedRowModel().rows.length} selected code(s)? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        const selectedRows = table.getSelectedRowModel().rows;
+                        selectedRows.forEach((row) => {
+                          const code = row.original;
+                          onDeleteCode(code.id, code.code);
+                        });
+                      }}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <Button variant="outline" onClick={() => refetch()}>
               Refresh
             </Button>

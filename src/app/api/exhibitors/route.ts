@@ -136,8 +136,10 @@ export async function POST(request: NextRequest) {
         jsonData.goals = JSON.parse(jsonData.goals);
       }
 
-      // Convert string booleans to actual booleans (if any)
-      // Note: exhibitor registration doesn't have boolean fields, but keeping for consistency
+      // Convert string booleans to actual booleans
+      if (jsonData.exhibitor_member && typeof jsonData.exhibitor_member === 'string') {
+        jsonData.exhibitor_member = jsonData.exhibitor_member === 'true';
+      }
 
     } catch (parseError) {
       console.error('Error parsing FormData fields:', parseError);

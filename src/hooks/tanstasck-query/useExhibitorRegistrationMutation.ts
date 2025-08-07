@@ -29,6 +29,9 @@ const submitExhibitorRegistration = async (data: ExhibitorRegistrationMutationDa
     } else if (Array.isArray(value)) {
       // Handle arrays (participationTypes, goals)
       formData.append(key, JSON.stringify(value));
+    } else if (key === 'exhibitor_member') {
+      // Ensure exhibitor_member is sent as a boolean
+      formData.append(key, value === true || value === 'true' ? 'true' : 'false');
     } else if (value !== null && value !== undefined) {
       // Handle all other fields
       formData.append(key, String(value));

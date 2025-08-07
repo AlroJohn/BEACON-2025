@@ -34,12 +34,16 @@ export const baseExhibitorSchema = z.object({
 
   // exhibitor_registrations fields - Section 1: Company Information
   companyName: z.string().min(1, "Company name is required"),
-  businessRegistrationName: z.string().min(1, 'Businedd Name is required'),
+  businessRegistrationName: z.string().min(1, 'Business Name is required'),
   industrySector: z.nativeEnum(IndustrySector),
   industrySectorOthers: z.string().optional().nullable(),
   companyAddress: z.string().min(1, "Company address is required"),
   companyWebsite: z.string().url("Invalid website URL").or(z.literal("")),
   companyProfile: z.string().min(1, "Company profile is required"),
+
+  // Exhibitor membership fields
+  exhibitor_member: z.boolean(),
+  exhibitor_code: z.string().optional().nullable(),
 
   // Section 4: Exhibition Package & Preferences
   participationTypes: z.array(z.nativeEnum(ParticipationType)).min(1, "Select at least one participation type"),
@@ -120,118 +124,137 @@ export const exhibitorRegistrationSchema = baseExhibitorSchema
   }, {
     message: "Face capture is required for registration",
     path: ["faceScannedUrl"],
+  })
+  .refine((data) => {
+    // If exhibitor_member is true, exhibitor_code is required
+    if (data.exhibitor_member === true) {
+      return data.exhibitor_code && data.exhibitor_code.trim().length > 0;
+    }
+    return true;
+  }, {
+    message: "Exhibitor member code is required",
+    path: ["exhibitor_code"],
   });
 
 export type ExhibitorRegistrationFormData = z.infer<typeof exhibitorRegistrationSchema>;
+export type ExhibitorRegistrationSchema = z.infer<typeof exhibitorRegistrationSchema>;
 
 // Default values for exhibitor registration form
-export const defaultExhibitorRegistrationValues: Partial<ExhibitorRegistrationFormData> = {
-  // Form-only fields
-  faceScannedUrl: "",
-
-  // user_details fields
-  firstName: "",
-  lastName: "",
-  middleName: null,
-  suffix: null,
-  preferredName: null,
-  gender: Gender.MALE,
-  genderOthers: null,
-  ageBracket: AgeBracket.AGE_25_34,
-  nationality: "",
-  position: '',
-
-  // user_accounts fields
-  email: "",
-  mobileNumber: "",
-  mailingAddress: null,
-  landline: null,
-
-  // Company Information
-  companyName: "",
-  businessRegistrationName: '',
-  industrySector: IndustrySector.MARITIME_EQUIPMENT_TECHNOLOGY,
-  industrySectorOthers: null,
-  companyAddress: '',
-  companyWebsite: '',
-  companyProfile: '',
-
-  // Exhibition Package & Preferences
-  participationTypes: [],
-  boothSize: '',
-  boothDescription: "",
-  launchNewProduct: null,
-  requireDemoArea: null,
-
-  // Logistics & Marketing Coordination
-  bringLargeEquipment: null,
-  haveMarketingCollaterals: null,
-  logoUrl: null,
-
-  // Company Objectives & Collaboration
-  goals: [],
-  goalsOthers: null,
-  exploreSponsorship: null,
-
-  // Confirmation & Next Steps
-  confirmIntent: ConfirmIntent.TENTATIVE,
-  letterOfIntentUrl: null,
-  additionalComments: null,
-};
-
 // export const defaultExhibitorRegistrationValues: Partial<ExhibitorRegistrationFormData> = {
 //   // Form-only fields
 //   faceScannedUrl: "",
 
 //   // user_details fields
-//   firstName: "John",
-//   lastName: "Doe",
-//   middleName: "A.",
-//   suffix: "Jr.",
-//   preferredName: "John",
+//   firstName: "",
+//   lastName: "",
+//   middleName: null,
+//   suffix: null,
+//   preferredName: null,
 //   gender: Gender.MALE,
-//   genderOthers: null, // only use if gender === 'OTHERS'
+//   genderOthers: null,
 //   ageBracket: AgeBracket.AGE_25_34,
-//   nationality: "Filipino",
-//   position: "Marketing Manager",
+//   nationality: "",
+//   position: '',
 
 //   // user_accounts fields
-//   email: "alromercado08@gmail.com",
-//   mobileNumber: "09171234567",
-//   mailingAddress: "Unit 1203, Ayala Ave., Makati City, Metro Manila",
-//   landline: "+63 2 8123 4567",
+//   email: "",
+//   mobileNumber: "",
+//   mailingAddress: null,
+//   landline: null,
 
 //   // Company Information
-//   companyName: "Acme Maritime Solutions, Inc.",
-//   businessRegistrationName: "Acme Maritime Solutions, Inc.",
+//   companyName: "",
+//   businessRegistrationName: '',
 //   industrySector: IndustrySector.MARITIME_EQUIPMENT_TECHNOLOGY,
-//   industrySectorOthers: null, // only use if industrySector === 'OTHERS'
-//   companyAddress: "123 Harbor Drive, Pasay City, Metro Manila",
-//   companyWebsite: "https://www.acmemaritime.com",
-//   companyProfile: "Provider of marine equipment, navigation systems, and coastal monitoring solutions.",
+//   industrySectorOthers: null,
+//   companyAddress: '',
+//   companyWebsite: '',
+//   companyProfile: '',
+
+//   // Exhibitor membership fields
+//   exhibitor_member: false,
+//   exhibitor_code: null,
 
 //   // Exhibition Package & Preferences
-//   participationTypes: [], // keep empty unless you want to pre-select in UI
-//   boothSize: "3m x 3m (9 sqm)",
-//   boothDescription: "Corner booth with storage and product display shelves.",
-//   launchNewProduct: 'YES',
-//   requireDemoArea: 'YES',
+//   participationTypes: [],
+//   boothSize: '',
+//   boothDescription: "",
+//   launchNewProduct: null,
+//   requireDemoArea: null,
 
 //   // Logistics & Marketing Coordination
-//   bringLargeEquipment: 'MAYBE',
-//   haveMarketingCollaterals: '',
-//   logoUrl: null, // file upload will populate this
+//   bringLargeEquipment: null,
+//   haveMarketingCollaterals: null,
+//   logoUrl: null,
 
 //   // Company Objectives & Collaboration
-//   goals: [], // keep empty unless you want to pre-select
-//   goalsOthers: null, // fill only if goals contains 'OTHERS'
-//   exploreSponsorship: 'MAYBE',
+//   goals: [],
+//   goalsOthers: null,
+//   exploreSponsorship: null,
 
 //   // Confirmation & Next Steps
 //   confirmIntent: ConfirmIntent.TENTATIVE,
-//   letterOfIntentUrl: null, // file upload will populate this
-//   additionalComments: "We prefer a booth near the conference hall entrance.",
+//   letterOfIntentUrl: null,
+//   additionalComments: null,
 // };
+
+export const defaultExhibitorRegistrationValues: Partial<ExhibitorRegistrationFormData> = {
+  // Form-only fields
+  faceScannedUrl: "",
+
+  // user_details fields
+  firstName: "John",
+  lastName: "Doe",
+  middleName: "A.",
+  suffix: "Jr.",
+  preferredName: "John",
+  gender: Gender.MALE,
+  genderOthers: null, // only use if gender === 'OTHERS'
+  ageBracket: AgeBracket.AGE_25_34,
+  nationality: "Filipino",
+  position: "Marketing Manager",
+
+  // user_accounts fields
+  email: "alromercado08@gmail.com",
+  mobileNumber: "09171234567",
+  mailingAddress: "Unit 1203, Ayala Ave., Makati City, Metro Manila",
+  landline: "+63 2 8123 4567",
+
+  // Company Information
+  companyName: "Acme Maritime Solutions, Inc.",
+  businessRegistrationName: "Acme Maritime Solutions, Inc.",
+  industrySector: IndustrySector.MARITIME_EQUIPMENT_TECHNOLOGY,
+  industrySectorOthers: null, // only use if industrySector === 'OTHERS'
+  companyAddress: "123 Harbor Drive, Pasay City, Metro Manila",
+  companyWebsite: "https://www.acmemaritime.com",
+  companyProfile: "Provider of marine equipment, navigation systems, and coastal monitoring solutions.",
+
+  // Exhibition Package & Preferences
+  participationTypes: [], // keep empty unless you want to pre-select in UI
+  boothSize: "3m x 3m (9 sqm)",
+  boothDescription: "Corner booth with storage and product display shelves.",
+  launchNewProduct: 'YES',
+  requireDemoArea: 'YES',
+
+  // Logistics & Marketing Coordination
+  bringLargeEquipment: 'MAYBE',
+  haveMarketingCollaterals: '',
+  logoUrl: null, // file upload will populate this
+
+  // Company Objectives & Collaboration
+  goals: [], // keep empty unless you want to pre-select
+  goalsOthers: null, // fill only if goals contains 'OTHERS'
+  exploreSponsorship: 'MAYBE',
+
+  // Confirmation & Next Steps
+  confirmIntent: ConfirmIntent.TENTATIVE,
+  letterOfIntentUrl: null, // file upload will populate this
+  additionalComments: "We prefer a booth near the conference hall entrance.",
+
+  // Exhibitor membership fields
+  exhibitor_member: false,
+  exhibitor_code: '',
+};
 
 
 // UI options for dropdowns and multi-selects
@@ -245,6 +268,11 @@ export const industrySectorOptions = [
   { value: IndustrySector.FASHION_LIFESTYLE, label: "Fashion & Lifestyle" },
   { value: IndustrySector.EDUCATION_TRAINING, label: "Education & Training" },
   { value: IndustrySector.OTHERS, label: "Others" },
+] as const;
+
+export const exhibitorMembershipOptions = [
+  { value: "true", label: "Yes" },
+  { value: "false", label: "No" },
 ] as const;
 
 export const participationTypeOptions = [
@@ -405,6 +433,10 @@ export interface ExhibitorWithRelations {
   confirmIntent: ConfirmIntent;
   letterOfIntentUrl?: string | null;
   additionalComments?: string | null;
+
+  // Exhibitor membership fields
+  exhibitor_member: boolean;
+  exhibitor_code?: string | null;
 
   // Relations
   user: {

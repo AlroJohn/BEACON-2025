@@ -79,7 +79,7 @@ const data = {
           url: "/admin/members/tml",
         },
         {
-          title: "Registered User",
+          title: "Registered Users",
           url: "/admin/conference",
         },
       ],
@@ -101,6 +101,18 @@ const data = {
         {
           title: "Registrered User ",
           url: "/admin/exhibitors",
+        },
+      ],
+    },
+    {
+      title: "Sponsor Management",
+      url: "",
+      icon: Building,
+      isActive: true,
+      items: [
+        {
+          title: "Registrered Sponsors ",
+          url: "/admin/sponsors",
         },
       ],
     },

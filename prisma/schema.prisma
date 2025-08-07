@@ -432,6 +432,10 @@ model exhibitor_registrations {
   letterOfIntentUrl  String?
   additionalComments String?
 
+  //added section to determine if user is an exhibitor
+  exhibitor_member Boolean @default(false)
+  exhibitor_code String?
+
   @@map("exhibitor_registrations")
 }
 
@@ -645,7 +649,7 @@ model TmlMembers {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Member Information
+  // Member Information 
   firstName    String?
   lastName     String?
   middleName   String?

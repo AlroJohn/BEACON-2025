@@ -270,7 +270,6 @@ export async function POST(request: NextRequest) {
 
     // Handle face image upload if provided
     if (faceScannedUrl) {
-      console.log("Sponsor API: Uploading face image to user-profile/" + user.id + "/");
       try {
         faceImageUrl = await uploadImageToSupabase(faceScannedUrl, user.id, 'face');
 

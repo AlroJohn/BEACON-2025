@@ -12,9 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Loader2, Building, Plus } from "lucide-react";
+import { Loader2, Building, Plus, Zap, RefreshCw } from "lucide-react";
 import { useAdminStore } from "@/stores/adminStore";
 import { MembersDataTable } from "@/components/admin/members-data-table";
+import { BulkGenerateExhibitorCodesDialog } from "@/components/admin/bulk-generate-exhibitor-codes-dialog";
 
 export default function ExhibitorMembersDashboard() {
   const router = useRouter();
@@ -54,6 +55,31 @@ export default function ExhibitorMembersDashboard() {
               <CardDescription>
                 Manage exhibitor members, send bulk messages, and handle member data
               </CardDescription>
+            </div>
+            <div className="flex space-x-2">
+              <BulkGenerateExhibitorCodesDialog
+                trigger={
+                  <Button className="flex items-center gap-1" variant="secondary">
+                    <Zap className="h-4 w-4" />
+                    Generate Codes
+                  </Button>
+                }
+                onCodesGenerated={() => {
+                toast.success("Exhibitor codes generated successfully!");
+                // Force refresh of data
+                setTimeout(() => {
+                  window.location.reload();
+                }, 1500);
+              }}
+              />
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-1"
+                onClick={() => window.location.reload()}
+              >
+                <RefreshCw className="h-4 w-4" />
+                Refresh Codes
+              </Button>
             </div>
           </div>
         </CardHeader>

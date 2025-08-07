@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Zap, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, Zap, CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -93,6 +93,7 @@ export function BulkGenerateExhibitorCodesDialog({
         });
       }, 200);
 
+      console.log('Starting exhibitor code generation request...');
       const response = await fetch("/api/exhibitor-codes/bulk", {
         method: "POST",
         headers: {

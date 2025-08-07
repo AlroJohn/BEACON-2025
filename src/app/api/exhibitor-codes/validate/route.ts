@@ -20,44 +20,78 @@ export async function POST(request: NextRequest) {
       where: { 
         code: code.toUpperCase() 
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            user_accounts: {
+              select: {
+                email: true
+              }
+            },
+            user_details: {
+              select: {
+                firstName: true,
+                lastName: true
+              }
+            }
+          }
+        }
+      }
     });
 
     // If code doesn't exist
     if (!exhibitorCode) {
       return NextResponse.json({
-        success: true,
+        success: false,
         isValid: false,
         isActive: false,
-        message: "Exhibitor code not found",
-      });
+        message: "The Exhibitor member code you entered is not valid.",
+        error: "Invalid code"
+      }, { status: 400 });
     }
 
     // If code exists but is inactive
     if (!exhibitorCode.isActive) {
       return NextResponse.json({
-        success: true,
+        success: false,
         isValid: false,
         isActive: false,
-        message: "Exhibitor code is inactive",
-      });
+        message: "This Exhibitor member code is not active anymore and cannot be used for registration.",
+        error: "Inactive code"
+      }, { status: 400 });
     }
 
     // If code is already used
     if (exhibitorCode.userId) {
       return NextResponse.json({
-        success: true,
+        success: false,
         isValid: false,
         isActive: true,
-        message: "Exhibitor code has already been used",
-      });
+        message: "This Exhibitor member code has already been used by another user.",
+        error: "Code already used",
+        usedBy: exhibitorCode.user ? {
+          name: `${exhibitorCode.user.user_details[0]?.firstName} ${exhibitorCode.user.user_details[0]?.lastName}`,
+          email: exhibitorCode.user.user_accounts[0]?.email
+        } : null
+      }, { status: 409 });
     }
 
     // Code is valid and available
     return NextResponse.json({
       success: true,
-      isValid: true,
-      isActive: true,
-      message: "Exhibitor code is valid and available",
+      message: "Valid Exhibitor member code",
+      data: {
+        code: exhibitorCode.code,
+        isValid: true,
+        benefits: [
+          'Early access to booth selection',
+          'Exhibitor lounge access',
+          'Discounted booth rates',
+          'Priority marketing opportunities',
+          'Extended setup/teardown periods'
+        ]
+      }
     });
 
   } catch (error) {
@@ -104,40 +138,74 @@ export async function GET(request: NextRequest) {
       where: { 
         code: code.toUpperCase() 
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+            user_accounts: {
+              select: {
+                email: true
+              }
+            },
+            user_details: {
+              select: {
+                firstName: true,
+                lastName: true
+              }
+            }
+          }
+        }
+      }
     });
 
     if (!exhibitorCode) {
       return NextResponse.json({
-        success: true,
+        success: false,
         isValid: false,
         isActive: false,
-        message: "Exhibitor code not found",
-      });
+        message: "The Exhibitor member code you entered is not valid.",
+        error: "Invalid code"
+      }, { status: 400 });
     }
 
     if (!exhibitorCode.isActive) {
       return NextResponse.json({
-        success: true,
+        success: false,
         isValid: false,
         isActive: false,
-        message: "Exhibitor code is inactive",
-      });
+        message: "This Exhibitor member code is not active anymore and cannot be used for registration.",
+        error: "Inactive code"
+      }, { status: 400 });
     }
 
     if (exhibitorCode.userId) {
       return NextResponse.json({
-        success: true,
+        success: false,
         isValid: false,
         isActive: true,
-        message: "Exhibitor code has already been used",
-      });
+        message: "This Exhibitor member code has already been used by another user.",
+        error: "Code already used",
+        usedBy: exhibitorCode.user ? {
+          name: `${exhibitorCode.user.user_details[0]?.firstName} ${exhibitorCode.user.user_details[0]?.lastName}`,
+          email: exhibitorCode.user.user_accounts[0]?.email
+        } : null
+      }, { status: 409 });
     }
 
     return NextResponse.json({
       success: true,
-      isValid: true,
-      isActive: true,
-      message: "Exhibitor code is valid and available",
+      message: "Valid Exhibitor member code",
+      data: {
+        code: exhibitorCode.code,
+        isValid: true,
+        benefits: [
+          'Early access to booth selection',
+          'Exhibitor lounge access',
+          'Discounted booth rates',
+          'Priority marketing opportunities',
+          'Extended setup/teardown periods'
+        ]
+      }
     });
 
   } catch (error) {
@@ -149,5 +217,7 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

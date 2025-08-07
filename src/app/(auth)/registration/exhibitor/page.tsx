@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useCallback, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2 } from "lucide-react";
@@ -41,6 +41,7 @@ import { ObjectivesGoals } from "./exhibitor-components/ObjectivesGoals";
 import { ConfirmationNextSteps } from "./exhibitor-components/ConfirmationNextSteps";
 import { Icon } from "@iconify/react";
 import { ModeToggle } from "@/components/reuseable/page-components/ModeToggle";
+import ExhibitorMembership from "./exhibitor-components/ExhibitorMembership";
 
 export default function ExhibitorRegistrationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,7 +72,7 @@ export default function ExhibitorRegistrationPage() {
 
   const exhibitorRegistrationMutation = useExhibitorRegistrationMutation();
 
-  const form = useForm<ExhibitorRegistrationFormData>({
+  const form: UseFormReturn<ExhibitorRegistrationFormData> = useForm<ExhibitorRegistrationFormData>({
     resolver: zodResolver(exhibitorRegistrationSchema),
     defaultValues: defaultExhibitorRegistrationValues,
     mode: "onChange",
@@ -233,6 +234,20 @@ export default function ExhibitorRegistrationPage() {
       }
     };
   }, []);
+
+  // Check if form submission should be disabled
+  const isFormSubmissionDisabled = (): boolean => {
+    // If user is an exhibitor member but code is invalid, disable submission
+    const isExhibitorMember = form.watch("exhibitor_member");
+    const exhibitorCode = form.watch("exhibitor_code");
+    const hasExhibitorCodeError = !!form.formState.errors.exhibitor_code;
+    
+    if (isExhibitorMember === true) {
+      return !exhibitorCode || hasExhibitorCodeError;
+    }
+    
+    return false;
+  };
 
   // Function to scroll to first error field
   const scrollToFirstError = useCallback(() => {
@@ -470,7 +485,10 @@ export default function ExhibitorRegistrationPage() {
                           Company Information
                         </h1>
                         <div className="lg:ml-4 py-4 h-fit">
-                          <CompanyInformation form={form} />
+                          <ExhibitorMembership form={form} />
+                          <div className="mt-8">
+                            <CompanyInformation form={form} />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -683,7 +701,8 @@ export default function ExhibitorRegistrationPage() {
                         disabled={
                           isSubmitting ||
                           exhibitorRegistrationMutation.isPending ||
-                          emailCheck?.exists
+                          emailCheck?.exists ||
+                          isFormSubmissionDisabled()
                         }
                       >
                         {isSubmitting ||
@@ -694,6 +713,8 @@ export default function ExhibitorRegistrationPage() {
                           </>
                         ) : emailCheck?.exists ? (
                           "Email Already Exists - Cannot Submit"
+                        ) : isFormSubmissionDisabled() ? (
+                          "Enter Valid Exhibitor Code to Continue"
                         ) : (
                           "Complete Exhibitor Registration"
                         )}

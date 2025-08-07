@@ -62,7 +62,7 @@ async function uploadImageToSupabase(base64Image: string, userId: string): Promi
 
     // Generate file name with user ID directory structure
     const fileName = `${userId}/face-scan.jpg`;
-    const filePath = `user-profile/${fileName}`;
+    const filePath = `${fileName}`;
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage

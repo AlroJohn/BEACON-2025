@@ -182,9 +182,9 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
       const videoWidth = videoElement.videoWidth || videoRect.width;
       const videoHeight = videoElement.videoHeight || videoRect.height;
 
-      // Define the oval guide dimensions - consistent across mobile and desktop
-      const ovalWidth = 280;
-      const ovalHeight = 320;
+      // Define the oval guide dimensions - consistent with the 444x333 aspect ratio
+      const ovalWidth = 230;
+      const ovalHeight = 230;
       const ovalCenterX = videoWidth / 2;
       const ovalCenterY = videoHeight / 2;
 
@@ -537,14 +537,17 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
                         : faceDetected
                         ? "border-orange-400"
                         : "border-gray-300"
-                    } ${
-                      isMobile ? "w-full max-w-sm" : "w-full max-w-md"
                     } -scale-x-100`}
+                    style={{
+                      width: "444px",
+                      height: "333px",
+                      objectFit: "cover"
+                    }}
                     videoConstraints={{
                       facingMode: facingMode,
-                      width: 640,
-                      height: 480,
-                      aspectRatio: 4/3,
+                      width: 444,
+                      height: 333,
+                      aspectRatio: 444/333,
                     }}
                     screenshotQuality={1}
                     imageSmoothing={true}
@@ -582,8 +585,8 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
                         <div
                           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 border-dashed border-blue-400 rounded-full opacity-70"
                           style={{
-                            width: "280px",
-                            height: "320px",
+                            width: "230px",
+                            height: "230px",
                           }}
                         />
                         {/* Guide lines for better positioning */}
@@ -591,13 +594,13 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
                           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-blue-300 opacity-30"
                           style={{
                             width: "1px",
-                            height: "320px",
+                            height: "230px",
                           }}
                         />
                         <div
                           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-blue-300 opacity-30"
                           style={{
-                            width: "280px",
+                            width: "230px",
                             height: "1px",
                           }}
                         />

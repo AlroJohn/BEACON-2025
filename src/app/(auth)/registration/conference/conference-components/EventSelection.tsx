@@ -12,11 +12,18 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Calendar, Info, ChevronDown, ChevronUp, CreditCard } from "lucide-react";
+import {
+  Loader2,
+  Calendar,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  CreditCard,
+} from "lucide-react";
 import { EventSelectionProps } from "@/types/conference/components";
 import { useEventSelection } from "@/hooks/tanstasck-query/useEventsQuery";
 import { useConferenceRegistrationStore } from "@/hooks/standard-hooks/conference/useConferenceRegistrationStore";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 
 export default function EventSelection({ form }: EventSelectionProps) {
   const { updateSelectedEvents } = useConferenceRegistrationStore();
@@ -36,20 +43,25 @@ export default function EventSelection({ form }: EventSelectionProps) {
   const previousSelectionRef = useRef<string>("");
 
   // Helper functions for managing attendingDays
-  const handleDateSelection = (eventId: string, eventName: string, dateStr: string, checked: boolean) => {
+  const handleDateSelection = (
+    eventId: string,
+    eventName: string,
+    dateStr: string,
+    checked: boolean
+  ) => {
     const currentAttendingDays = form.getValues("attendingDays") || {};
     const currentDates = currentAttendingDays[eventName] || [];
-    
+
     if (checked) {
       // Add date
       const updatedDates = [...currentDates, dateStr];
       form.setValue("attendingDays", {
         ...currentAttendingDays,
-        [eventName]: updatedDates
+        [eventName]: updatedDates,
       });
     } else {
       // Remove date
-      const updatedDates = currentDates.filter(date => date !== dateStr);
+      const updatedDates = currentDates.filter((date) => date !== dateStr);
       if (updatedDates.length === 0) {
         // Remove the event entirely if no dates selected
         const { [eventName]: _, ...remainingDays } = currentAttendingDays;
@@ -57,7 +69,7 @@ export default function EventSelection({ form }: EventSelectionProps) {
       } else {
         form.setValue("attendingDays", {
           ...currentAttendingDays,
-          [eventName]: updatedDates
+          [eventName]: updatedDates,
         });
       }
     }
@@ -102,9 +114,14 @@ export default function EventSelection({ form }: EventSelectionProps) {
 
         // Check if conference discount is applied (3+ CONFERENCE days)
         const conferenceDaysCount = selected
-          .filter(event => events.find(e => e.id === event.id)?.eventStatus === "CONFERENCE")
+          .filter(
+            (event) =>
+              events.find((e) => e.id === event.id)?.eventStatus ===
+              "CONFERENCE"
+          )
           .reduce((sum, event) => {
-            const eventName = events.find(e => e.id === event.id)?.eventName || "";
+            const eventName =
+              events.find((e) => e.id === event.id)?.eventName || "";
             const selectedDates = attendingDays[eventName] || [];
             return sum + selectedDates.length;
           }, 0);
@@ -117,16 +134,18 @@ export default function EventSelection({ form }: EventSelectionProps) {
         useConferenceRegistrationStore.setState({ totalAmount: total });
 
         // Validate that each selected event has at least one date selected
-        const eventsMissingDates = selected.filter(event => {
+        const eventsMissingDates = selected.filter((event) => {
           const selectedDates = attendingDays[event.eventName] || [];
           return selectedDates.length === 0;
         });
 
         if (eventsMissingDates.length > 0) {
-          const missingEventNames = eventsMissingDates.map(e => e.eventName).join(", ");
+          const missingEventNames = eventsMissingDates
+            .map((e) => e.eventName)
+            .join(", ");
           form.setError("attendingDays", {
             type: "manual",
-            message: `Please select at least one date for: ${missingEventNames}`
+            message: `Please select at least one date for: ${missingEventNames}`,
           });
         } else {
           form.clearErrors("attendingDays");
@@ -189,12 +208,12 @@ export default function EventSelection({ form }: EventSelectionProps) {
     let otherEventsTotal = 0;
     let conferenceDaysCount = 0;
 
-    selectedEvents.forEach(event => {
+    selectedEvents.forEach((event) => {
       const eventName = event.eventName;
       const selectedDates = attendingDays[eventName] || [];
       const pricePerDay = Number(event.eventPrice);
       const daysSelected = selectedDates.length;
-      
+
       if (event.eventStatus === "CONFERENCE") {
         // Conference events - eligible for discount
         conferenceTotal += daysSelected * pricePerDay;
@@ -281,8 +300,9 @@ export default function EventSelection({ form }: EventSelectionProps) {
               <FormMessage />
             </div>
             <FormDescription className="font-normal text-accent-foreground pb-4">
-              Select events and specific dates you'd like to attend. Pricing is per day.
-              Get a discount of ₱1,500 if you select 3 or more CONFERENCE days.
+              Select events and specific dates you'd like to attend. Pricing is
+              per day. Get a discount of ₱1,500 if you select 3 or more
+              CONFERENCE days.
             </FormDescription>
             <FormControl>
               <div className="grid grid-cols-1 gap-6 overflow-hidden">
@@ -298,10 +318,18 @@ export default function EventSelection({ form }: EventSelectionProps) {
                         const isExpanded = expandedEvents.has(event.id);
                         const eventDates = attendingDays[event.eventName] || [];
 
-                        const needsDates = isEventSelected && eventDates.length === 0;
-                        
+                        const needsDates =
+                          isEventSelected && eventDates.length === 0;
+
                         return (
-                          <div key={`item-${event.id}`} className={`border rounded-lg p-4 ${needsDates ? 'border-red-300 bg-red-50' : ''}`}>
+                          <div
+                            key={`item-${event.id}`}
+                            className={`border rounded-lg p-4 ${
+                              needsDates
+                                ? "border-red-300 bg-red-50 dark:bg-transparent "
+                                : ""
+                            }`}
+                          >
                             <FormItem className="flex flex-row items-start lg:items-center space-x-3 space-y-0">
                               <FormControl>
                                 <Checkbox
@@ -314,7 +342,9 @@ export default function EventSelection({ form }: EventSelectionProps) {
                                         event.id,
                                       ]);
                                       // Automatically expand date selection when event is selected
-                                      const newExpanded = new Set(expandedEvents);
+                                      const newExpanded = new Set(
+                                        expandedEvents
+                                      );
                                       newExpanded.add(event.id);
                                       setExpandedEvents(newExpanded);
                                     } else {
@@ -324,11 +354,20 @@ export default function EventSelection({ form }: EventSelectionProps) {
                                         )
                                       );
                                       // Clear attending days for this event when unchecked
-                                      const currentAttendingDays = form.getValues("attendingDays") || {};
-                                      const { [event.eventName]: _, ...remainingDays } = currentAttendingDays;
-                                      form.setValue("attendingDays", remainingDays);
+                                      const currentAttendingDays =
+                                        form.getValues("attendingDays") || {};
+                                      const {
+                                        [event.eventName]: _,
+                                        ...remainingDays
+                                      } = currentAttendingDays;
+                                      form.setValue(
+                                        "attendingDays",
+                                        remainingDays
+                                      );
                                       // Remove from expanded events
-                                      const newExpanded = new Set(expandedEvents);
+                                      const newExpanded = new Set(
+                                        expandedEvents
+                                      );
                                       newExpanded.delete(event.id);
                                       setExpandedEvents(newExpanded);
                                     }
@@ -337,7 +376,9 @@ export default function EventSelection({ form }: EventSelectionProps) {
                               </FormControl>
                               <div className="flex-1">
                                 <FormLabel className="text-accent-foreground flex flex-col lg:flex-row lg:items-center gap-2">
-                                  <span className="font-medium">{event.eventName}</span>
+                                  <span className="font-medium">
+                                    {event.eventName}
+                                  </span>
                                   <div className="flex items-center gap-2">
                                     <Badge
                                       className={getEventStatusColor(
@@ -358,30 +399,36 @@ export default function EventSelection({ form }: EventSelectionProps) {
                                 <div className="flex items-center justify-between text-sm text-muted-foreground mt-1">
                                   <div className="flex items-center">
                                     <Calendar className="h-4 w-4 mr-2" />
-                                    {event.eventDates && event.eventDates.length > 0 
-                                      ? `${event.eventDates.length} date${event.eventDates.length > 1 ? 's' : ''} available`
-                                      : 'No dates scheduled'
-                                    }
+                                    {event.eventDates &&
+                                    event.eventDates.length > 0
+                                      ? `${event.eventDates.length} date${
+                                          event.eventDates.length > 1 ? "s" : ""
+                                        } available`
+                                      : "No dates scheduled"}
                                   </div>
-                                  {isEventSelected && event.eventDates && event.eventDates.length > 0 && (
-                                    <button
-                                      type="button"
-                                      onClick={() => toggleEventExpansion(event.id)}
-                                      className="flex items-center text-blue-600 hover:text-blue-800"
-                                    >
-                                      {isExpanded ? (
-                                        <>
-                                          <ChevronUp className="h-4 w-4 mr-1" />
-                                          Hide dates
-                                        </>
-                                      ) : (
-                                        <>
-                                          <ChevronDown className="h-4 w-4 mr-1" />
-                                          Select dates
-                                        </>
-                                      )}
-                                    </button>
-                                  )}
+                                  {isEventSelected &&
+                                    event.eventDates &&
+                                    event.eventDates.length > 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          toggleEventExpansion(event.id)
+                                        }
+                                        className="flex items-center text-blue-600 hover:text-blue-800"
+                                      >
+                                        {isExpanded ? (
+                                          <>
+                                            <ChevronUp className="h-4 w-4 mr-1" />
+                                            Hide dates
+                                          </>
+                                        ) : (
+                                          <>
+                                            <ChevronDown className="h-4 w-4 mr-1" />
+                                            Select dates
+                                          </>
+                                        )}
+                                      </button>
+                                    )}
                                 </div>
                               </div>
                             </FormItem>
@@ -389,48 +436,69 @@ export default function EventSelection({ form }: EventSelectionProps) {
                             {/* Warning when event is selected but no dates chosen */}
                             {needsDates && (
                               <div className="mt-2 p-2 bg-red-100 border border-red-200 rounded text-sm text-red-700">
-                                ⚠️ Please select at least one date for this event
+                                ⚠️ Please select at least one date for this
+                                event
                               </div>
                             )}
 
                             {/* Date Selection */}
-                            {isEventSelected && isExpanded && event.eventDates && event.eventDates.length > 0 && (
-                              <Collapsible open={isExpanded}>
-                                <CollapsibleContent className="mt-4 pt-4 border-t">
-                                  <div className="space-y-2">
-                                    <p className="text-sm font-medium text-gray-700">
-                                      Select which dates you'll attend:
-                                    </p>
-                                    <div className="grid gap-2">
-                                      {event.eventDates.map((dateString, index) => {
-                                        const date = new Date(dateString);
-                                        const dateStr = date.toISOString().split('T')[0];
-                                        const isDateSelected = eventDates.includes(dateStr);
-                                        
-                                        return (
-                                          <label key={index} className="flex items-center space-x-2 p-2 rounded border hover:bg-gray-50">
-                                            <Checkbox
-                                              checked={isDateSelected}
-                                              onCheckedChange={(checked) => 
-                                                handleDateSelection(event.id, event.eventName, dateStr, checked as boolean)
-                                              }
-                                            />
-                                            <span className="text-sm">
-                                              {formatDate(date)}
-                                            </span>
-                                          </label>
-                                        );
-                                      })}
-                                    </div>
-                                    {eventDates.length > 0 && (
-                                      <p className="text-xs text-green-600 mt-2">
-                                        ✓ {eventDates.length} date{eventDates.length > 1 ? 's' : ''} selected
+                            {isEventSelected &&
+                              isExpanded &&
+                              event.eventDates &&
+                              event.eventDates.length > 0 && (
+                                <Collapsible open={isExpanded}>
+                                  <CollapsibleContent className="mt-4 pt-4 border-t">
+                                    <div className="space-y-2">
+                                      <p className="text-sm font-medium">
+                                        Select which dates you'll attend:
                                       </p>
-                                    )}
-                                  </div>
-                                </CollapsibleContent>
-                              </Collapsible>
-                            )}
+                                      <div className="grid gap-2">
+                                        {event.eventDates.map(
+                                          (dateString, index) => {
+                                            const date = new Date(dateString);
+                                            const dateStr = date
+                                              .toISOString()
+                                              .split("T")[0];
+                                            const isDateSelected =
+                                              eventDates.includes(dateStr);
+
+                                            return (
+                                              <label
+                                                key={index}
+                                                className="flex items-center space-x-2 p-2 rounded border hover:bg-muted/10"
+                                              >
+                                                <Checkbox
+                                                  checked={isDateSelected}
+                                                  onCheckedChange={(checked) =>
+                                                    handleDateSelection(
+                                                      event.id,
+                                                      event.eventName,
+                                                      dateStr,
+                                                      checked as boolean
+                                                    )
+                                                  }
+                                                />
+                                                <span className="text-sm">
+                                                  {formatDate(date)}
+                                                </span>
+                                              </label>
+                                            );
+                                          }
+                                        )}
+                                      </div>
+                                      {eventDates.length > 0 && (
+                                        <p className="text-xs text-green-600 mt-2">
+                                          ✓ {eventDates.length} date
+                                          {eventDates.length > 1
+                                            ? "s"
+                                            : ""}{" "}
+                                          selected
+                                        </p>
+                                      )}
+                                    </div>
+                                  </CollapsibleContent>
+                                </Collapsible>
+                              )}
                           </div>
                         );
                       }}
@@ -455,36 +523,42 @@ export default function EventSelection({ form }: EventSelectionProps) {
 
       {/* Pricing Summary */}
       {selectedEventIds.length > 0 && (
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
+        <div className="mt-6 p-4 bg-muted dark:bg-c1/30 rounded-lg border">
           <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
             Pricing Summary
           </h3>
-          
+
           <div className="space-y-2 text-sm">
             {(() => {
               const selectedEvents = getEventsByIds(selectedEventIds);
               let conferenceTotal = 0;
               let otherEventsTotal = 0;
               let conferenceDaysCount = 0;
-              const breakdown: Array<{name: string, days: number, pricePerDay: number, total: number, isConference: boolean}> = [];
+              const breakdown: Array<{
+                name: string;
+                days: number;
+                pricePerDay: number;
+                total: number;
+                isConference: boolean;
+              }> = [];
 
-              selectedEvents.forEach(event => {
+              selectedEvents.forEach((event) => {
                 const eventName = event.eventName;
                 const selectedDates = attendingDays[eventName] || [];
                 const pricePerDay = Number(event.eventPrice);
                 const daysSelected = selectedDates.length;
-                
+
                 if (daysSelected > 0) {
                   const eventTotal = daysSelected * pricePerDay;
                   const isConference = event.eventStatus === "CONFERENCE";
-                  
+
                   breakdown.push({
                     name: eventName,
                     days: daysSelected,
                     pricePerDay,
                     total: eventTotal,
-                    isConference
+                    isConference,
                   });
 
                   if (isConference) {
@@ -503,14 +577,20 @@ export default function EventSelection({ form }: EventSelectionProps) {
               return (
                 <>
                   {breakdown.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center py-1">
+                    <div
+                      key={index}
+                      className="flex justify-between items-center py-1"
+                    >
                       <div className="flex-1">
                         <span className="font-medium">{item.name}</span>
                         {item.isConference && (
-                          <Badge variant="outline" className="ml-2 text-xs">CONFERENCE</Badge>
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            CONFERENCE
+                          </Badge>
                         )}
-                        <div className="text-gray-600 text-xs">
-                          {item.days} day{item.days > 1 ? 's' : ''} × {formatPrice(item.pricePerDay)}
+                        <div className=" text-xs">
+                          {item.days} day{item.days > 1 ? "s" : ""} ×{" "}
+                          {formatPrice(item.pricePerDay)}
                         </div>
                       </div>
                       <div className="font-medium">
@@ -518,28 +598,34 @@ export default function EventSelection({ form }: EventSelectionProps) {
                       </div>
                     </div>
                   ))}
-                  
+
                   {breakdown.length > 0 && (
                     <>
                       <div className="border-t pt-2 mt-2">
                         <div className="flex justify-between text-sm">
                           <span>Subtotal:</span>
-                          <span>{formatPrice(conferenceTotal + otherEventsTotal)}</span>
+                          <span>
+                            {formatPrice(conferenceTotal + otherEventsTotal)}
+                          </span>
                         </div>
-                        
+
                         {hasDiscount && (
                           <div className="flex justify-between text-sm text-green-600">
-                            <span>Conference Discount ({conferenceDaysCount} days):</span>
+                            <span>
+                              Conference Discount ({conferenceDaysCount} days):
+                            </span>
                             <span>-{formatPrice(discount)}</span>
                           </div>
                         )}
-                        
+
                         <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t">
                           <span>Total:</span>
-                          <span className="text-blue-600">{formatPrice(finalTotal)}</span>
+                          <span className="text-blue-600">
+                            {formatPrice(finalTotal)}
+                          </span>
                         </div>
                       </div>
-                      
+
                       {hasDiscount && (
                         <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
                           <Info className="h-3 w-3" />

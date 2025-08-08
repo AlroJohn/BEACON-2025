@@ -182,9 +182,9 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
       const videoWidth = videoElement.videoWidth || videoRect.width;
       const videoHeight = videoElement.videoHeight || videoRect.height;
 
-      // Define the oval guide dimensions - larger for close-up faces
-      const ovalWidth = isMobile ? 200 : 280;
-      const ovalHeight = isMobile ? 240 : 320;
+      // Define the oval guide dimensions - consistent across mobile and desktop
+      const ovalWidth = 280;
+      const ovalHeight = 320;
       const ovalCenterX = videoWidth / 2;
       const ovalCenterY = videoHeight / 2;
 
@@ -194,15 +194,15 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
       const faceWidth = faceBox.width;
       const faceHeight = faceBox.height;
 
-      // More lenient tolerances for close-up faces
-      const centerToleranceX = isMobile ? 80 : 120;
-      const centerToleranceY = isMobile ? 60 : 100;
+      // Consistent tolerances across all devices
+      const centerToleranceX = 120;
+      const centerToleranceY = 100;
 
-      // Allow larger faces for close-up shots
-      const minFaceWidth = isMobile ? 60 : 80;
-      const maxFaceWidth = isMobile ? 400 : 500; // Much larger to allow close-ups
-      const minFaceHeight = isMobile ? 80 : 100;
-      const maxFaceHeight = isMobile ? 450 : 550; // Much larger to allow close-ups
+      // Consistent face size requirements across all devices
+      const minFaceWidth = 80;
+      const maxFaceWidth = 500; // Allow close-ups
+      const minFaceHeight = 100;
+      const maxFaceHeight = 550; // Allow close-ups
 
       // Check if face is reasonably centered
       const isCenteredX =
@@ -298,7 +298,39 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
   );
 
   const captureImageAsFile = async (imageSrc: string): Promise<string> => {
-    return imageSrc;
+    // Extract base64 data from the image source
+    const base64Data = imageSrc.split(',')[1];
+    if (!base64Data) return imageSrc;
+
+    // Create a new image to load the captured photo
+    const img = new Image();
+    
+    return new Promise((resolve) => {
+      img.onload = () => {
+        // Create a canvas with the original dimensions to maintain high quality
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw the image on the canvas with high quality settings
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Set high quality image rendering
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          // Get the high quality image as base64
+          const highQualityImage = canvas.toDataURL('image/jpeg', 1.0); // Use highest quality (1.0)
+          resolve(highQualityImage);
+        } else {
+          resolve(imageSrc); // Fallback to original if canvas context unavailable
+        }
+      };
+      
+      img.onerror = () => resolve(imageSrc); // Fallback to original on error
+      img.src = imageSrc;
+    });
   };
 
   const handleWebcamCapture = useCallback(async () => {
@@ -488,9 +520,12 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
                     } -scale-x-100`}
                     videoConstraints={{
                       facingMode: facingMode,
-                      width: isMobile ? 320 : 640,
-                      height: isMobile ? 240 : 480,
+                      width: isMobile ? 640 : 640,
+                      height: isMobile ? 480 : 480,
+                      aspectRatio: 4/3,
                     }}
+                    screenshotQuality={1}
+                    imageSmoothing={true}
                     onUserMedia={handleCameraModalOpen}
                     onUserMediaError={(error) => {
                       console.error("Camera error:", error);
@@ -525,8 +560,8 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
                         <div
                           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 border-dashed border-blue-400 rounded-full opacity-70"
                           style={{
-                            width: isMobile ? "200px" : "280px",
-                            height: isMobile ? "240px" : "320px",
+                            width: "280px",
+                            height: "320px",
                           }}
                         />
                         {/* Guide lines for better positioning */}
@@ -534,13 +569,13 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
                           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-blue-300 opacity-30"
                           style={{
                             width: "1px",
-                            height: isMobile ? "240px" : "320px",
+                            height: "320px",
                           }}
                         />
                         <div
                           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-blue-300 opacity-30"
                           style={{
-                            width: isMobile ? "200px" : "280px",
+                            width: "280px",
                             height: "1px",
                           }}
                         />

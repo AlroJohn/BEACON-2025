@@ -269,6 +269,7 @@ model Users {
   sponsorship_interests     sponsorship_interests[]
   sponsor_registrations     sponsor_registrations[]
   ExhibitorCodeDistribution ExhibitorCodeDistribution[]
+  Attendance                Attendance[]
 
   @@map("users")
 }
@@ -434,7 +435,7 @@ model exhibitor_registrations {
 
   //added section to determine if user is an exhibitor
   exhibitor_member Boolean @default(false)
-  exhibitor_code String?
+  exhibitor_code   String?
 
   @@map("exhibitor_registrations")
 }
@@ -688,4 +689,16 @@ model ExhibitorMembers {
   isActive Boolean @default(true)
 
   @@map("exhibitor_members")
+}
+
+model Attendance {
+  id       String   @id @default(uuid())
+  userId   String
+  scanTime DateTime @default(now())
+  scanDate DateTime @default(now()) @db.Date
+
+  // Relations
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("attendance")
 }

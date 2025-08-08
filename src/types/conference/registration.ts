@@ -161,116 +161,116 @@ export const conferenceRegistrationSchema = baseConferenceSchema
 export type ConferenceRegistrationFormData = z.infer<typeof conferenceRegistrationSchema>;
 
 // Default values for conference registration form
-// export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData = {
-//   /* ─── form-only ─── */
-//   selectedEventIds: [],
-//   faceScannedUrl: '',
-
-//   /* ─── user_details ─── */
-//   firstName: '',
-//   lastName: '',
-//   middleName: '',
-//   suffix: '',
-//   preferredName: '',
-//   gender: Gender.MALE,          // Gender enum
-//   genderOthers: '',
-//   ageBracket: AgeBracket.AGE_18_24,      // AgeBracket enum
-//   nationality: '',
-
-//   /* ─── user_accounts ─── */
-//   email: '',
-//   mobileNumber: '',
-//   mailingAddress: '',
-
-//   /* ─── conference ─── */
-//   isMaritimeLeagueMember: 'NO',   // MaritimeLeagueMembership enum
-//   tmlMemberCode: '',
-//   attendingDays: {},
-
-//   /* ─── professional info ─── */
-//   jobTitle: '',
-//   companyName: '',
-//   industry: '',
-//   companyAddress: '',
-//   companyWebsite: '',
-
-//   /* ─── areas of interest ─── */
-//   interestAreas: [],
-//   detailedInterests: {},
-//   otherInterests: '',
-//   receiveEventInvites: false,
-
-//   /* ─── payment details ─── */
-//   totalPaymentAmount: null,
-//   customPaymentAmount: null,
-//   paymentMode: PaymentMode.GCASH,            // e.g. 'GCASH' | 'BANK_TRANSFER'
-//   hasConferenceDiscount: false,
-//   receiptImageUrl: '',
-//   referenceNumber: '',
-
-//   /* ─── consent & confirmation ─── */
-//   emailCertificate: false,
-//   photoVideoConsent: false,
-//   dataUsageConsent: false,
-// };
-
-//automatic default values
 export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData = {
-  // Form-only fields
-  selectedEventIds: [], // example IDs
-  faceScannedUrl: "",
+  /* ─── form-only ─── */
+  selectedEventIds: [],
+  faceScannedUrl: '',
 
-  // user_details fields
-  firstName: "Maria",
-  lastName: "Santos",
-  middleName: "Reyes",
-  suffix: null,
-  preferredName: "Mia",
-  gender: Gender.FEMALE,
-  genderOthers: null,
-  ageBracket: AgeBracket.AGE_25_34,
-  nationality: "Filipino",
+  /* ─── user_details ─── */
+  firstName: '',
+  lastName: '',
+  middleName: '',
+  suffix: '',
+  preferredName: '',
+  gender: Gender.MALE,          // Gender enum
+  genderOthers: '',
+  ageBracket: AgeBracket.AGE_18_24,      // AgeBracket enum
+  nationality: '',
 
-  // user_accounts fields
-  email: "alromercado08@gmail.com",
-  mobileNumber: "09171234567",
-  mailingAddress: "Unit 1003, Legazpi Village, Makati City, Metro Manila",
+  /* ─── user_accounts ─── */
+  email: '',
+  mobileNumber: '',
+  mailingAddress: '',
 
-  // Conference fields
-  // Use YES here so receipt isn’t required by default even with selected events.
-  isMaritimeLeagueMember: MaritimeLeagueMembership.NO,
-  tmlMemberCode: "TML-2025-0001",
+  /* ─── conference ─── */
+  isMaritimeLeagueMember: 'NO',   // MaritimeLeagueMembership enum
+  tmlMemberCode: '',
   attendingDays: {},
 
-  // Professional Information
-  jobTitle: "Business Development Manager",
-  companyName: "Oceanic Innovations PH, Inc.",
-  industry: "Marine Technology",
-  companyAddress: "28F GT Tower, Ayala Avenue, Makati City, 1226 Philippines",
-  companyWebsite: "https://oceanic.ph",
+  /* ─── professional info ─── */
+  jobTitle: '',
+  companyName: '',
+  industry: '',
+  companyAddress: '',
+  companyWebsite: '',
 
-  // Areas of Interest
-  interestAreas: [
-    ConferenceInterestArea.MARINE_TECHNOLOGY,
-    ConferenceInterestArea.INNOVATION_SUSTAINABILITY,
-  ],
+  /* ─── areas of interest ─── */
+  interestAreas: [],
   detailedInterests: {},
-  otherInterests: null,
-  receiveEventInvites: true,
+  otherInterests: '',
+  receiveEventInvites: false,
 
-  // Payment Details
-  totalPaymentAmount: 3000,
+  /* ─── payment details ─── */
+  totalPaymentAmount: null,
   customPaymentAmount: null,
-  paymentMode: "GCASH",
+  paymentMode: PaymentMode.GCASH,            // e.g. 'GCASH' | 'BANK_TRANSFER'
   hasConferenceDiscount: false,
-  receiptImageUrl: null, // not required when member = YES
-  referenceNumber: "GCASH-REF-12345678",
+  receiptImageUrl: '',
+  referenceNumber: '',
 
-  // Consent & Confirmation
-  emailCertificate: true,
-  photoVideoConsent: true,
-  dataUsageConsent: true, // required by schema
+  /* ─── consent & confirmation ─── */
+  emailCertificate: false,
+  photoVideoConsent: false,
+  dataUsageConsent: false,
 };
+
+//automatic default values
+// export const defaultConferenceRegistrationValues: ConferenceRegistrationFormData = {
+//   // Form-only fields
+//   selectedEventIds: [], // example IDs
+//   faceScannedUrl: "",
+
+//   // user_details fields
+//   firstName: "Maria",
+//   lastName: "Santos",
+//   middleName: "Reyes",
+//   suffix: null,
+//   preferredName: "Mia",
+//   gender: Gender.FEMALE,
+//   genderOthers: null,
+//   ageBracket: AgeBracket.AGE_25_34,
+//   nationality: "Filipino",
+
+//   // user_accounts fields
+//   email: "alromercado08@gmail.com",
+//   mobileNumber: "09171234567",
+//   mailingAddress: "Unit 1003, Legazpi Village, Makati City, Metro Manila",
+
+//   // Conference fields
+//   // Use YES here so receipt isn’t required by default even with selected events.
+//   isMaritimeLeagueMember: MaritimeLeagueMembership.NO,
+//   tmlMemberCode: "TML-2025-0001",
+//   attendingDays: {},
+
+//   // Professional Information
+//   jobTitle: "Business Development Manager",
+//   companyName: "Oceanic Innovations PH, Inc.",
+//   industry: "Marine Technology",
+//   companyAddress: "28F GT Tower, Ayala Avenue, Makati City, 1226 Philippines",
+//   companyWebsite: "https://oceanic.ph",
+
+//   // Areas of Interest
+//   interestAreas: [
+//     ConferenceInterestArea.MARINE_TECHNOLOGY,
+//     ConferenceInterestArea.INNOVATION_SUSTAINABILITY,
+//   ],
+//   detailedInterests: {},
+//   otherInterests: null,
+//   receiveEventInvites: true,
+
+//   // Payment Details
+//   totalPaymentAmount: 3000,
+//   customPaymentAmount: null,
+//   paymentMode: "GCASH",
+//   hasConferenceDiscount: false,
+//   receiptImageUrl: null, // not required when member = YES
+//   referenceNumber: "GCASH-REF-12345678",
+
+//   // Consent & Confirmation
+//   emailCertificate: true,
+//   photoVideoConsent: true,
+//   dataUsageConsent: true, // required by schema
+// };
 
 
 // Conference Interest Areas options for UI with detailed sub-interests

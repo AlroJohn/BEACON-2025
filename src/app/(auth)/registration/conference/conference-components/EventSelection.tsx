@@ -330,7 +330,7 @@ export default function EventSelection({ form }: EventSelectionProps) {
                                 : ""
                             }`}
                           >
-                            <FormItem className="flex flex-row items-start lg:items-center space-x-3 space-y-0">
+                            <FormItem className="flex flex-row items-start lg:items-center lg:space-x-3 space-y-0">
                               <FormControl>
                                 <Checkbox
                                   checked={isEventSelected}
@@ -375,7 +375,7 @@ export default function EventSelection({ form }: EventSelectionProps) {
                                 />
                               </FormControl>
                               <div className="flex-1">
-                                <FormLabel className="text-accent-foreground flex flex-col lg:flex-row lg:items-center gap-2">
+                                <FormLabel className="text-accent-foreground flex flex-col lg:flex-row items-start lg:items-center gap-2">
                                   <span className="font-medium">
                                     {event.eventName}
                                   </span>

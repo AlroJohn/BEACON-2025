@@ -208,7 +208,7 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
     <div className="space-y-6">
       {/* Pricing Summary */}
       {selectedEvents.length > 0 && (
-        <Card className="border-blue-200">
+        <Card className="border-blue-200 dark:bg-c1/30 bg-muted">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
@@ -277,7 +277,7 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
                               CONFERENCE
                             </Badge>
                           )}
-                          <div className="text-gray-600 text-xs">
+                          <div className=" text-xs">
                             {item.days} day{item.days > 1 ? "s" : ""} ×{" "}
                             {formatPrice(item.pricePerDay)}
                           </div>
@@ -422,7 +422,7 @@ export default function PaymentDetails({ form }: PaymentDetailsProps) {
                   </div>
                 </div>
               </div>
-              <Alert className="border-blue-300 ">
+              <Alert className="border-blue-300 dark:bg-c1/30 bg-muted">
                 <Info className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-accent-foreground">
                   <strong>How to pay:</strong> Scan the QR code above using your

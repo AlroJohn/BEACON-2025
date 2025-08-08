@@ -307,10 +307,10 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
     
     return new Promise((resolve) => {
       img.onload = () => {
-        // Create a canvas with the original dimensions to maintain high quality
+        // Create a canvas with consistent desktop dimensions (444x333)
         const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
+        canvas.width = 444;
+        canvas.height = 333;
         
         // Draw the image on the canvas with high quality settings
         const ctx = canvas.getContext('2d');
@@ -318,7 +318,29 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
           // Set high quality image rendering
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          // Calculate dimensions to maintain aspect ratio while filling the 444x333 area
+          const sourceAspect = img.width / img.height;
+          const targetAspect = 444 / 333;
+          
+          let sw, sh, sx, sy;
+          
+          if (sourceAspect > targetAspect) {
+            // Source is wider than target, crop the width
+            sh = img.height;
+            sw = sh * targetAspect;
+            sy = 0;
+            sx = (img.width - sw) / 2;
+          } else {
+            // Source is taller than target, crop the height
+            sw = img.width;
+            sh = sw / targetAspect;
+            sx = 0;
+            sy = (img.height - sh) / 2;
+          }
+          
+          // Draw the image centered and cropped to match the 444x333 aspect ratio
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 444, 333);
           
           // Get the high quality image as base64
           const highQualityImage = canvas.toDataURL('image/jpeg', 1.0); // Use highest quality (1.0)
@@ -520,8 +542,8 @@ export function FaceCapture({ onCapture, capturedImage }: FaceCaptureProps) {
                     } -scale-x-100`}
                     videoConstraints={{
                       facingMode: facingMode,
-                      width: isMobile ? 640 : 640,
-                      height: isMobile ? 480 : 480,
+                      width: 640,
+                      height: 480,
                       aspectRatio: 4/3,
                     }}
                     screenshotQuality={1}
